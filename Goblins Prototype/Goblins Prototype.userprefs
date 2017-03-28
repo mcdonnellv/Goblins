@@ -1,0 +1,15 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Roster.cs">
+    <Files>
+      <File FileName="Assets\Character.cs" Line="32" Column="9" />
+      <File FileName="Assets\GameManager.cs" Line="19" Column="3" />
+      <File FileName="Assets\CombatMove.cs" Line="24" Column="9" />
+      <File FileName="Assets\Roster.cs" Line="18" Column="60" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
