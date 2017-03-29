@@ -22,7 +22,6 @@ public class GameManager : MonoBehaviour {
 
 	IEnumerator InitState () {
 		Debug.Log("Init: Enter");
-		roster.Populate();
 		while (state == State.Init) {
 			yield return 0;
 		}
@@ -68,8 +67,6 @@ public class GameManager : MonoBehaviour {
 
 	void Start () {
 		NextState();
-
-		roster.Populate();
 	}
 
 	// Update is called once per frame

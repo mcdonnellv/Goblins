@@ -8,6 +8,7 @@ public class CombatMove : MonoBehaviour {
 	public enum MoveType {
 		Damage,
 		Heal,
+		Idle,
 	}
 
 	public enum DamageType {
@@ -17,11 +18,15 @@ public class CombatMove : MonoBehaviour {
 		Dark,
 		Ice,
 		Fire,
+		None,
 	}
 
-	public string name;
+	public string moveName;
 	public string description;
-	public int effectiveness;
+	public int effectiveness = 1;
+	public float critChance = .1f;
+	public int weight = 10;
+	public int energyCost = 2;
 	public MoveType moveType = MoveType.Damage;
 	public DamageType damageType = DamageType.Slice;
 }
