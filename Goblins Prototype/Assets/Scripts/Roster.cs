@@ -57,7 +57,7 @@ public class Roster : MonoBehaviour {
 			//assign classes
 			if(classes.Count > 1) {
 				int randClassIndex = UnityEngine.Random.Range(1, classes.Count);
-				data.combatClass = classes[randClassIndex];
+				data.AssignClass(classes[randClassIndex]);
 			}
 		}
 			

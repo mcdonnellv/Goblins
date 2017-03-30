@@ -69,6 +69,15 @@ public class CharacterData {
 		life = maxLife;
 		energy = maxEnergy;
 	}
+
+	public void AssignClass(CombatClass cc) {
+		combatClass = cc;
+		foreach(Transform t in combatClass.movePrefabs){
+			CombatMove cm = t.GetComponent<CombatMove>();
+			moves.Add(cm);
+		}
+
+	}
 }
 
 public class Character : MonoBehaviour {

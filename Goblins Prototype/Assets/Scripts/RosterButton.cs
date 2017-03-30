@@ -35,7 +35,8 @@ public class RosterButton : MonoBehaviour {
 
 	public void Pressed () {
 		CharacterDetails characterDetails = characterDetailsPanel.GetComponent<CharacterDetails>();
-		characterDetails.character = character;
+		characterDetails.AssignCharacter(character);
 		characterDetailsPanel.gameObject.SetActive(true);
+
 	}
 }

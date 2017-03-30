@@ -52,6 +52,7 @@
      <Compile Include="Assets\Scripts\CombatMove.cs" />
      <Compile Include="Assets\Scripts\Enemies.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
+     <Compile Include="Assets\Scripts\MovePanel.cs" />
      <Compile Include="Assets\Scripts\PooledObject.cs" />
      <Compile Include="Assets\Scripts\Roster.cs" />
      <Compile Include="Assets\Scripts\RosterButton.cs" />

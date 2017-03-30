@@ -16,7 +16,7 @@ public class CombatMove : MonoBehaviour {
 		Crush,
 		Arcane,
 		Dark,
-		Ice,
+		Cold,
 		Fire,
 		None,
 	}
@@ -29,4 +29,25 @@ public class CombatMove : MonoBehaviour {
 	public int energyCost = 2;
 	public MoveType moveType = MoveType.Damage;
 	public DamageType damageType = DamageType.Slice;
+
+	public string GenerateDesciption () {
+		switch(moveType){
+		case MoveType.Damage : 
+			description = "Deal " + effectiveness.ToString();
+			switch(damageType) {
+			case DamageType.Slice : description += " slicing damage"; break;
+			case DamageType.Crush : description += " crushing damage"; break;
+			case DamageType.Arcane : description += " arcane damage"; break;
+			case DamageType.Dark : description += " dark damage"; break;
+			case DamageType.Cold : description += " cold damage"; break;
+			case DamageType.Fire : description += " fire damage"; break;
+			}
+			break;
+		case MoveType.Heal : 
+			description = "Heal " + effectiveness.ToString() + " damage";
+			break;
+		}
+
+		return description;
+	}
 }
