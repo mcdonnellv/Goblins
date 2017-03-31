@@ -12,12 +12,12 @@ public class Roster : MonoBehaviour {
 	public Transform goblinPrefab;
 	public List<CombatClass> classes;
 	public Transform characterDetailsPanel;
+	public Transform partyGrid;
 
+	public List<CharacterData> party = new List<CharacterData>();
 
 	// Use this for initialization
 	void Start() {
-		if(goblins.Count == 0)
-			Populate();
 		RefreshDisplay();
 	}
 
@@ -39,8 +39,17 @@ public class Roster : MonoBehaviour {
 			GameObject newButton = buttonObjectPool.GetObject();
 			newButton.transform.SetParent(contentPanel, false);
 			RosterButton rosterButton = newButton.GetComponent<RosterButton>();
+			rosterButton.inParty = false;
+			foreach(Transform child in partyGrid) {
+				PartyMemberPanel pmp = child.GetComponent<PartyMemberPanel>();
+				if(pmp.character == data) {
+					//mark it as part of party
+					rosterButton.inParty = true;
+					break;
+				}
+			}
+			rosterButton.roster = this;
 			rosterButton.Setup(data);
-			rosterButton.characterDetailsPanel = characterDetailsPanel;
 		}
 	}
 
@@ -78,7 +87,10 @@ public class Roster : MonoBehaviour {
 		goblin.data = goblins[i];
 		Debug.Log("Goblin spawned");
 	}
-	
+
+	public void CloseButtonPressed() {
+		transform.gameObject.SetActive(false);
+	}
 	// Update is called once per frame
 	void Update () {
 		

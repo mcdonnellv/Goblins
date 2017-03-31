@@ -1,15 +1,22 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/RosterButton.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Enemies.cs">
     <Files>
-      <File FileName="Assets/Scripts/Roster.cs" Line="25" Column="63" />
-      <File FileName="Assets/Scripts/CharacterDetails.cs" Line="19" Column="1" />
-      <File FileName="Assets/Scripts/RosterButton.cs" Line="38" Column="1" />
+      <File FileName="Assets\Scripts\Roster.cs" Line="56" Column="2" />
+      <File FileName="Assets\Scripts\CharacterDetails.cs" Line="43" Column="17" />
+      <File FileName="Assets\Scripts\RosterButton.cs" Line="50" Column="38" />
+      <File FileName="Assets\Scripts\Character.cs" Line="45" Column="23" />
+      <File FileName="Assets\PartyMemberPanel.cs" Line="49" Column="43" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="35" Column="28" />
+      <File FileName="Assets\PartyPanel.cs" Line="17" Column="49" />
+      <File FileName="Assets\Scripts\Enemies.cs" Line="78" Column="2" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/CharacterDetails.cs" line="19" column="1" />
+      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\Scripts\GameManager.cs" line="25" column="3" />
+      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\Scripts\Roster.cs" line="43" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

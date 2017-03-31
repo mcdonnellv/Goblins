@@ -22,6 +22,8 @@ public class GameManager : MonoBehaviour {
 
 	IEnumerator InitState () {
 		Debug.Log("Init: Enter");
+		roster.Populate();
+		state = State.Prep;
 		while (state == State.Init) {
 			yield return 0;
 		}

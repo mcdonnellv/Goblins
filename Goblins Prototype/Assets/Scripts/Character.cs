@@ -72,6 +72,7 @@ public class CharacterData {
 
 	public void AssignClass(CombatClass cc) {
 		combatClass = cc;
+		moves.Clear();
 		foreach(Transform t in combatClass.movePrefabs){
 			CombatMove cm = t.GetComponent<CombatMove>();
 			moves.Add(cm);

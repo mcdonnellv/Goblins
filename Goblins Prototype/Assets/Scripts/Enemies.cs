@@ -44,7 +44,38 @@ public class Enemies : MonoBehaviour {
 		}
 		enemyParty = stageEnemySets[0].enemies;
 	}
-	
+
+
+	public string DescribeEnemyParty() {
+		float[] resistances = new float[6];
+
+		foreach(Transform t in enemyParty) {
+			CharacterData e = t.GetComponent<Character>().data;
+			resistances[0] += e.sliceRes;
+			resistances[1] += e.crushRes;
+			resistances[2] += e.aracaneRes;
+			resistances[3] += e.darkRes;
+			resistances[4] += e.coldRes;
+			resistances[5] += e.fireRes;
+		}
+
+		float largestVal = 0f;
+		int largestValInd = 0;
+		for(int i=0; i < 6; i++) {
+			if(Mathf.Abs(resistances[i]) > largestVal)
+				largestValInd = i;
+		}
+
+		if(largestVal > 0) {
+			CombatMove.DamageType d =(CombatMove.DamageType)largestValInd;
+			return "Enemies are " + 
+				(resistances[largestValInd] < 0 ? "vulnarable" : "resistant" ) +   
+				" to " + d.ToString() + " damage.";
+		}
+		return "Enemies are unremarkable";
+
+	}
+
 	// Update is called once per frame
 	void Update () {
 		

@@ -41,7 +41,6 @@ public class CharacterDetails : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		transform.gameObject.SetActive(false);
 	}
 
 	public void AssignCharacter(CharacterData c) {

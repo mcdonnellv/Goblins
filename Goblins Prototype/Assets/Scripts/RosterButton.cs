@@ -13,9 +13,10 @@ public class RosterButton : MonoBehaviour {
 	public Text mindLabel;
 	public Text spiritLabel;
 	public Image iconImage;
-	public Transform characterDetailsPanel;
-
+	public Roster roster;
 	private CharacterData character;
+	public bool inParty = false;
+
 
 	// Use this for initialization
 	void Start () {
@@ -30,13 +31,24 @@ public class RosterButton : MonoBehaviour {
 		bodyLabel.text = "Body: " + character.body.ToString();
 		mindLabel.text = "Mind: " + character.mind.ToString();
 		spiritLabel.text = "Spirit :" + character.spirit.ToString();
+		SetInPartyStatus();
 	}
 
-
+	void SetInPartyStatus() {
+		Image bg = GetComponent<Image>();
+		bg.color = inParty ? new Color(.4f,.81f,.58f) : Color.white;
+		transform.localScale = new Vector3(1,1,1);
+	}
+		
 	public void Pressed () {
-		CharacterDetails characterDetails = characterDetailsPanel.GetComponent<CharacterDetails>();
+		CharacterDetails characterDetails = roster.characterDetailsPanel.GetComponent<CharacterDetails>();
 		characterDetails.AssignCharacter(character);
-		characterDetailsPanel.gameObject.SetActive(true);
+		roster.characterDetailsPanel.gameObject.SetActive(true);
 
+		if(inParty == false) {
+			PartyMemberPanel partyMemberPanel = roster.partyGrid.GetChild(PartyMemberPanel.activePanelIndex).GetComponent<PartyMemberPanel>();
+			partyMemberPanel.Setup(character);
+		}
+		roster.RefreshDisplay();
 	}
 }
