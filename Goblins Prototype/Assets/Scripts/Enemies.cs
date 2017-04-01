@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 [Serializable]
@@ -22,9 +23,13 @@ public class StageEnemyList {
 		for(int i=0; i < enemyCount; i++) {
 			//randomly choose enemy from prefabs
 			int prefabIndex = UnityEngine.Random.Range(0, enemyPrefabs.Count);
+			// this will actually spawn him in the world somwhere
 			Transform spawnedEnemy = GameObject.Instantiate(enemyPrefabs[prefabIndex]);
 			spawnedEnemy.transform.SetParent(parentTransform);
 			enemies.Add(spawnedEnemy);
+
+			Transform spawnPt = GameManager.gm.arena.enemySpawnSpots[i];
+			spawnedEnemy.position = spawnPt.position;
 		}
 	}
 
@@ -33,6 +38,7 @@ public class StageEnemyList {
 public class Enemies : MonoBehaviour {
 	public StageEnemyList[] stageEnemySets;
 	public List<Transform> enemyParty;
+	public Text enemyDescription;
 
 
 	// Use this for initialization
@@ -42,12 +48,20 @@ public class Enemies : MonoBehaviour {
 			StageEnemyList list = stageEnemySets[i];
 			list.PopulateEnemyList(transform);
 		}
-		enemyParty = stageEnemySets[0].enemies;
+		SetParty(0);
+	}
+
+
+	public void SetParty(int index) {
+		enemyParty = stageEnemySets[index].enemies;
+		enemyDescription.text = DescribeEnemyParty();
 	}
 
 
 	public string DescribeEnemyParty() {
 		float[] resistances = new float[6];
+		float[] magicRes = new float[4];
+		float[] physRes = new float[2];
 
 		foreach(Transform t in enemyParty) {
 			CharacterData e = t.GetComponent<Character>().data;
@@ -59,14 +73,36 @@ public class Enemies : MonoBehaviour {
 			resistances[5] += e.fireRes;
 		}
 
-		float largestVal = 0f;
+		physRes[0] = resistances[0];
+		physRes[1] = resistances[1];
+		magicRes[0] = resistances[2];
+		magicRes[1] = resistances[3];
+		magicRes[2] = resistances[4];
+		magicRes[3] = resistances[5];
+			
 		int largestValInd = 0;
-		for(int i=0; i < 6; i++) {
-			if(Mathf.Abs(resistances[i]) > largestVal)
+		for(int i=1; i < 6; i++) {
+			if(Mathf.Abs(resistances[i]) > Mathf.Abs(resistances[largestValInd]))
 				largestValInd = i;
 		}
 
-		if(largestVal > 0) {
+		float genPhysRes = 0f;
+		float genMagicRes = 0f;
+	
+		for(int i=0; i<2; i++)
+			genPhysRes += physRes[i];
+		genPhysRes /= 2f;
+
+		for(int i=0; i<4; i++)
+			genMagicRes += magicRes[i];
+		genMagicRes /= 4f;
+
+		if(Mathf.Abs(resistances[largestValInd]) > 0) {
+			if(resistances[largestValInd] == genPhysRes)
+				return "Enemies are " + (resistances[largestValInd] < 0 ? "vulnarable" : "resistant" ) + " to physical damage.";
+			if(resistances[largestValInd] == genMagicRes)
+				return "Enemies are " + (resistances[largestValInd] < 0 ? "vulnarable" : "resistant" ) + " to magical damage.";
+			
 			CombatMove.DamageType d =(CombatMove.DamageType)largestValInd;
 			return "Enemies are " + 
 				(resistances[largestValInd] < 0 ? "vulnarable" : "resistant" ) +   

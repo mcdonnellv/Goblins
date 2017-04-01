@@ -10,6 +10,9 @@ public class GameManager : MonoBehaviour {
 	public Roster roster;
 	public Enemies enemies;
 	public List<CombatMove> moves = new List<CombatMove>();
+	public Camera prepCam;
+	public Camera fightCam;
+	public Arena arena;
 
 	public enum State {
 		Init,
@@ -33,6 +36,8 @@ public class GameManager : MonoBehaviour {
 
 	IEnumerator PrepState () {
 		Debug.Log("Prep: Enter");
+		prepCam.enabled = true;
+		fightCam.enabled = false;
 		while (state == State.Prep) {
 			yield return 0;
 		}
@@ -42,6 +47,8 @@ public class GameManager : MonoBehaviour {
 
 	IEnumerator CombatState () {
 		Debug.Log("Combat: Enter");
+		prepCam.enabled = false;
+		fightCam.enabled = true;
 		while (state == State.Combat) {
 			yield return 0;
 		}
