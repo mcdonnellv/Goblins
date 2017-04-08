@@ -18,16 +18,28 @@ public class PartyMemberPanel : MonoBehaviour {
 	public Button addButton;
 	public Button removeButton;
 
+	public Transform spawnPt;
+	public Transform goblinPrefab;
+
 	void Start () {
 		character = null;
 		cell.SetActive(false);
 	}
 
-	public void Setup (CharacterData currentCharacter) {
-		character = currentCharacter;
+	public void Setup (CharacterData characterParam) {
+		if(character != null) {
+			if(character.characterGameObject != null) {
+				Character c = character.characterGameObject.GetComponent<Character>();
+				c.DeSpawn();
+				character = null;
+			}
+		}
+
+		character = characterParam;
 		nameLabel.text = character.combatClass.type.ToString();
 		lifeLabel.text = "Life: " + character.maxLife.ToString();
 		energyLabel.text = "Energy: " + character.maxEnergy.ToString();
+		SpawnGoblin();
 		cell.SetActive(true);
 	}
 
@@ -37,16 +49,24 @@ public class PartyMemberPanel : MonoBehaviour {
 		//assign a goblin but check first, it might be already in another party panel.
 		foreach(CharacterData goblin in roster.goblins) {
 			if(IsGoblinInParty(goblin) == false) {
-				character = goblin;
-				Setup(character);
+				Setup(goblin);
 				break;
 			}
 		}
-			
 		roster.gameObject.SetActive(true);
 		roster.RefreshDisplay();
 		addButton.gameObject.SetActive(false);
 		removeButton.gameObject.SetActive(true);
+	}
+
+	private void SpawnGoblin() {
+		//spawn the dude
+		if(character.characterGameObject != null) {
+			Character c = character.characterGameObject.GetComponent<Character>();
+			if(c != null)
+				c.DeSpawn();
+		}
+		Character.Spawn(goblinPrefab, spawnPt, character);
 	}
 
 	bool IsGoblinInParty(CharacterData goblin) {
@@ -60,6 +80,12 @@ public class PartyMemberPanel : MonoBehaviour {
 	}
 
 	public void RemoveButtonPressed() {
+		if(character.characterGameObject != null) {
+			Character c = character.characterGameObject.GetComponent<Character>();
+			if(c != null)
+				c.DeSpawn();
+		}
+		
 		cell.SetActive(false);
 		character = null;
 		addButton.gameObject.SetActive(true);

@@ -13,8 +13,11 @@ public class PartyPanel : MonoBehaviour {
 		gameObject.SetActive(false);
 		GameManager.gm.state = GameManager.State.Combat;
 		GameManager.gm.roster.party.Clear();
-		foreach(PartyMemberPanel p  in partyPanels)
+		foreach(PartyMemberPanel p  in partyPanels) {
 			GameManager.gm.roster.party.Add(p.character);
+			Character.Spawn(p.goblinPrefab, GameManager.gm.arena.playerSpawnSpots[partyPanels.IndexOf(p)], p.character);
+		}
+		
 	}
 
 	void Update() {

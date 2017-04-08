@@ -18,7 +18,6 @@ public class Roster : MonoBehaviour {
 
 	// Use this for initialization
 	void Start() {
-		RefreshDisplay();
 	}
 
 	public void RefreshDisplay() {

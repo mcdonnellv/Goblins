@@ -1,23 +1,22 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Enemies.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\GameManager.cs">
     <Files>
-      <File FileName="Assets/Scripts/Roster.cs" Line="61" Column="5" />
-      <File FileName="Assets/Scripts/CharacterDetails.cs" Line="68" Column="40" />
-      <File FileName="Assets/Scripts/RosterButton.cs" Line="22" Column="14" />
-      <File FileName="Assets/Scripts/CombatMove.cs" Line="51" Column="22" />
-      <File FileName="Assets/Scripts/MovePanel.cs" Line="20" Column="59" />
-      <File FileName="Assets/Scripts/SimpleObjectPool.cs" Line="17" Column="29" />
-      <File FileName="Assets/Scripts/Character.cs" Line="73" Column="25" />
-      <File FileName="Assets/Scripts/CombatClass.cs" Line="7" Column="1" />
-      <File FileName="Assets/PartyPanel.cs" Line="10" Column="28" />
-      <File FileName="Assets/Scripts/Enemies.cs" Line="32" Column="45" />
-      <File FileName="Assets/Scripts/GameManager.cs" Line="15" Column="21" />
-      <File FileName="Assets/Arena.cs" Line="7" Column="2" />
+      <File FileName="Assets\Scripts\Arena.cs" Line="86" Column="48" />
+      <File FileName="Assets\Scripts\CombatUI.cs" Line="24" Column="4" />
+      <File FileName="Assets\Scripts\GoblinCombatPanel.cs" Line="52" Column="110" />
+      <File FileName="Assets\InfiniteScroll.cs" Line="35" Column="85" />
+      <File FileName="Assets\Scripts\Character.cs" Line="122" Column="3" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="67" Column="31" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\unity-ui-extensions\Scripts\Layout\ScrollSnapBase.cs" line="193" column="1" />
+      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\unity-ui-extensions\Scripts\Layout\UIVerticalScroller.cs" line="168" column="1" />
+      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\unity-ui-extensions\Scripts\Layout\UIVerticalScroller.cs" line="176" column="1" />
+      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\unity-ui-extensions\Scripts\Layout\UIVerticalScroller.cs" line="156" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 [Serializable]
 public class StageEnemyList {
-	public int minEnemies = 1;
+	public int minEnemies = 2;
 	public int maxEnemies = 4;
 	public List<Transform> enemies;
 	public List<Transform> enemyPrefabs;
@@ -23,16 +23,11 @@ public class StageEnemyList {
 		for(int i=0; i < enemyCount; i++) {
 			//randomly choose enemy from prefabs
 			int prefabIndex = UnityEngine.Random.Range(0, enemyPrefabs.Count);
-			// this will actually spawn him in the world somwhere
-			Transform spawnedEnemy = GameObject.Instantiate(enemyPrefabs[prefabIndex]);
-			spawnedEnemy.transform.SetParent(parentTransform);
-			enemies.Add(spawnedEnemy);
 
-			Transform spawnPt = GameManager.gm.arena.enemySpawnSpots[i];
-			spawnedEnemy.position = spawnPt.position;
+			Transform spawnedEnemy = Character.Spawn(enemyPrefabs[prefabIndex], GameManager.gm.arena.enemySpawnSpots[i], null);
+			enemies.Add(spawnedEnemy);
 		}
 	}
-
 }
 
 public class Enemies : MonoBehaviour {

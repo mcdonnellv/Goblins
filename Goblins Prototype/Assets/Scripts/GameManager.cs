@@ -24,43 +24,47 @@ public class GameManager : MonoBehaviour {
 	public State state;
 
 	IEnumerator InitState () {
-		Debug.Log("Init: Enter");
+		Debug.Log("Init: Enter\n");
 		roster.Populate();
 		state = State.Prep;
+		arena.combatUI.gameObject.SetActive(false);
 		while (state == State.Init) {
 			yield return 0;
 		}
-		Debug.Log("Init: Exit");
+		Debug.Log("Init: Exit\n");
 		NextState();
 	}
 
 	IEnumerator PrepState () {
-		Debug.Log("Prep: Enter");
+		Debug.Log("Prep: Enter\n");
 		prepCam.enabled = true;
 		fightCam.enabled = false;
 		while (state == State.Prep) {
 			yield return 0;
 		}
-		Debug.Log("Prep: Exit");
+		Debug.Log("Prep: Exit\n");
 		NextState();
 	}
 
 	IEnumerator CombatState () {
-		Debug.Log("Combat: Enter");
+		Debug.Log("Combat: Enter\n");
+		roster.gameObject.SetActive(false);
 		prepCam.enabled = false;
 		fightCam.enabled = true;
+		arena.state = Arena.State.Init;
 		while (state == State.Combat) {
 			yield return 0;
 		}
-		Debug.Log("Combat: Exit");
+		arena.state = Arena.State.Inactive;
+		Debug.Log("Combat: Exit\n");
 	}
 
 	IEnumerator ResultState () {
-		Debug.Log("Result: Enter");
+		Debug.Log("Result: Enter\n");
 		while (state == State.Result) {
 			yield return 0;
 		}
-		Debug.Log("Result: Exit");
+		Debug.Log("Result: Exit\n");
 	}
 
 

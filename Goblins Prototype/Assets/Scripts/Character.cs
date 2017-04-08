@@ -43,6 +43,7 @@ public class CharacterData {
 	public float fireRes;
 
 	public List<CombatMove> moves = new List<CombatMove>();
+	public GameObject characterGameObject = null;
 
 	public void RollStats() {
 		RollAttributes();
@@ -78,9 +79,46 @@ public class CharacterData {
 			moves.Add(cm);
 		}
 
+		if(characterGameObject != null) {
+			Character c = characterGameObject.GetComponent<Character>();
+			if(c!= null)
+				c.UpdateSprite();
+		}
 	}
 }
 
 public class Character : MonoBehaviour {
 	public CharacterData data;
+	public SpriteRenderer spriteRenderer;
+	public int combatPosition = 1;
+	public CombatMove queuedMove;
+
+	static public Transform Spawn(Transform prefab, Transform parentTransform, CharacterData cData) {
+		Transform spawnedChar = GameObject.Instantiate(prefab);
+		spawnedChar.transform.SetParent(parentTransform);
+		spawnedChar.transform.localPosition = new Vector3(0f,0f,0f);
+		Character c = spawnedChar.GetComponent<Character>();
+		if(cData != null)
+			c.data = cData;
+
+		c.data.characterGameObject = spawnedChar.gameObject;
+		c.UpdateSprite();
+		return spawnedChar;
+	}
+
+	public void DeSpawn() {
+		data.characterGameObject = null;
+		Destroy(gameObject);
+	}
+
+	public void UpdateSprite() {
+		if(data.combatClass.sprite != null) {
+			spriteRenderer.sprite = data.combatClass.sprite;
+		}
+	}
+
+	public CombatMove GetRandomMove() {
+		int index = UnityEngine.Random.Range(0, data.moves.Count);
+		return data.moves[index];
+	}
 }

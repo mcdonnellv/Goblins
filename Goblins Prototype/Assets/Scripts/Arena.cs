@@ -1,0 +1,114 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Arena : MonoBehaviour {
+
+	public List<Transform> enemySpawnSpots = new List<Transform>();
+	public List<Transform> playerSpawnSpots = new List<Transform>();
+
+	public List<Character> goblins = new List<Character>();
+	public List<Character> enemies = new List<Character>();
+	public CombatUI combatUI;
+
+	public enum State {
+		Inactive,
+		Init,
+		MoveRollPhase,
+		PositionPhase,
+		PlayerExecutionPhase,
+		EnemyExecutionPhase,
+		Conclusion,
+	}
+	public State state;
+
+	IEnumerator InactiveState () {
+		while (state == State.Inactive)
+			yield return 0;
+		NextState();
+	}
+
+	IEnumerator InitState () {
+		Debug.Log("***Init State***\n");
+		combatUI.gameObject.SetActive(true);
+		GetListFromSpawnPts(enemySpawnSpots, enemies);
+		GetListFromSpawnPts(playerSpawnSpots, goblins);
+		combatUI.RefreshPanelPositionNumbers();
+		foreach(Character c in goblins) {
+			int ind = goblins.IndexOf(c);
+			combatUI.goblinPanels[ind].Setup(c);
+		}
+
+		state = State.MoveRollPhase;
+		while (state == State.Init)
+			yield return 0;
+		NextState();
+	}
+
+	IEnumerator MoveRollPhaseState () {
+		Debug.Log("***MoveRollPhase State***\n");
+		combatUI.StartMoveRoll();
+		while (state == State.MoveRollPhase)
+			yield return 0;
+		NextState();
+	}
+
+	IEnumerator PositionPhaseState () {
+		Debug.Log("***PositionPhase State***\n");
+		while (state == State.PositionPhase)
+			yield return 0;
+		NextState();
+	}
+
+	IEnumerator PlayerExecutionPhaseState () {
+		Debug.Log("***PlayerExecutionPhase State***\n");
+		while (state == State.PlayerExecutionPhase)
+			yield return 0;
+		NextState();
+	}
+
+	IEnumerator EnemyExecutionPhaseState () {
+		Debug.Log("***EnemyExecutionPhase State***\n");
+		while (state == State.EnemyExecutionPhase)
+			yield return 0;
+		NextState();
+	}
+
+	IEnumerator ConclusionState () {
+		Debug.Log("***Conclusion State***\n");
+		while (state == State.Conclusion)
+			yield return 0;
+		NextState();
+	}
+
+
+	void NextState () {
+		string methodName = state.ToString() + "State";
+		System.Reflection.MethodInfo info =
+			GetType().GetMethod(methodName,
+				System.Reflection.BindingFlags.NonPublic |
+				System.Reflection.BindingFlags.Instance);
+		StartCoroutine((IEnumerator)info.Invoke(this, null));
+	}
+
+	void Start () {
+		NextState();
+	}
+
+	private void GetListFromSpawnPts(List<Transform> spawnSpots, List<Character> partyList) {
+		int combatPosition = 0;
+		foreach(Transform child in spawnSpots) {
+			combatPosition++;
+			if(child.childCount == 0)
+				continue;
+			Transform charObj = child.GetChild(0);
+			if(charObj == null)
+				continue;
+			Character c = charObj.GetComponent<Character>();
+			c.combatPosition = combatPosition;
+			partyList.Add(c);
+		}
+	}
+
+
+}

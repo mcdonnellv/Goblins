@@ -34,6 +34,7 @@ public class CharacterDetails : MonoBehaviour {
 	public Roster roster;
 
 
+
 	public void CloseButtonPressed() {
 		transform.gameObject.SetActive(false);
 	}
@@ -75,12 +76,18 @@ public class CharacterDetails : MonoBehaviour {
 			MovePanel mp = spawnedGameObject.GetComponent<MovePanel>();
 			mp.Setup(cm);
 		}
+
+
 	}
 
 
 	public void ClassChanged(int ind) {
+		CombatClassType newClassType = roster.classes[ind].type;
+		if(newClassType == character.combatClass.type)
+			return;
 		character.AssignClass(roster.classes[ind]);
 		Refresh();
+		roster.RefreshDisplay();
 	}
 	
 	// Update is called once per frame
