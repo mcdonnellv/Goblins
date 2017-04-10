@@ -92,21 +92,30 @@ public class Character : MonoBehaviour {
 	public SpriteRenderer spriteRenderer;
 	public int combatPosition = 1;
 	public CombatMove queuedMove;
+	public State state = State.Unspawned;
+
+	public enum State {
+		Unspawned,
+		Alive,
+		Dead,
+	}
+
 
 	static public Transform Spawn(Transform prefab, Transform parentTransform, CharacterData cData) {
 		Transform spawnedChar = GameObject.Instantiate(prefab);
 		spawnedChar.transform.SetParent(parentTransform);
 		spawnedChar.transform.localPosition = new Vector3(0f,0f,0f);
 		Character c = spawnedChar.GetComponent<Character>();
+		c.state = State.Alive;
 		if(cData != null)
 			c.data = cData;
-
 		c.data.characterGameObject = spawnedChar.gameObject;
 		c.UpdateSprite();
 		return spawnedChar;
 	}
 
 	public void DeSpawn() {
+		state = State.Unspawned;
 		data.characterGameObject = null;
 		Destroy(gameObject);
 	}

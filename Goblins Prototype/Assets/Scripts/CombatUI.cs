@@ -10,7 +10,7 @@ public class CombatUI : MonoBehaviour {
 
 	public void RefreshPanelPositionNumbers () {
 		foreach(Transform child in goblinPanelGrid) {
-			GoblinCombatPanel panel = child.GetComponent<GoblinCombatPanel>();
+			GoblinCombatPanel panel = child.GetComponentInChildren<GoblinCombatPanel>();
 			panel.position = child.GetSiblingIndex() + 1;
 			panel.positionText.text = panel.position.ToString();
 		}

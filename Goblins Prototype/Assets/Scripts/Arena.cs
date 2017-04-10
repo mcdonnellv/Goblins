@@ -55,6 +55,9 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator PositionPhaseState () {
 		Debug.Log("***PositionPhase State***\n");
+		foreach(GoblinCombatPanel panel in combatUI.goblinPanels) {
+			panel.GetComponent<DragMe>().interactable = true;
+		}
 		while (state == State.PositionPhase)
 			yield return 0;
 		NextState();
@@ -110,5 +113,44 @@ public class Arena : MonoBehaviour {
 		}
 	}
 
+	public void RepositionGoblins() {
+		foreach(Transform spawnSpot in playerSpawnSpots) {
+			if(spawnSpot.childCount == 0)
+				continue;
+			Transform charObj = spawnSpot.GetChild(0);
+			Character c = charObj.GetComponent<Character>();
+			GoblinCombatPanel p = GetPanelForGoblin(c);
+			int ind = spawnSpot.GetSiblingIndex();
+			if(p.position - 1 == ind)
+				continue;
+			Transform newSpawnSpot = playerSpawnSpots[p.position - 1];
+			if(spawnSpot.childCount > 0) {
+				Transform prevInhabitingObj = newSpawnSpot.GetChild(0);
+				prevInhabitingObj.SetParent(spawnSpot,true);
+				StartCoroutine(MoveOverSeconds(prevInhabitingObj.gameObject, spawnSpot.transform.position, .5f));
+			}
+			charObj.SetParent(newSpawnSpot,true);
+			StartCoroutine(MoveOverSeconds(charObj.gameObject, newSpawnSpot.transform.position, .5f));
+		}
+	}
 
+
+	public IEnumerator MoveOverSeconds (GameObject objectToMove, Vector3 end, float seconds) {
+		float elapsedTime = 0;
+		Vector3 startingPos = objectToMove.transform.position;
+		while (elapsedTime < seconds)
+		{
+			objectToMove.transform.position = Vector3.Lerp(startingPos, end, (elapsedTime / seconds));
+			elapsedTime += Time.deltaTime;
+			yield return new WaitForEndOfFrame();
+		}
+		objectToMove.transform.position = end;
+	}
+
+	public GoblinCombatPanel GetPanelForGoblin(Character c){
+		foreach(GoblinCombatPanel p in combatUI.goblinPanels)
+			if(c == p.character)
+				return p;
+		return null;
+	}
 }

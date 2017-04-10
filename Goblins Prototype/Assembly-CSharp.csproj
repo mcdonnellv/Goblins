@@ -53,6 +53,9 @@
      <Compile Include="Assets\Scripts\CombatClass.cs" />
      <Compile Include="Assets\Scripts\CombatMove.cs" />
      <Compile Include="Assets\Scripts\CombatUI.cs" />
+     <Compile Include="Assets\Scripts\DragMe.cs" />
+     <Compile Include="Assets\Scripts\DragPanel.cs" />
+     <Compile Include="Assets\Scripts\DropMe.cs" />
      <Compile Include="Assets\Scripts\Enemies.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\GoblinCombatPanel.cs" />
@@ -63,6 +66,7 @@
      <Compile Include="Assets\Scripts\Roster.cs" />
      <Compile Include="Assets\Scripts\RosterButton.cs" />
      <Compile Include="Assets\Scripts\SimpleObjectPool.cs" />
+     <None Include="Assets\Movinarc\PackageUninstaller\README.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
