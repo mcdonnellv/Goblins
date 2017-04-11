@@ -20,6 +20,8 @@ public class CharacterData {
 	public static float standardCritChance = .1f;
 
 	public string givenName;
+	public string enemyRace;
+	public string enemyClass;
 	public int maxLife;
 	public int life;
 	public int maxEnergy;
@@ -91,7 +93,7 @@ public class Character : MonoBehaviour {
 	public CharacterData data;
 	public SpriteRenderer spriteRenderer;
 	public int combatPosition = 1;
-	public CombatMove queuedMove;
+	public CombatMove queuedMove = null;
 	public State state = State.Unspawned;
 
 	public enum State {
@@ -124,10 +126,5 @@ public class Character : MonoBehaviour {
 		if(data.combatClass.sprite != null) {
 			spriteRenderer.sprite = data.combatClass.sprite;
 		}
-	}
-
-	public CombatMove GetRandomMove() {
-		int index = UnityEngine.Random.Range(0, data.moves.Count);
-		return data.moves[index];
 	}
 }

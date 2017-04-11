@@ -12,6 +12,7 @@ public class InfiniteScroll : MonoBehaviour {
 	private int count = 0;
 	private float size = 0f;
 	public Transform panelTr;
+	private bool rolling = false;
 
 	void Start() {
 		count = panelTr.childCount - 1; // How many kids do we have?
@@ -19,6 +20,8 @@ public class InfiniteScroll : MonoBehaviour {
 	}
 
 	public void  Movement() {
+		if(!rolling)
+			return;
 		Transform top = panelTr.GetChild (0);            // Get first kid
 		Transform bottom = panelTr.GetChild(count);    // Get last kid
 		if(bottom.position.y < bottomCursor.position.y) {
@@ -33,10 +36,12 @@ public class InfiniteScroll : MonoBehaviour {
 			scroll.verticalNormalizedPosition = 0.5f;
 			string indexText = scroll.content.GetChild(1).GetComponentInChildren<Text>().text;
 			GetComponentInParent<GoblinCombatPanel>().SetSelectedMove(int.Parse(indexText) - 1);
+			rolling = false;
 		}
 	}
 
 	public void StartMoveScroll(float speed) {
 		scroll.velocity = new Vector2(0f, -speed);
+		rolling = true;
 	}
 }

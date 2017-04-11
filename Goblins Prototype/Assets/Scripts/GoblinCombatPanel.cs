@@ -32,7 +32,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 
 	void RefreshBar(Image bar, float curval, float totVal) {
 		Vector2 s = bar.GetComponent<RectTransform>().sizeDelta;
-		bar.GetComponent<RectTransform>().sizeDelta = new Vector2(192f * curval/totVal, s.y);
+		bar.GetComponent<RectTransform>().sizeDelta = new Vector2(172f * curval/totVal, s.y);
 	}
 
 	void RefreshMoveNames() {
@@ -50,6 +50,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 		curSelectedMoveIndex = index;
 		character.queuedMove = character.data.moves[index];
 		Debug.Log("Goblin " + character.combatPosition.ToString() + " has rolled: " + character.queuedMove.moveName + "\n");
+		GameManager.gm.arena.CheckAllGoblinMovesDone();
 	}
 }
 

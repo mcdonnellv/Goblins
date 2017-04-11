@@ -6,16 +6,23 @@ using UnityEngine.UI;
 public class DropMe : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
 	public Image containerImage;
-	private Color normalColor;
 	public Color highlightColor = Color.yellow;
+	public Color activeColor = Color.blue;
+	public Color inactiveColor = Color.gray;
 	
 	public void OnEnable () {
-		if (containerImage != null)
-			normalColor = containerImage.color;
+	}
+
+	public void Activate() {
+		containerImage.color = activeColor;
+	}
+
+	public void Deactivate() {
+		containerImage.color = inactiveColor;
 	}
 	
 	public void OnDrop(PointerEventData data) {
-		containerImage.color = normalColor;
+		containerImage.color = activeColor;
 		GameObject dropGameObject = GetDropGameObject(data);
 		DragMe dragMe = dropGameObject.GetComponent<DragMe>();
 		if(!dragMe.interactable)
@@ -42,19 +49,19 @@ public class DropMe : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointe
 
 	public void OnPointerEnter(PointerEventData data) {
 		GameObject dropGameObject = GetDropGameObject(data);
+		if (dropGameObject == null)
+			return;
 		DragMe dragMe = dropGameObject.GetComponent<DragMe>();
 		if(!dragMe.interactable)
 			return;
-		if (dropGameObject != null)
-			containerImage.color = highlightColor;
+		containerImage.color = highlightColor;
 	}
 
 	public void OnPointerExit(PointerEventData data){
-		GameObject dropGameObject = GetDropGameObject(data);
-		DragMe dragMe = dropGameObject.GetComponent<DragMe>();
-		if(!dragMe.interactable)
-			return;
-		containerImage.color = normalColor;
+		if(GameManager.gm.arena.state == Arena.State.PositionPhase)
+			containerImage.color = activeColor;
+		else
+			containerImage.color = inactiveColor;
 	}
 	
 	private GameObject GetDropGameObject(PointerEventData data) {

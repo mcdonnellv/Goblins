@@ -10,10 +10,12 @@ public class Arena : MonoBehaviour {
 	public List<Character> goblins = new List<Character>();
 	public List<Character> enemies = new List<Character>();
 	public CombatUI combatUI;
+	public int round;
 
 	public enum State {
 		Inactive,
 		Init,
+		WaitForRollPhase,
 		MoveRollPhase,
 		PositionPhase,
 		PlayerExecutionPhase,
@@ -30,23 +32,41 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator InitState () {
 		Debug.Log("***Init State***\n");
+		round = 1;
 		combatUI.gameObject.SetActive(true);
 		GetListFromSpawnPts(enemySpawnSpots, enemies);
 		GetListFromSpawnPts(playerSpawnSpots, goblins);
 		combatUI.RefreshPanelPositionNumbers();
+		combatUI.rollButton.gameObject.SetActive(false);
+		combatUI.fightButton.gameObject.SetActive(false);
+		combatUI.DeactivatePanels();
+		combatUI.HideEnemyPanel();
 		foreach(Character c in goblins) {
 			int ind = goblins.IndexOf(c);
 			combatUI.goblinPanels[ind].Setup(c);
 		}
-
-		state = State.MoveRollPhase;
+		state = State.WaitForRollPhase;
 		while (state == State.Init)
+			yield return 0;
+		NextState();
+	}
+
+	IEnumerator WaitForRollPhaseState () {
+		Debug.Log("***WaitforRollPhase State***\n");
+		combatUI.rollButton.gameObject.SetActive(true);
+		combatUI.roundText.text = "Round " + round.ToString();
+		combatUI.stateText.text = "Roll for combat moves";
+		while (state == State.WaitForRollPhase)
 			yield return 0;
 		NextState();
 	}
 
 	IEnumerator MoveRollPhaseState () {
 		Debug.Log("***MoveRollPhase State***\n");
+		combatUI.stateText.text = "";
+		combatUI.rollButton.gameObject.SetActive(false);
+		foreach(Character c in goblins)
+			c.queuedMove = null;
 		combatUI.StartMoveRoll();
 		while (state == State.MoveRollPhase)
 			yield return 0;
@@ -55,9 +75,11 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator PositionPhaseState () {
 		Debug.Log("***PositionPhase State***\n");
-		foreach(GoblinCombatPanel panel in combatUI.goblinPanels) {
+		combatUI.stateText.text = "You may reposition goblins";
+		combatUI.fightButton.gameObject.SetActive(true);
+		combatUI.ActivatePanels();
+		foreach(GoblinCombatPanel panel in combatUI.goblinPanels)
 			panel.GetComponent<DragMe>().interactable = true;
-		}
 		while (state == State.PositionPhase)
 			yield return 0;
 		NextState();
@@ -65,6 +87,9 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator PlayerExecutionPhaseState () {
 		Debug.Log("***PlayerExecutionPhase State***\n");
+		combatUI.DeactivatePanels();
+		combatUI.fightButton.gameObject.SetActive(false);
+		combatUI.stateText.text = "";
 		while (state == State.PlayerExecutionPhase)
 			yield return 0;
 		NextState();
@@ -79,6 +104,8 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator ConclusionState () {
 		Debug.Log("***Conclusion State***\n");
+		round++;
+		state = State.WaitForRollPhase;
 		while (state == State.Conclusion)
 			yield return 0;
 		NextState();
@@ -152,5 +179,38 @@ public class Arena : MonoBehaviour {
 			if(c == p.character)
 				return p;
 		return null;
+	}
+
+	public void CheckAllGoblinMovesDone() {
+		foreach(Character goblin in goblins) {
+			if(goblin.queuedMove == null)
+				return;
+		}
+		state = State.PositionPhase;
+	}
+
+	public void Update() {
+		if(Input.GetMouseButtonDown(0)) {
+			Character enemyCharHit = null;
+			RaycastHit hitInfo = new RaycastHit();
+			bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
+			if(hit) {
+				Character hitchar = hitInfo.transform.GetComponent<Character>();
+				if(hitchar != null) {
+					foreach(Character c in enemies) {
+						if(hitchar == c) {
+							enemyCharHit = hitchar;
+							break;
+						}
+					}
+				}
+
+			}
+
+			if(enemyCharHit != null)
+				combatUI.ShowEnemyPanel(enemyCharHit);
+			else
+				combatUI.HideEnemyPanel();
+		}
 	}
 }

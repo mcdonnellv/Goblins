@@ -46,6 +46,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\EnemyCombatPanel.cs" />
      <Compile Include="Assets\InfiniteScroll.cs" />
      <Compile Include="Assets\Scripts\Arena.cs" />
      <Compile Include="Assets\Scripts\Character.cs" />
