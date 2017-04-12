@@ -94,13 +94,13 @@ public class Enemies : MonoBehaviour {
 
 		if(Mathf.Abs(resistances[largestValInd]) > 0) {
 			if(resistances[largestValInd] == genPhysRes)
-				return "Enemies are " + (resistances[largestValInd] < 0 ? "vulnarable" : "resistant" ) + " to physical damage.";
+				return "Enemies are " + (resistances[largestValInd] < 0 ? "vulnerable" : "resistant" ) + " to physical damage.";
 			if(resistances[largestValInd] == genMagicRes)
-				return "Enemies are " + (resistances[largestValInd] < 0 ? "vulnarable" : "resistant" ) + " to magical damage.";
+				return "Enemies are " + (resistances[largestValInd] < 0 ? "vulnerable" : "resistant" ) + " to magical damage.";
 			
 			CombatMove.DamageType d =(CombatMove.DamageType)largestValInd;
 			return "Enemies are " + 
-				(resistances[largestValInd] < 0 ? "vulnarable" : "resistant" ) +   
+				(resistances[largestValInd] < 0 ? "vulnerable" : "resistant" ) +   
 				" to " + d.ToString() + " damage.";
 		}
 		return "Enemies are unremarkable";

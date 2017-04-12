@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour {
 	public Camera prepCam;
 	public Camera fightCam;
 	public Arena arena;
+	public GameObject prepUI;
 
 	public enum State {
 		Init,
@@ -39,6 +40,7 @@ public class GameManager : MonoBehaviour {
 		Debug.Log("Prep: Enter\n");
 		prepCam.enabled = true;
 		fightCam.enabled = false;
+		prepUI.gameObject.SetActive(true);
 		while (state == State.Prep) {
 			yield return 0;
 		}
@@ -51,6 +53,7 @@ public class GameManager : MonoBehaviour {
 		roster.gameObject.SetActive(false);
 		prepCam.enabled = false;
 		fightCam.enabled = true;
+		prepUI.gameObject.SetActive(false);
 		arena.state = Arena.State.Init;
 		while (state == State.Combat) {
 			yield return 0;

@@ -55,7 +55,7 @@ public class Arena : MonoBehaviour {
 		Debug.Log("***WaitforRollPhase State***\n");
 		combatUI.rollButton.gameObject.SetActive(true);
 		combatUI.roundText.text = "Round " + round.ToString();
-		combatUI.stateText.text = "Roll for combat moves";
+		combatUI.stateText.text = "Move Roll Phase";
 		while (state == State.WaitForRollPhase)
 			yield return 0;
 		NextState();
@@ -75,7 +75,7 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator PositionPhaseState () {
 		Debug.Log("***PositionPhase State***\n");
-		combatUI.stateText.text = "You may reposition goblins";
+		combatUI.stateText.text = "Positioning Phase";
 		combatUI.fightButton.gameObject.SetActive(true);
 		combatUI.ActivatePanels();
 		foreach(GoblinCombatPanel panel in combatUI.goblinPanels)

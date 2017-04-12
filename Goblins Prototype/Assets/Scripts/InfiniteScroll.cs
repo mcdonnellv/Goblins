@@ -10,13 +10,12 @@ public class InfiniteScroll : MonoBehaviour {
 	// Actually this could be using the screen dimension but I was just doing it quick
 	// the x values of those two objects will define when to snap
 	private int count = 0;
-	private float size = 0f;
+	public float size = 100f;
 	public Transform panelTr;
 	private bool rolling = false;
 
 	void Start() {
 		count = panelTr.childCount - 1; // How many kids do we have?
-		size = 180f;//GetButtonSize();   // Here you pass the width of a button
 	}
 
 	public void  Movement() {
