@@ -40,8 +40,6 @@ public class DropMe : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointe
 		dropGameObject.transform.SetAsLastSibling();
 
 		//do game logic
-		Transform prevChild = currentChild;
-		currentChild = dropGameObject.transform;
 		GameManager.gm.arena.combatUI.RefreshPanelPositionNumbers();
 		GameManager.gm.arena.RepositionGoblins();
 

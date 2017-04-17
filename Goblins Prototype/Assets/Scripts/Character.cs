@@ -95,9 +95,12 @@ public class Character : MonoBehaviour {
 	public int combatPosition = 1;
 	public CombatMove queuedMove = null;
 	public State state = State.Unspawned;
+	public Character target;
 
 	public enum State {
 		Unspawned,
+		WaitingToPerformMove,
+		DonePerformingMove,
 		Alive,
 		Dead,
 	}
@@ -126,5 +129,10 @@ public class Character : MonoBehaviour {
 		if(data.combatClass.sprite != null) {
 			spriteRenderer.sprite = data.combatClass.sprite;
 		}
+	}
+
+	public void ReturnMeToSpawnPosition() {
+		transform.SetParent(GameManager.gm.arena.playerSpawnSpots[combatPosition-1], true);
+		StartCoroutine(GameManager.gm.MoveOverSeconds(gameObject, transform.parent.transform.position, .1f));
 	}
 }

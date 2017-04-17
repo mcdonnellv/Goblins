@@ -21,7 +21,6 @@ public class InfiniteScroll : MonoBehaviour {
 	public void  Movement() {
 		if(!rolling)
 			return;
-		Transform top = panelTr.GetChild (0);            // Get first kid
 		Transform bottom = panelTr.GetChild(count);    // Get last kid
 		if(bottom.position.y < bottomCursor.position.y) {
 			bottom.SetAsFirstSibling();

@@ -14,7 +14,6 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public Character character;
 	public InfiniteScroll wheel;
 	public List<Text> moveLabels;
-	int curSelectedMoveIndex = 0;
 
 	public void Setup(Character c) {
 		character = c;
@@ -47,7 +46,6 @@ public class GoblinCombatPanel : MonoBehaviour {
 	}
 
 	public void SetSelectedMove(int index) {
-		curSelectedMoveIndex = index;
 		character.queuedMove = character.data.moves[index];
 		Debug.Log("Goblin " + character.combatPosition.ToString() + " has rolled: " + character.queuedMove.moveName + "\n");
 		GameManager.gm.arena.CheckAllGoblinMovesDone();

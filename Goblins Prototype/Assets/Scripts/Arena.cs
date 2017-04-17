@@ -6,11 +6,14 @@ public class Arena : MonoBehaviour {
 
 	public List<Transform> enemySpawnSpots = new List<Transform>();
 	public List<Transform> playerSpawnSpots = new List<Transform>();
+	public Transform playerClashPt;
+	public Transform enemyClashPt;
 
 	public List<Character> goblins = new List<Character>();
 	public List<Character> enemies = new List<Character>();
 	public CombatUI combatUI;
 	public int round;
+	public ExecutionPhaseManager em;
 
 	public enum State {
 		Inactive,
@@ -31,7 +34,7 @@ public class Arena : MonoBehaviour {
 	}
 
 	IEnumerator InitState () {
-		Debug.Log("***Init State***\n");
+		Debug.Log("***Arena Init State***\n");
 		round = 1;
 		combatUI.gameObject.SetActive(true);
 		GetListFromSpawnPts(enemySpawnSpots, enemies);
@@ -52,7 +55,7 @@ public class Arena : MonoBehaviour {
 	}
 
 	IEnumerator WaitForRollPhaseState () {
-		Debug.Log("***WaitforRollPhase State***\n");
+		Debug.Log("***Arena WaitforRollPhase State***\n");
 		combatUI.rollButton.gameObject.SetActive(true);
 		combatUI.roundText.text = "Round " + round.ToString();
 		combatUI.stateText.text = "Move Roll Phase";
@@ -62,7 +65,7 @@ public class Arena : MonoBehaviour {
 	}
 
 	IEnumerator MoveRollPhaseState () {
-		Debug.Log("***MoveRollPhase State***\n");
+		Debug.Log("***Arena MoveRollPhase State***\n");
 		combatUI.stateText.text = "";
 		combatUI.rollButton.gameObject.SetActive(false);
 		foreach(Character c in goblins)
@@ -74,7 +77,7 @@ public class Arena : MonoBehaviour {
 	}
 
 	IEnumerator PositionPhaseState () {
-		Debug.Log("***PositionPhase State***\n");
+		Debug.Log("***Arena PositionPhase State***\n");
 		combatUI.stateText.text = "Positioning Phase";
 		combatUI.fightButton.gameObject.SetActive(true);
 		combatUI.ActivatePanels();
@@ -86,24 +89,27 @@ public class Arena : MonoBehaviour {
 	}
 
 	IEnumerator PlayerExecutionPhaseState () {
-		Debug.Log("***PlayerExecutionPhase State***\n");
+		Debug.Log("***Arena PlayerExecutionPhase State***\n");
 		combatUI.DeactivatePanels();
 		combatUI.fightButton.gameObject.SetActive(false);
 		combatUI.stateText.text = "";
+		em.Setup(playerSpawnSpots, true);
+
 		while (state == State.PlayerExecutionPhase)
 			yield return 0;
 		NextState();
 	}
 
 	IEnumerator EnemyExecutionPhaseState () {
-		Debug.Log("***EnemyExecutionPhase State***\n");
+		Debug.Log("***Arena EnemyExecutionPhase State***\n");
+		em.Setup(enemySpawnSpots, false);
 		while (state == State.EnemyExecutionPhase)
 			yield return 0;
 		NextState();
 	}
 
 	IEnumerator ConclusionState () {
-		Debug.Log("***Conclusion State***\n");
+		Debug.Log("***Arena Conclusion State***\n");
 		round++;
 		state = State.WaitForRollPhase;
 		while (state == State.Conclusion)
@@ -154,25 +160,13 @@ public class Arena : MonoBehaviour {
 			if(spawnSpot.childCount > 0) {
 				Transform prevInhabitingObj = newSpawnSpot.GetChild(0);
 				prevInhabitingObj.SetParent(spawnSpot,true);
-				StartCoroutine(MoveOverSeconds(prevInhabitingObj.gameObject, spawnSpot.transform.position, .5f));
+				StartCoroutine(GameManager.gm.MoveOverSeconds(prevInhabitingObj.gameObject, spawnSpot.transform.position, .5f));
 			}
 			charObj.SetParent(newSpawnSpot,true);
-			StartCoroutine(MoveOverSeconds(charObj.gameObject, newSpawnSpot.transform.position, .5f));
+			StartCoroutine(GameManager.gm.MoveOverSeconds(charObj.gameObject, newSpawnSpot.transform.position, .5f));
 		}
 	}
 
-
-	public IEnumerator MoveOverSeconds (GameObject objectToMove, Vector3 end, float seconds) {
-		float elapsedTime = 0;
-		Vector3 startingPos = objectToMove.transform.position;
-		while (elapsedTime < seconds)
-		{
-			objectToMove.transform.position = Vector3.Lerp(startingPos, end, (elapsedTime / seconds));
-			elapsedTime += Time.deltaTime;
-			yield return new WaitForEndOfFrame();
-		}
-		objectToMove.transform.position = end;
-	}
 
 	public GoblinCombatPanel GetPanelForGoblin(Character c){
 		foreach(GoblinCombatPanel p in combatUI.goblinPanels)
@@ -188,6 +182,27 @@ public class Arena : MonoBehaviour {
 		}
 		state = State.PositionPhase;
 	}
+		
+
+
+
+	public bool IsCharacterGoblin (Character c1) {
+		foreach(Character c2 in goblins)
+			if(c1==c2)
+				return true;
+		return false;
+	}
+
+	public bool IsCharacterEnemy (Character c1) {
+		foreach(Character c2 in enemies)
+			if(c1==c2)
+				return true;
+		return false;
+	}
+
+
+
+
 
 	public void Update() {
 		if(Input.GetMouseButtonDown(0)) {
@@ -196,15 +211,8 @@ public class Arena : MonoBehaviour {
 			bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
 			if(hit) {
 				Character hitchar = hitInfo.transform.GetComponent<Character>();
-				if(hitchar != null) {
-					foreach(Character c in enemies) {
-						if(hitchar == c) {
-							enemyCharHit = hitchar;
-							break;
-						}
-					}
-				}
-
+				if(hitchar != null && IsCharacterEnemy(hitchar))
+					enemyCharHit = hitchar;
 			}
 
 			if(enemyCharHit != null)
