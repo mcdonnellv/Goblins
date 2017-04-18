@@ -6,8 +6,7 @@ public class Arena : MonoBehaviour {
 
 	public List<Transform> enemySpawnSpots = new List<Transform>();
 	public List<Transform> playerSpawnSpots = new List<Transform>();
-	public Transform playerClashPt;
-	public Transform enemyClashPt;
+
 
 	public List<Character> goblins = new List<Character>();
 	public List<Character> enemies = new List<Character>();
@@ -97,6 +96,8 @@ public class Arena : MonoBehaviour {
 
 		while (state == State.PlayerExecutionPhase)
 			yield return 0;
+
+
 		NextState();
 	}
 
@@ -185,7 +186,6 @@ public class Arena : MonoBehaviour {
 		
 
 
-
 	public bool IsCharacterGoblin (Character c1) {
 		foreach(Character c2 in goblins)
 			if(c1==c2)
@@ -199,10 +199,6 @@ public class Arena : MonoBehaviour {
 				return true;
 		return false;
 	}
-
-
-
-
 
 	public void Update() {
 		if(Input.GetMouseButtonDown(0)) {

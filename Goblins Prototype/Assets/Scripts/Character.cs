@@ -95,7 +95,10 @@ public class Character : MonoBehaviour {
 	public int combatPosition = 1;
 	public CombatMove queuedMove = null;
 	public State state = State.Unspawned;
+	public Transform spawnSpot;
 	public Character target;
+	public Shader bwShader;
+	private Shader originalShader;
 
 	public enum State {
 		Unspawned,
@@ -111,12 +114,19 @@ public class Character : MonoBehaviour {
 		spawnedChar.transform.SetParent(parentTransform);
 		spawnedChar.transform.localPosition = new Vector3(0f,0f,0f);
 		Character c = spawnedChar.GetComponent<Character>();
+		c.spawnSpot = parentTransform;
 		c.state = State.Alive;
 		if(cData != null)
 			c.data = cData;
 		c.data.characterGameObject = spawnedChar.gameObject;
 		c.UpdateSprite();
+
+
 		return spawnedChar;
+	}
+
+	public void Start() {
+		originalShader = GetComponentInChildren<SpriteRenderer>().material.shader;
 	}
 
 	public void DeSpawn() {
@@ -131,8 +141,20 @@ public class Character : MonoBehaviour {
 		}
 	}
 
-	public void ReturnMeToSpawnPosition() {
-		transform.SetParent(GameManager.gm.arena.playerSpawnSpots[combatPosition-1], true);
-		StartCoroutine(GameManager.gm.MoveOverSeconds(gameObject, transform.parent.transform.position, .1f));
+	public void Idle() {
+		RestoreShader();
+		Animator animator = GetComponentInChildren<Animator>();
+		animator.Play("Idle");
 	}
+
+	public void RestoreShader() {
+		GetComponentInChildren<SpriteRenderer>().material.shader = originalShader;
+	}
+
+	public void GoBackToSpawnSpot() {
+		transform.SetParent(spawnSpot, true);
+		StartCoroutine(GameManager.gm.MoveOverSeconds(gameObject, spawnSpot.position, .1f));
+	}
+
+
 }

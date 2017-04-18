@@ -6,10 +6,15 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public List<Character> attackers = new List<Character>();
 	public bool isPlayerTurn = true;
 	public Arena arena;
+	public float timeDelayBetweenAttacks;
+	public float timeDelayBetweenTurns;
 	private Animator animator;
 	private int curAttacker;
+	public List<Transform> playerClashPt;
+	public List<Transform> enemyClashPt;
 
 	public enum State {
+		Inactive,
 		Init,
 		Attack,
 		AttackDone,
@@ -17,8 +22,13 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 	public State state;
 
+	IEnumerator InactiveState () {
+		while (state == State.Inactive)
+			yield return 0;
+		NextState();
+	}
+
 	IEnumerator InitState () {
-		Debug.Log("***Arena "+( isPlayerTurn ? "Player" : "Enemy")+"ExecutionPhase Start***\n");
 		curAttacker = 0;
 		state = State.Attack;
 		while (state == State.Init)
@@ -28,31 +38,24 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator AttackState() {
 		Character attacker = attackers[curAttacker];
-		Debug.Log("***Arena "+( isPlayerTurn ? "Player" : "Enemy")+"ExecutionPhase Attack" + (curAttacker+1).ToString() + " Start***\n");
+		Debug.Log("Executing Attack" + (curAttacker+1).ToString() + "\n");
 		if(attacker.target == null) {
-			Debug.Log("skipping attack, no target\n");
+			Debug.Log("Skipping attack, no target\n");
 			state = State.AttackDone;
 			NextState();
 			yield break;
 		}
-
 		bool friendlyTarget = (isPlayerTurn && arena.IsCharacterGoblin(attacker.target)) || (!isPlayerTurn && !arena.IsCharacterGoblin(attacker.target)) ? true : false;
-
-		if(friendlyTarget) {
-		}
-		else {
+		if(friendlyTarget) {}
+		else
 			ClashCharacters(attacker, attacker.target);
-		}
-			
 		while (state == State.Attack)
 			yield return 0;	
 		NextState();
 	}
 
 	IEnumerator AttackDoneState () {
-		float timer = 5f;
-		Debug.Log("***Arena "+( isPlayerTurn ? "Player" : "Enemy")+"ExecutionPhase Attack" + (curAttacker+1).ToString() + " End***\n");
-
+		float timer = timeDelayBetweenAttacks;
 		while(timer > 0f) {
 			timer-=Time.deltaTime;
 			yield return 0;
@@ -70,7 +73,21 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator EndState () {
-		Debug.Log("***Arena "+( isPlayerTurn ? "Player" : "Enemy")+"ExecutionPhase Done***\n");
+		BackToIdle();
+		BackToSpawnSpot();
+		attackers.Clear();
+
+		float timer = timeDelayBetweenTurns;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
+
+		if(isPlayerTurn)
+			arena.state = Arena.State.EnemyExecutionPhase;
+		else
+			arena.state = Arena.State.Conclusion;
+		state = State.Inactive;
 		while (state == State.End)
 			yield return 0;
 		NextState();
@@ -86,11 +103,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		StartCoroutine((IEnumerator)info.Invoke(this, null));
 	}
 
-//	private IEnumerator WaitForAnimation ( Animation animation ) {
-//		do {
-//			yield return null;
-//		} while ( animation.isPlaying );
-//	}
+	void Start () {
+		NextState();
+	}
 
 	public void Setup(List<Transform> spawnPts, bool playerTurn) {
 		isPlayerTurn = playerTurn;
@@ -105,39 +120,62 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			c.target = GetOpponent(c);
 			c.state = Character.State.WaitingToPerformMove;
 		}
-
-		NextState();
+		state = State.Init;
 	}
 
 	public Character GetOpponent(Character attacker) {
-		//TODO if no target check other spots.
-		List<Transform> spawnPts = isPlayerTurn ?arena.enemySpawnSpots : arena.playerSpawnSpots;
+		List<Transform> spawnPts = isPlayerTurn ? arena.enemySpawnSpots : arena.playerSpawnSpots;
 		int index = attacker.combatPosition - 1;
-		if(spawnPts[index].childCount == 0)
-			return null;
-		return spawnPts[index].GetChild(0).GetComponent<Character>();
+		for(int i=0; i<4; i++) {
+			int y = (index + i) % 4;
+			if(spawnPts[y].childCount > 0)
+				return spawnPts[y].GetChild(0).GetComponent<Character>();
+		}
+		return null;
 	}
 
 	public void ClashCharacters(Character attacker, Character defender) {
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
-		camAnimator.Play("ZoomInCombat");
+		int pos = attacker.combatPosition;
+		camAnimator.Play("ZoomInCombat "+ pos.ToString());
+
+		attacker.Idle();
+		defender.Idle();
+
 		if(isPlayerTurn) {
-			attacker.transform.SetParent(arena.playerClashPt.transform, false);
-			defender.transform.SetParent(arena.enemyClashPt.transform, false);
+			attacker.transform.SetParent(playerClashPt[pos-1].transform, false);
+			defender.transform.SetParent(enemyClashPt[pos-1].transform, false);
 		}
 		else {
-			attacker.transform.SetParent(arena.enemyClashPt.transform, false);
-			defender.transform.SetParent(arena.playerClashPt.transform, false);
+			attacker.transform.SetParent(enemyClashPt[pos-1].transform, false);
+			defender.transform.SetParent(playerClashPt[pos-1].transform, false);
 		}
 		Animator a = attacker.GetComponentInChildren<Animator>();
 		animator = a;
 		a.SetTrigger("Melee Attack");
+		//a.Play("MeleeAttack");
 		a = defender.GetComponentInChildren<Animator>();
 		a.SetTrigger("Melee Defend");
+		//a.Play("MeleeDefend");
 	}
 
-	public void ClashDone() {
-		state = State.AttackDone;
+	public void AttackDone() {
+		if(state == State.Attack)
+			state = State.AttackDone;
+	}
+
+	private void BackToIdle() {
+		foreach(Character c in arena.goblins)
+			c.Idle();
+		foreach(Character c in arena.enemies) 
+			c.Idle();
+	}
+
+	private void BackToSpawnSpot() {
+		foreach(Character c in arena.goblins)
+			c.GoBackToSpawnSpot();
+		foreach(Character c in arena.enemies) 
+			c.GoBackToSpawnSpot();
 	}
 }
 
