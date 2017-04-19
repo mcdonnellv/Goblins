@@ -38,14 +38,13 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator AttackState() {
 		Character attacker = attackers[curAttacker];
-		Debug.Log("Executing Attack" + (curAttacker+1).ToString() + "\n");
 		if(attacker.target == null) {
 			Debug.Log("Skipping attack, no target\n");
 			state = State.AttackDone;
 			NextState();
 			yield break;
 		}
-		bool friendlyTarget = (isPlayerTurn && arena.IsCharacterGoblin(attacker.target)) || (!isPlayerTurn && !arena.IsCharacterGoblin(attacker.target)) ? true : false;
+		bool friendlyTarget = (isPlayerTurn && attacker.target.isPlayerCharacter) || (!isPlayerTurn && !attacker.target.isPlayerCharacter) ? true : false;
 		if(friendlyTarget) {}
 		else
 			ClashCharacters(attacker, attacker.target);
@@ -135,6 +134,21 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	public void ClashCharacters(Character attacker, Character defender) {
+		bool hit = arena.cm.RollForHit(attacker.data, defender.data);
+		bool crit = false;
+		int damage = 0;
+		string damageString = attacker.data.givenName + " misses";
+		if(hit) {
+			damage = arena.cm.RollForDamage(attacker.queuedMove, defender.data);
+			crit = arena.cm.RollForCrit(attacker.data, defender.data);
+			if(crit)
+				damage = Mathf.FloorToInt(damage * arena.cm.baseCritDamage);
+			damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
+			//error above, enemies have no queued move (null)
+		}
+		Debug.Log("\t" + damageString + "\n");
+		arena.cm.ApplyDamage(damage, defender.data);
+		arena.combatUI.stateText.text = damageString;
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
 		int pos = attacker.combatPosition;
 		camAnimator.Play("ZoomInCombat "+ pos.ToString());
@@ -153,10 +167,11 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		Animator a = attacker.GetComponentInChildren<Animator>();
 		animator = a;
 		a.SetTrigger("Melee Attack");
-		//a.Play("MeleeAttack");
 		a = defender.GetComponentInChildren<Animator>();
-		a.SetTrigger("Melee Defend");
-		//a.Play("MeleeDefend");
+		if(defender.data.life <= 0)
+			a.SetBool("Alive", false);
+		else
+			a.SetTrigger("Melee Defend");
 	}
 
 	public void AttackDone() {

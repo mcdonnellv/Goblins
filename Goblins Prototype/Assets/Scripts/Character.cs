@@ -99,6 +99,7 @@ public class Character : MonoBehaviour {
 	public Character target;
 	public Shader bwShader;
 	private Shader originalShader;
+	public bool isPlayerCharacter;
 
 	public enum State {
 		Unspawned,
@@ -109,18 +110,20 @@ public class Character : MonoBehaviour {
 	}
 
 
-	static public Transform Spawn(Transform prefab, Transform parentTransform, CharacterData cData) {
+	static public Transform Spawn(Transform prefab, Transform parentTransform, CharacterData cData, bool playerChar) {
 		Transform spawnedChar = GameObject.Instantiate(prefab);
 		spawnedChar.transform.SetParent(parentTransform);
 		spawnedChar.transform.localPosition = new Vector3(0f,0f,0f);
 		Character c = spawnedChar.GetComponent<Character>();
 		c.spawnSpot = parentTransform;
 		c.state = State.Alive;
+		c.isPlayerCharacter = playerChar;
 		if(cData != null)
 			c.data = cData;
 		c.data.characterGameObject = spawnedChar.gameObject;
 		c.UpdateSprite();
-
+		if(c.isPlayerCharacter)
+			c.data.givenName = c.data.combatClass.type.ToString();
 
 		return spawnedChar;
 	}
@@ -158,3 +161,5 @@ public class Character : MonoBehaviour {
 
 
 }
+
+

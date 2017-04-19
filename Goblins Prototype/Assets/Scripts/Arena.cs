@@ -13,6 +13,7 @@ public class Arena : MonoBehaviour {
 	public CombatUI combatUI;
 	public int round;
 	public ExecutionPhaseManager em;
+	public CombatMath cm;
 
 	public enum State {
 		Inactive,
@@ -67,6 +68,11 @@ public class Arena : MonoBehaviour {
 		Debug.Log("***Arena MoveRollPhase State***\n");
 		combatUI.stateText.text = "";
 		combatUI.rollButton.gameObject.SetActive(false);
+		foreach(Character c in enemies) {
+			int roll = UnityEngine.Random.Range(0, c.data.moves.Count -1);
+			c.queuedMove = c.data.moves[roll];
+		}
+		
 		foreach(Character c in goblins)
 			c.queuedMove = null;
 		combatUI.StartMoveRoll();
@@ -183,22 +189,7 @@ public class Arena : MonoBehaviour {
 		}
 		state = State.PositionPhase;
 	}
-		
 
-
-	public bool IsCharacterGoblin (Character c1) {
-		foreach(Character c2 in goblins)
-			if(c1==c2)
-				return true;
-		return false;
-	}
-
-	public bool IsCharacterEnemy (Character c1) {
-		foreach(Character c2 in enemies)
-			if(c1==c2)
-				return true;
-		return false;
-	}
 
 	public void Update() {
 		if(Input.GetMouseButtonDown(0)) {
@@ -207,7 +198,7 @@ public class Arena : MonoBehaviour {
 			bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
 			if(hit) {
 				Character hitchar = hitInfo.transform.GetComponent<Character>();
-				if(hitchar != null && IsCharacterEnemy(hitchar))
+				if(hitchar != null && !hitchar.isPlayerCharacter)
 					enemyCharHit = hitchar;
 			}
 

@@ -66,7 +66,7 @@ public class PartyMemberPanel : MonoBehaviour {
 			if(c != null)
 				c.DeSpawn();
 		}
-		Character.Spawn(goblinPrefab, spawnPt, character);
+		Character.Spawn(goblinPrefab, spawnPt, character, true);
 	}
 
 	bool IsGoblinInParty(CharacterData goblin) {

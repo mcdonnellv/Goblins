@@ -24,7 +24,7 @@ public class StageEnemyList {
 			//randomly choose enemy from prefabs
 			int prefabIndex = UnityEngine.Random.Range(0, enemyPrefabs.Count);
 
-			Transform spawnedEnemy = Character.Spawn(enemyPrefabs[prefabIndex], GameManager.gm.arena.enemySpawnSpots[i], null);
+			Transform spawnedEnemy = Character.Spawn(enemyPrefabs[prefabIndex], GameManager.gm.arena.enemySpawnSpots[i], null, false);
 			enemies.Add(spawnedEnemy);
 		}
 	}
