@@ -12,6 +12,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	private int curAttacker;
 	public List<Transform> playerClashPt;
 	public List<Transform> enemyClashPt;
+	private bool attackSkipped = false;
 
 	public enum State {
 		Inactive,
@@ -38,12 +39,30 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator AttackState() {
 		Character attacker = attackers[curAttacker];
+		attacker.target = GetOpponent(attacker);
+		attackSkipped = false;
+		//dead characters don't attack
+		if(attacker.state == Character.State.Dead) {
+			attackSkipped = true;
+			Debug.Log("\t" + attacker.data.givenName + " is dead, skipping attack\n");
+			curAttacker++;
+			if (curAttacker >= attackers.Count)
+				state = State.End;
+			else
+				state = State.Attack;
+			NextState();
+			yield break;
+		}
+
+		//characters with no valid targets don't attack
 		if(attacker.target == null) {
-			Debug.Log("Skipping attack, no target\n");
+			attackSkipped= true;
+			Debug.Log("\t" + attacker.data.givenName + " has no target, skipping attack\n");
 			state = State.AttackDone;
 			NextState();
 			yield break;
 		}
+
 		bool friendlyTarget = (isPlayerTurn && attacker.target.isPlayerCharacter) || (!isPlayerTurn && !attacker.target.isPlayerCharacter) ? true : false;
 		if(friendlyTarget) {}
 		else
@@ -54,7 +73,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator AttackDoneState () {
-		float timer = timeDelayBetweenAttacks;
+		float timer = attackSkipped ? 0f : timeDelayBetweenAttacks;
 		while(timer > 0f) {
 			timer-=Time.deltaTime;
 			yield return 0;
@@ -113,22 +132,18 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				continue;
 			attackers.Add(spawnPt.GetChild(0).GetComponent<Character>());
 		}
-
-		// set targets
-		foreach(Character c in attackers) {
-			c.target = GetOpponent(c);
-			c.state = Character.State.WaitingToPerformMove;
-		}
+			
 		state = State.Init;
 	}
 
 	public Character GetOpponent(Character attacker) {
-		List<Transform> spawnPts = isPlayerTurn ? arena.enemySpawnSpots : arena.playerSpawnSpots;
+		List<Character> opponents = isPlayerTurn ? arena.enemies : arena.goblins;
 		int index = attacker.combatPosition - 1;
-		for(int i=0; i<4; i++) {
-			int y = (index + i) % 4;
-			if(spawnPts[y].childCount > 0)
-				return spawnPts[y].GetChild(0).GetComponent<Character>();
+		for(int i=0; i<opponents.Count; i++) {
+			int y = (index + i) % opponents.Count;
+			Character potentialTarget = opponents[y];
+			if(potentialTarget.state != Character.State.Dead)
+				return potentialTarget;	
 		}
 		return null;
 	}
@@ -144,11 +159,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			if(crit)
 				damage = Mathf.FloorToInt(damage * arena.cm.baseCritDamage);
 			damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
-			//error above, enemies have no queued move (null)
 		}
 		Debug.Log("\t" + damageString + "\n");
 		arena.cm.ApplyDamage(damage, defender.data);
-		arena.combatUI.stateText.text = damageString;
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
 		int pos = attacker.combatPosition;
 		camAnimator.Play("ZoomInCombat "+ pos.ToString());
@@ -169,9 +182,18 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		a.SetTrigger("Melee Attack");
 		a = defender.GetComponentInChildren<Animator>();
 		if(defender.data.life <= 0)
-			a.SetBool("Alive", false);
+			CharacterDeath(defender);
 		else
 			a.SetTrigger("Melee Defend");
+	}
+
+	public void CharacterDeath(Character c) {
+		Debug.Log("\t" + (c.isPlayerCharacter ? "Goblin " :"Enemy ") + c.data.givenName + " DIES!\n");
+		c.GetComponentInChildren<SpriteRenderer>().material.shader = c.bwShader;
+		Animator a = c.GetComponentInChildren<Animator>();
+		a.SetBool("Alive", false);
+		c.state = Character.State.Dead;
+
 	}
 
 	public void AttackDone() {

@@ -103,8 +103,6 @@ public class Character : MonoBehaviour {
 
 	public enum State {
 		Unspawned,
-		WaitingToPerformMove,
-		DonePerformingMove,
 		Alive,
 		Dead,
 	}
@@ -117,6 +115,8 @@ public class Character : MonoBehaviour {
 		Character c = spawnedChar.GetComponent<Character>();
 		c.spawnSpot = parentTransform;
 		c.state = State.Alive;
+		c.data.life = c.data.maxLife;
+		c.data.energy = c.data.maxEnergy;
 		c.isPlayerCharacter = playerChar;
 		if(cData != null)
 			c.data = cData;
@@ -145,6 +145,8 @@ public class Character : MonoBehaviour {
 	}
 
 	public void Idle() {
+		if(state == State.Dead)
+			return;
 		RestoreShader();
 		Animator animator = GetComponentInChildren<Animator>();
 		animator.Play("Idle");

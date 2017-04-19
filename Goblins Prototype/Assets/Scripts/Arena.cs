@@ -69,8 +69,11 @@ public class Arena : MonoBehaviour {
 		combatUI.stateText.text = "";
 		combatUI.rollButton.gameObject.SetActive(false);
 		foreach(Character c in enemies) {
+			if(c.state == Character.State.Dead)
+				continue;
 			int roll = UnityEngine.Random.Range(0, c.data.moves.Count -1);
 			c.queuedMove = c.data.moves[roll];
+			Debug.Log("\tEnemy " + c.data.givenName +  " has rolled: " + c.queuedMove.moveName + "\n");
 		}
 		
 		foreach(Character c in goblins)
@@ -117,8 +120,46 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator ConclusionState () {
 		Debug.Log("***Arena Conclusion State***\n");
-		round++;
-		state = State.WaitForRollPhase;
+		bool allGoblinsDead = true;
+		foreach(Character goblin in goblins) {
+			if(goblin.state != Character.State.Dead) {
+				allGoblinsDead = false;
+				break;
+			}
+		}
+		bool allEnemiesDead = true;
+		foreach(Character enemy in enemies) {
+			if(enemy.state != Character.State.Dead) {
+				allEnemiesDead = false;
+				break;
+			}
+		}
+
+		if(!allGoblinsDead && !allEnemiesDead) {
+			round++;
+			state = State.WaitForRollPhase;
+			NextState();
+			yield break;
+		}
+
+		if(allGoblinsDead) {
+			combatUI.roundText.text = "DEFEAT";
+			//show defeat banner;
+		}
+
+		if(allEnemiesDead) {
+			combatUI.roundText.text = "VICTORY";
+			//show victory banner;
+		}
+
+		float timer = 2;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
+			
+		GameManager.gm.state = GameManager.State.Result;
+		state = State.Inactive;
 		while (state == State.Conclusion)
 			yield return 0;
 		NextState();
@@ -182,14 +223,14 @@ public class Arena : MonoBehaviour {
 		return null;
 	}
 
-	public void CheckAllGoblinMovesDone() {
+	public void CheckAllGoblinMovesSelected() {
 		foreach(Character goblin in goblins) {
 			if(goblin.queuedMove == null)
 				return;
 		}
 		state = State.PositionPhase;
 	}
-
+		
 
 	public void Update() {
 		if(Input.GetMouseButtonDown(0)) {

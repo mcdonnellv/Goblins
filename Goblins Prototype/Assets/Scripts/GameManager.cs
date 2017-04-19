@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour {
 		Debug.Log("Prep: Enter\n");
 		prepCam.enabled = true;
 		fightCam.enabled = false;
-		prepUI.gameObject.SetActive(true);
+
 		while (state == State.Prep) {
 			yield return 0;
 		}
@@ -60,14 +60,32 @@ public class GameManager : MonoBehaviour {
 		}
 		arena.state = Arena.State.Inactive;
 		Debug.Log("Combat: Exit\n");
+		NextState();
 	}
 
 	IEnumerator ResultState () {
 		Debug.Log("Result: Enter\n");
+		arena.combatUI.gameObject.SetActive(false);
+		//copy survivors to prep
+		prepUI.gameObject.SetActive(true);
+		PartyPanel pp = prepUI.gameObject.GetComponentInChildren<PartyPanel>(true);
+		pp.gameObject.SetActive(true);
+		int i=0;
+		foreach(Character goblin in arena.goblins) {
+			if(goblin.state != Character.State.Dead)
+				pp.partyPanels[i].Setup(goblin.data);
+			i++;
+		}
+
+		foreach(Character enemy in arena.enemies)
+			enemy.DeSpawn();
+			
+		state = State.Prep;
 		while (state == State.Result) {
 			yield return 0;
 		}
 		Debug.Log("Result: Exit\n");
+		NextState();
 	}
 
 

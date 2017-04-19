@@ -47,8 +47,8 @@ public class GoblinCombatPanel : MonoBehaviour {
 
 	public void SetSelectedMove(int index) {
 		character.queuedMove = character.data.moves[index];
-		Debug.Log("Goblin " + character.combatPosition.ToString() + " has rolled: " + character.queuedMove.moveName + "\n");
-		GameManager.gm.arena.CheckAllGoblinMovesDone();
+		Debug.Log("\tGoblin " + character.data.givenName +  " has rolled: " + character.queuedMove.moveName + "\n");
+		GameManager.gm.arena.CheckAllGoblinMovesSelected();
 	}
 }
 
