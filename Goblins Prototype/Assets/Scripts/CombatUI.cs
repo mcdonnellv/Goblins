@@ -12,6 +12,8 @@ public class CombatUI : MonoBehaviour {
 	public Button fightButton;
 	public Text roundText;
 	public Text stateText;
+	public Transform moveAnnouncePlayerTransform;
+	public Transform moveAnnounceEnemyTransform;
 
 	public void RefreshPanelPositionNumbers () {
 		foreach(Transform child in goblinPanelGrid) {

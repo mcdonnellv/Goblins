@@ -96,6 +96,7 @@ public class Character : MonoBehaviour {
 	public CombatMove queuedMove = null;
 	public State state = State.Unspawned;
 	public Transform spawnSpot;
+	public Transform headTransform;
 	public Character target;
 	public Shader bwShader;
 	private Shader originalShader;

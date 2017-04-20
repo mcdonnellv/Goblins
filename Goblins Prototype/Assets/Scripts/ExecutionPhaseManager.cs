@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using EckTechGames.FloatingCombatText;
 
 public class ExecutionPhaseManager : MonoBehaviour {
 	public List<Character> attackers = new List<Character>();
@@ -13,6 +14,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public List<Transform> playerClashPt;
 	public List<Transform> enemyClashPt;
 	private bool attackSkipped = false;
+	public float moveAnnounceTimer;
 
 	public enum State {
 		Inactive,
@@ -61,6 +63,14 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			state = State.AttackDone;
 			NextState();
 			yield break;
+		}
+
+		GameObject moveTextMarker = isPlayerTurn ? GameManager.gm.arena.combatUI.moveAnnouncePlayerTransform.gameObject : GameManager.gm.arena.combatUI.moveAnnounceEnemyTransform.gameObject;
+		OverlayCanvasController.instance.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, attacker.queuedMove.moveName);
+		float timer = moveAnnounceTimer;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
 		}
 
 		bool friendlyTarget = (isPlayerTurn && attacker.target.isPlayerCharacter) || (!isPlayerTurn && !attacker.target.isPlayerCharacter) ? true : false;
@@ -149,6 +159,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	public void ClashCharacters(Character attacker, Character defender) {
+		OverlayCanvasController occ = OverlayCanvasController.instance;
 		bool hit = arena.cm.RollForHit(attacker.data, defender.data);
 		bool crit = false;
 		int damage = 0;
@@ -156,12 +167,23 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(hit) {
 			damage = arena.cm.RollForDamage(attacker.queuedMove, defender.data);
 			crit = arena.cm.RollForCrit(attacker.data, defender.data);
-			if(crit)
+			if(crit) {
 				damage = Mathf.FloorToInt(damage * arena.cm.baseCritDamage);
+				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, "CRIT!\n" + damage.ToString());
+			}
+			else {
+				occ.ShowCombatText(defender.headTransform.gameObject,  CombatTextType.Hit, damage.ToString());
+				occ.ShowCombatText(defender.headTransform.gameObject,  CombatTextType.Hit, damage.ToString());
+			}
 			damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
 		}
+		else
+			occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Miss, "Miss");
+		
 		Debug.Log("\t" + damageString + "\n");
 		arena.cm.ApplyDamage(damage, defender.data);
+
+
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
 		int pos = attacker.combatPosition;
 		camAnimator.Play("ZoomInCombat "+ pos.ToString());
