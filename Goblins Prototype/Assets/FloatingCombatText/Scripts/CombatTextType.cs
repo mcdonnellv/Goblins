@@ -16,5 +16,7 @@ namespace EckTechGames.FloatingCombatText
 		CriticalHit = 3,
 		Heal = 4,
 		MoveAnnounce = 5,
+		EncounterStart = 6,
+		RoundAnnounce = 7,
 	}
 }

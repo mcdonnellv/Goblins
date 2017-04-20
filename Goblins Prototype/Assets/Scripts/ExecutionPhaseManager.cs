@@ -65,7 +65,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			yield break;
 		}
 
-		GameObject moveTextMarker = isPlayerTurn ? GameManager.gm.arena.combatUI.moveAnnouncePlayerTransform.gameObject : GameManager.gm.arena.combatUI.moveAnnounceEnemyTransform.gameObject;
+		GameObject moveTextMarker = isPlayerTurn ? GameManager.gm.arena.combatUI.moveAnnouncePlayerMarker : GameManager.gm.arena.combatUI.moveAnnounceEnemyMarker;
 		OverlayCanvasController.instance.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, attacker.queuedMove.moveName);
 		float timer = moveAnnounceTimer;
 		while(timer > 0f) {

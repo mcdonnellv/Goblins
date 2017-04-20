@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour {
 		Prep,
 		Combat,
 		Result,
+		GameEnd,
 	}
 
 	public State state;
@@ -27,8 +28,9 @@ public class GameManager : MonoBehaviour {
 	IEnumerator InitState () {
 		Debug.Log("Init: Enter\n");
 		roster.Populate();
-		state = State.Prep;
 		arena.combatUI.gameObject.SetActive(false);
+		enemies.Setup();
+		state = State.Prep;
 		while (state == State.Init) {
 			yield return 0;
 		}
@@ -40,7 +42,8 @@ public class GameManager : MonoBehaviour {
 		Debug.Log("Prep: Enter\n");
 		prepCam.enabled = true;
 		fightCam.enabled = false;
-
+		//spawn enemies
+		enemies.SetAndSpawnParty(enemies.curPartyIndex);
 		while (state == State.Prep) {
 			yield return 0;
 		}
@@ -79,12 +82,23 @@ public class GameManager : MonoBehaviour {
 
 		foreach(Character enemy in arena.enemies)
 			enemy.DeSpawn();
-			
-		state = State.Prep;
+
+		enemies.curPartyIndex++;
+		if(enemies.curPartyIndex < enemies.stageEnemySets.Length)
+			state = State.Prep;
+		else 
+			state = State.GameEnd;
 		while (state == State.Result) {
 			yield return 0;
 		}
 		Debug.Log("Result: Exit\n");
+		NextState();
+	}
+
+	IEnumerator GameEndState () {
+		Debug.Log("Game Over You Win!\n");
+		while (state == State.GameEnd)
+			yield return 0;
 		NextState();
 	}
 

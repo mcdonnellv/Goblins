@@ -1,16 +1,18 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\ExecutionPhaseManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Effect.cs">
     <Files>
-      <File FileName="Assets\Scripts\GameManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\ExecutionPhaseManager.cs" Line="69" Column="84" />
-      <File FileName="Assets\Scripts\Arena.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Character.cs" Line="99" Column="32" />
-      <File FileName="Assets\AnimationEventReceiver.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\PartyPanel.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\PartyMemberPanel.cs" Line="1" Column="1" />
-      <File FileName="Assets\FloatingCombatText\ReadMe.txt" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\CombatUI.cs" Line="14" Column="24" />
+      <File FileName="Assets/FloatingCombatText/Scripts/CombatTextType.cs" Line="20" Column="16" />
+      <File FileName="Assets/Scripts/ExecutionPhaseManager.cs" Line="70" Column="3" />
+      <File FileName="Assets/Scripts/Arena.cs" Line="35" Column="31" />
+      <File FileName="Assets/Scripts/CombatUI.cs" Line="17" Column="40" />
+      <File FileName="Assets/Scripts/GameManager.cs" Line="77" Column="31" />
+      <File FileName="Assets/Scripts/Enemies.cs" Line="13" Column="33" />
+      <File FileName="Assets/Scripts/Character.cs" Line="112" Column="29" />
+      <File FileName="Assets/Scripts/Roster.cs" Line="63" Column="4" />
+      <File FileName="Assets/Scripts/PartyPanel.cs" Line="6" Column="1" />
+      <File FileName="Assets/Scripts/Effect.cs" Line="50" Column="30" />
+      <File FileName="Assets/Scripts/CombatMove.cs" Line="32" Column="114" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

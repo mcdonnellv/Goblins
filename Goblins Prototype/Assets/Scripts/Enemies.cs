@@ -7,24 +7,31 @@ using UnityEngine.UI;
 
 [Serializable]
 public class StageEnemyList {
-	public int minEnemies = 2;
-	public int maxEnemies = 4;
-	public List<Transform> enemies;
-	public List<Transform> enemyPrefabs;
+	public static int minEnemies = 2;
+	public static int maxEnemies = 4;
+	public List<Transform> enemyPrefabs = new List<Transform>();
+	public List<Transform> enemies = new List<Transform>();
 
-	public void PopulateEnemyList(Transform parentTransform) {
+	public void PopulateEnemyList(Transform parentTransform, List<Transform> allEnemyPrefabs) {
 
-		if (enemyPrefabs.Count == 0) {
+		if (allEnemyPrefabs.Count == 0) {
 			Debug.LogWarning("enemyPrefabs is empty, cannot populate enemies list");
 			return;
 		}
 
+		enemyPrefabs.Clear();
 		int enemyCount = UnityEngine.Random.Range(minEnemies, maxEnemies + 1);	
 		for(int i=0; i < enemyCount; i++) {
-			//randomly choose enemy from prefabs
-			int prefabIndex = UnityEngine.Random.Range(0, enemyPrefabs.Count);
+			//randomly choose enemy prefab from all enemy prefabs
+			int prefabIndex = UnityEngine.Random.Range(0, allEnemyPrefabs.Count);
+			enemyPrefabs.Add(allEnemyPrefabs[prefabIndex]);
+		}
+	}
 
-			Transform spawnedEnemy = Character.Spawn(enemyPrefabs[prefabIndex], GameManager.gm.arena.enemySpawnSpots[i], null, false);
+	public void SpawnEnemies() {
+		enemies.Clear();
+		for(int i=0; i < enemyPrefabs.Count; i++) {
+			Transform spawnedEnemy = Character.Spawn(enemyPrefabs[i], GameManager.gm.arena.enemySpawnSpots[i], null, false);
 			enemies.Add(spawnedEnemy);
 		}
 	}
@@ -34,20 +41,29 @@ public class Enemies : MonoBehaviour {
 	public StageEnemyList[] stageEnemySets;
 	public List<Transform> enemyParty;
 	public Text enemyDescription;
+	public int curPartyIndex = 0;
+	public int enemySetsCount;
+	public List<Transform> enemyPrefabs;
 
 
 	// Use this for initialization
-	void Start () {
-		//roll for enemies
+	public void Setup () {
+		// roll for enemies
+		stageEnemySets = new StageEnemyList[enemySetsCount];
 		for(int i=0; i< stageEnemySets.Length; i++) {
-			StageEnemyList list = stageEnemySets[i];
-			list.PopulateEnemyList(transform);
+			stageEnemySets[i] = new StageEnemyList();
+			stageEnemySets[i].PopulateEnemyList(transform, enemyPrefabs);
 		}
-		SetParty(0);
+		curPartyIndex = 0;
 	}
 
 
-	public void SetParty(int index) {
+	public void SetAndSpawnParty(int index) {
+		if(index >= stageEnemySets.Length) {
+			Debug.LogWarning("Index oob, no more enemy parties left to fight\n");
+			return;
+		}
+		stageEnemySets[index].SpawnEnemies();
 		enemyParty = stageEnemySets[index].enemies;
 		enemyDescription.text = DescribeEnemyParty();
 	}

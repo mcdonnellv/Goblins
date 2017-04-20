@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using EckTechGames.FloatingCombatText;
 
 public class Arena : MonoBehaviour {
 
@@ -14,6 +15,9 @@ public class Arena : MonoBehaviour {
 	public int round;
 	public ExecutionPhaseManager em;
 	public CombatMath cm;
+	public float encounterStartAnnounceTimer;
+	public float roundAnnounceTimer;
+	public float victoryAnnounceTimer;
 
 	public enum State {
 		Inactive,
@@ -37,6 +41,8 @@ public class Arena : MonoBehaviour {
 		Debug.Log("***Arena Init State***\n");
 		round = 1;
 		combatUI.gameObject.SetActive(true);
+		goblins.Clear();
+		enemies.Clear();
 		GetListFromSpawnPts(enemySpawnSpots, enemies);
 		GetListFromSpawnPts(playerSpawnSpots, goblins);
 		combatUI.RefreshPanelPositionNumbers();
@@ -48,6 +54,14 @@ public class Arena : MonoBehaviour {
 			int ind = goblins.IndexOf(c);
 			combatUI.goblinPanels[ind].Setup(c);
 		}
+
+		OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "ENCOUNTER!");
+		float timer = encounterStartAnnounceTimer;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
+
 		state = State.WaitForRollPhase;
 		while (state == State.Init)
 			yield return 0;
@@ -91,15 +105,22 @@ public class Arena : MonoBehaviour {
 		combatUI.ActivatePanels();
 		foreach(GoblinCombatPanel panel in combatUI.goblinPanels)
 			panel.GetComponent<DragMe>().interactable = true;
+
 		while (state == State.PositionPhase)
 			yield return 0;
+		combatUI.fightButton.gameObject.SetActive(false);
+		OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "ROUND " + round.ToString());
+		float timer = roundAnnounceTimer;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
 		NextState();
 	}
 
 	IEnumerator PlayerExecutionPhaseState () {
 		Debug.Log("***Arena PlayerExecutionPhase State***\n");
 		combatUI.DeactivatePanels();
-		combatUI.fightButton.gameObject.SetActive(false);
 		combatUI.stateText.text = "";
 		em.Setup(playerSpawnSpots, true);
 
@@ -144,15 +165,17 @@ public class Arena : MonoBehaviour {
 
 		if(allGoblinsDead) {
 			combatUI.roundText.text = "DEFEAT";
+			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "DEFEAT!");
 			//show defeat banner;
 		}
 
 		if(allEnemiesDead) {
 			combatUI.roundText.text = "VICTORY";
+			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "VICTORY!");
 			//show victory banner;
 		}
 
-		float timer = 2;
+		float timer = victoryAnnounceTimer;
 		while(timer > 0f) {
 			timer-=Time.deltaTime;
 			yield return 0;
