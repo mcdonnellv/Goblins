@@ -45,6 +45,8 @@ public class CharacterData {
 	public float fireRes;
 
 	public List<CombatMove> moves = new List<CombatMove>();
+	public List<BaseStatusEffect> statusEffects = new List<BaseStatusEffect>();
+
 	public GameObject characterGameObject = null;
 
 	public void RollStats() {
@@ -85,6 +87,29 @@ public class CharacterData {
 			Character c = characterGameObject.GetComponent<Character>();
 			if(c!= null)
 				c.UpdateSprite();
+		}
+	}
+
+	public void AddStatusEffect(BaseStatusEffect newStatusEffect) {
+		bool found = false;
+		foreach(BaseStatusEffect se in statusEffects) {
+			if(se.statusEffectID == newStatusEffect.statusEffectID) {
+				se.statusEffectTurnsApplied = newStatusEffect.statusEffectTurnsApplied;
+				return;
+			}
+		}
+		statusEffects.Add(newStatusEffect);
+	}
+
+	public void ProcessTurnForStatusEffects() {
+		bool found = false;
+		for(int i=0; i<statusEffects.Count; i++) {
+			statusEffects[i].statusEffectTurnsApplied--;
+			// make an onexpire event?
+			if(statusEffects[i].statusEffectTurnsApplied <= 0) {
+				Debug.Log("\t" + givenName + " " + statusEffects[i].statusEffectName + " has expired\n");
+				statusEffects.Remove(statusEffects[i]);
+			}
 		}
 	}
 }

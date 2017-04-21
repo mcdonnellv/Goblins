@@ -42,29 +42,3 @@ public class OtherCharClass : MonoBehaviour {
 		return val;
 	}
 }
-///////
-/// 
-/// 
-/// 
-
-public class BaseStatusEffect {
-	public string statusEffectName;
-	public string statusEffectDescription;
-	public int statusEffectID;
-	public int statusEffectPower;
-	public int statusEffectApplyPercentage; //chance to apply to target
-	public int statusEffectTurnsApplied; 
-}
-
-public class BurnStatusEffect : BaseStatusEffect {
-
-	public BurnStatusEffect() {
-		statusEffectName = "Burn";
-		statusEffectDescription = "Burns an enemy for a number of turns";
-		statusEffectID = 1;
-		statusEffectPower = 10;
-		statusEffectApplyPercentage = 75; 
-		statusEffectTurnsApplied = 2;
-
-	}
-}

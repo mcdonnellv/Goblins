@@ -83,6 +83,14 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator AttackDoneState () {
+		
+		//do any post attack combat move effects
+		CombatMove move = attackers[curAttacker].queuedMove;
+		if(move.displaceOpponent) {
+			int pos = attackers[curAttacker].target.combatPosition;
+			arena.MoveCharacterToNewPosition(attackers[curAttacker].target, pos + 1);
+		}
+
 		float timer = attackSkipped ? 0f : timeDelayBetweenAttacks;
 		while(timer > 0f) {
 			timer-=Time.deltaTime;
@@ -101,6 +109,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator EndState () {
+		foreach(Character c in attackers)
+			c.data.ProcessTurnForStatusEffects();
+
 		BackToIdle();
 		BackToSpawnSpot();
 		attackers.Clear();
@@ -149,11 +160,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public Character GetOpponent(Character attacker) {
 		List<Character> opponents = isPlayerTurn ? arena.enemies : arena.goblins;
 		int index = attacker.combatPosition - 1;
-		for(int i=0; i<opponents.Count; i++) {
-			int y = (index + i) % opponents.Count;
-			Character potentialTarget = opponents[y];
-			if(potentialTarget.state != Character.State.Dead)
-				return potentialTarget;	
+		foreach(Character c in opponents) {
+			if(c.combatPosition == attacker.combatPosition && c.state != Character.State.Dead) 
+				return c;	
 		}
 		return null;
 	}
@@ -176,6 +185,12 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				occ.ShowCombatText(defender.headTransform.gameObject,  CombatTextType.Hit, damage.ToString());
 			}
 			damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
+
+			//add any status effects that may come from the attack
+			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects) {
+				defender.data.AddStatusEffect(se);
+				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Miss, se.statusEffectName);
+			}
 		}
 		else
 			occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Miss, "Miss");

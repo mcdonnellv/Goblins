@@ -141,6 +141,8 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator ConclusionState () {
 		Debug.Log("***Arena Conclusion State***\n");
+
+
 		bool allGoblinsDead = true;
 		foreach(Character goblin in goblins) {
 			if(goblin.state != Character.State.Dead) {
@@ -224,17 +226,10 @@ public class Arena : MonoBehaviour {
 			Transform charObj = spawnSpot.GetChild(0);
 			Character c = charObj.GetComponent<Character>();
 			GoblinCombatPanel p = GetPanelForGoblin(c);
-			int ind = spawnSpot.GetSiblingIndex();
+			int ind = playerSpawnSpots.IndexOf(spawnSpot);
 			if(p.position - 1 == ind)
 				continue;
-			Transform newSpawnSpot = playerSpawnSpots[p.position - 1];
-			if(spawnSpot.childCount > 0) {
-				Transform prevInhabitingObj = newSpawnSpot.GetChild(0);
-				prevInhabitingObj.SetParent(spawnSpot,true);
-				StartCoroutine(GameManager.gm.MoveOverSeconds(prevInhabitingObj.gameObject, spawnSpot.transform.position, .5f));
-			}
-			charObj.SetParent(newSpawnSpot,true);
-			StartCoroutine(GameManager.gm.MoveOverSeconds(charObj.gameObject, newSpawnSpot.transform.position, .5f));
+			MoveCharacterToNewPosition(c, p.position);
 		}
 	}
 
@@ -254,6 +249,25 @@ public class Arena : MonoBehaviour {
 		state = State.PositionPhase;
 	}
 		
+	public void MoveCharacterToNewPosition(Character character, int newPos) {
+		newPos = Mathf.Min(newPos, 4);
+		Transform oldPt = character.transform.parent;
+		Transform newPt = character.isPlayerCharacter ? playerSpawnSpots[newPos - 1] : enemySpawnSpots[newPos - 1];
+		if(newPt.childCount > 0) {
+			// already has a prior inhabitant, swap positions
+			Character inhabitant = newPt.GetChild(0).GetComponent<Character>();
+			inhabitant.transform.SetParent(oldPt, true);
+			inhabitant.combatPosition = character.combatPosition;
+			inhabitant.spawnSpot = inhabitant.isPlayerCharacter ? playerSpawnSpots[inhabitant.combatPosition-1] : enemySpawnSpots[inhabitant.combatPosition-1];
+			StartCoroutine(GameManager.gm.MoveOverSeconds(inhabitant.gameObject, oldPt.position, .5f));
+		}
+
+		character.transform.SetParent(newPt, true);
+		character.spawnSpot = newPt;
+		character.combatPosition = newPos;
+		StartCoroutine(GameManager.gm.MoveOverSeconds(character.gameObject, newPt.position, .5f));
+
+	}
 
 	public void Update() {
 		if(Input.GetMouseButtonDown(0)) {

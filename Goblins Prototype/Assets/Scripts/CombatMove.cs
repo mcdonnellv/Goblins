@@ -30,7 +30,7 @@ public class CombatMove : MonoBehaviour {
 	public MoveType moveType = MoveType.Damage;
 	public DamageType damageType = DamageType.Slice;
 	public List<BaseStatusEffect> moveStatusEffects = new List<BaseStatusEffect>(); //this move may apply 1 to many status effects on its target
-
+	public bool displaceOpponent;
 	public string GenerateDesciption () {
 		switch(moveType){
 		case MoveType.Damage : 
@@ -50,5 +50,5 @@ public class CombatMove : MonoBehaviour {
 		}
 
 		return description;
-	}
+	} 
 }
