@@ -9,7 +9,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public Arena arena;
 	public float timeDelayBetweenAttacks;
 	public float timeDelayBetweenTurns;
-	private Animator animator;
 	private int curAttacker;
 	public List<Transform> playerClashPt;
 	public List<Transform> enemyClashPt;
@@ -41,7 +40,11 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator AttackState() {
 		Character attacker = attackers[curAttacker];
-		attacker.target = GetOpponent(attacker);
+		attacker.target = GetTarget(attacker);
+
+		foreach(BaseStatusEffect se in attacker.target.data.statusEffects)
+			se.OnTargetted(attacker.queuedMove, attacker);
+		
 		attackSkipped = false;
 		//dead characters don't attack
 		if(attacker.state == Character.State.Dead) {
@@ -72,11 +75,12 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
-
-		bool friendlyTarget = (isPlayerTurn && attacker.target.isPlayerCharacter) || (!isPlayerTurn && !attacker.target.isPlayerCharacter) ? true : false;
-		if(friendlyTarget) {}
-		else
+			
+		if(attacker.queuedMove.targetType == CombatMove.TargetType.Opponent || attacker.queuedMove.targetType == CombatMove.TargetType.RandomOpponent)
 			ClashCharacters(attacker, attacker.target);
+		else
+			CastOnFriendlyCharacter(attacker, attacker.target);
+
 		while (state == State.Attack)
 			yield return 0;	
 		NextState();
@@ -86,8 +90,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		
 		//do any post attack combat move effects
 		CombatMove move = attackers[curAttacker].queuedMove;
-		if(move.displaceOpponent) {
-			int pos = attackers[curAttacker].target.combatPosition;
+		Character attacker = attackers[curAttacker];
+		if(move.displaceOpponent && attacker.target != null && attacker.target.state != Character.State.Dead) {
+			int pos = attacker.target.combatPosition;
 			arena.MoveCharacterToNewPosition(attackers[curAttacker].target, pos + 1);
 		}
 
@@ -109,9 +114,12 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator EndState () {
-		foreach(Character c in attackers)
-			c.data.ProcessTurnForStatusEffects();
+		foreach(Character c in arena.goblins)
+			c.ProcessTurnForStatusEffects();
 
+		foreach(Character c in arena.enemies)
+			c.ProcessTurnForStatusEffects();
+		
 		BackToIdle();
 		BackToSpawnSpot();
 		attackers.Clear();
@@ -157,51 +165,95 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		state = State.Init;
 	}
 
-	public Character GetOpponent(Character attacker) {
-		List<Character> opponents = isPlayerTurn ? arena.enemies : arena.goblins;
-		int index = attacker.combatPosition - 1;
-		foreach(Character c in opponents) {
-			if(c.combatPosition == attacker.combatPosition && c.state != Character.State.Dead) 
-				return c;	
+	public Character GetTarget(Character attacker) {
+		switch(attacker.queuedMove.targetType){
+		case CombatMove.TargetType.Self: return attacker;
+		case CombatMove.TargetType.Opponent: return GetOpponent(attacker);
+		case CombatMove.TargetType.RandomAlly: {
+				Character tar = null;
+				List<Character> aliveAllies = new List<Character>();
+				foreach(Character a in attackers)
+					if(a.state != Character.State.Dead && a != attacker)
+						aliveAllies.Add(a);
+				if(aliveAllies.Count > 0) {
+					int roll = UnityEngine.Random.Range(0, aliveAllies.Count);
+					tar = aliveAllies[roll];
+				}
+				return tar;
+			}
 		}
 		return null;
+	}
+
+	public Character GetOpponent(Character attacker) {
+		List<Character> opponents = isPlayerTurn ? arena.enemies : arena.goblins;
+		foreach(Character c in opponents) {
+			if(c.combatPosition == attacker.combatPosition && c.state != Character.State.Dead) {
+				return c;	
+			}
+		}
+		return null;
+	}
+
+	public void CastOnFriendlyCharacter(Character caster, Character target) {
+		OverlayCanvasController occ = OverlayCanvasController.instance;
+		string text = caster.queuedMove.moveName;
+
+		foreach(BaseStatusEffect se in caster.queuedMove.moveStatusEffects){
+			target.AddStatusEffect(se);
+			se.OnAdd(caster);
+		}
+
+		List<Transform> clashPts = isPlayerTurn ? playerClashPt : enemyClashPt;
+		int pos1 = caster.combatPosition;
+		int pos2 = target.combatPosition;
+		AnimateCamera(pos1);
+
+		caster.Idle();
+		caster.transform.SetParent(clashPts[pos1-1].transform, false);
+		if(caster != target) {
+			target.Idle();
+			target.transform.SetParent(clashPts[pos2-1].transform, false);
+		}
+			
+		caster.GetComponentInChildren<Animator>().SetTrigger("Ranged Cast");
+		occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Miss, text);
 	}
 
 	public void ClashCharacters(Character attacker, Character defender) {
 		OverlayCanvasController occ = OverlayCanvasController.instance;
 		bool hit = arena.cm.RollForHit(attacker.data, defender.data);
 		bool crit = false;
-		int damage = 0;
+		float damage = 0f;
+		int finalDamage = 0;
 		string damageString = attacker.data.givenName + " misses";
 		if(hit) {
-			damage = arena.cm.RollForDamage(attacker.queuedMove, defender.data);
+			damage = arena.cm.RollForDamage(attacker.queuedMove, attacker.data, defender.data);
 			crit = arena.cm.RollForCrit(attacker.data, defender.data);
-			if(crit) {
-				damage = Mathf.FloorToInt(damage * arena.cm.baseCritDamage);
-				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, "CRIT!\n" + damage.ToString());
+			if(crit)
+				damage = damage * arena.cm.baseCritDamage;
+			int statusEffectCount = defender.data.statusEffects.Count;
+			for(int i=0; i < statusEffectCount; i++) {
+				BaseStatusEffect se = defender.data.statusEffects[i];
+				damage = se.OnDamageTakenCalc(attacker.queuedMove, damage);
+				statusEffectCount = defender.data.statusEffects.Count;
 			}
-			else {
-				occ.ShowCombatText(defender.headTransform.gameObject,  CombatTextType.Hit, damage.ToString());
-				occ.ShowCombatText(defender.headTransform.gameObject,  CombatTextType.Hit, damage.ToString());
-			}
+			finalDamage = Mathf.FloorToInt(damage);
+			occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Hit, (crit ? "CRIT!\n" : "") + finalDamage.ToString());
 			damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
 
 			//add any status effects that may come from the attack
-			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects) {
-				defender.data.AddStatusEffect(se);
-				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Miss, se.statusEffectName);
-			}
+			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects)
+				defender.AddStatusEffect(se);
 		}
 		else
 			occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Miss, "Miss");
 		
 		Debug.Log("\t" + damageString + "\n");
-		arena.cm.ApplyDamage(damage, defender.data);
+		arena.cm.ApplyDamage(attacker.queuedMove, finalDamage, defender.data);
 
-
-		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
 		int pos = attacker.combatPosition;
-		camAnimator.Play("ZoomInCombat "+ pos.ToString());
+		AnimateCamera(pos);
 
 		attacker.Idle();
 		defender.Idle();
@@ -215,13 +267,22 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			defender.transform.SetParent(playerClashPt[pos-1].transform, false);
 		}
 		Animator a = attacker.GetComponentInChildren<Animator>();
-		animator = a;
-		a.SetTrigger("Melee Attack");
+		if(attacker.queuedMove.rangeType == CombatMove.RangeType.Melee)
+			a.SetTrigger("Melee Attack");
+		
+		if(attacker.queuedMove.rangeType == CombatMove.RangeType.Ranged)
+			a.SetTrigger("Ranged Cast");
+		
 		a = defender.GetComponentInChildren<Animator>();
 		if(defender.data.life <= 0)
 			CharacterDeath(defender);
 		else
 			a.SetTrigger("Melee Defend");
+	}
+
+	public void AnimateCamera(int pos) {
+		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
+		camAnimator.Play("ZoomInCombat "+ pos.ToString());
 	}
 
 	public void CharacterDeath(Character c) {
@@ -230,6 +291,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		Animator a = c.GetComponentInChildren<Animator>();
 		a.SetBool("Alive", false);
 		c.state = Character.State.Dead;
+		c.RemoveAllStatusEffects();
 
 	}
 

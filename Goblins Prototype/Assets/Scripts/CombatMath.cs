@@ -24,7 +24,7 @@ public class CombatMath : MonoBehaviour {
 		return false;
 	}
 
-	public int RollForDamage(CombatMove combatMove, CharacterData defender) {
+	public float RollForDamage(CombatMove combatMove, CharacterData attacker, CharacterData defender) {
 		if (combatMove == null)
 			return 0;
 		float resist = GetResistForDamageType(combatMove.damageType, defender);
@@ -32,9 +32,12 @@ public class CombatMath : MonoBehaviour {
 		damage = Mathf.Max(0f, damage);
 		// status effects may alter the attack's damage value
 		foreach(BaseStatusEffect se in defender.statusEffects)
-			damage = se.OnDamageCalc(combatMove, damage);
+			damage = se.OnDamageDealtToMeCalc(combatMove, damage);
+
+		foreach(BaseStatusEffect se in attacker.statusEffects)
+			damage = se.OnDamageDealtByMeCalc(combatMove, damage);
 		
-		return Mathf.FloorToInt(damage);
+		return damage;
 	}
 
 	public float GetResistForDamageType(CombatMove.DamageType dt, CharacterData defender) {
@@ -49,8 +52,7 @@ public class CombatMath : MonoBehaviour {
 		return 0f;
 	}
 
-	public void ApplyDamage(int damage, CharacterData defender) {
-		
+	public void ApplyDamage(CombatMove combatMove, int damage, CharacterData defender) {
 		defender.life = Mathf.Max(0, defender.life - damage);
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using EckTechGames.FloatingCombatText;
 
 
 public enum CombatClassType {
@@ -90,28 +91,6 @@ public class CharacterData {
 		}
 	}
 
-	public void AddStatusEffect(BaseStatusEffect newStatusEffect) {
-		bool found = false;
-		foreach(BaseStatusEffect se in statusEffects) {
-			if(se.statusEffectID == newStatusEffect.statusEffectID) {
-				se.statusEffectTurnsApplied = newStatusEffect.statusEffectTurnsApplied;
-				return;
-			}
-		}
-		statusEffects.Add(newStatusEffect);
-	}
-
-	public void ProcessTurnForStatusEffects() {
-		bool found = false;
-		for(int i=0; i<statusEffects.Count; i++) {
-			statusEffects[i].statusEffectTurnsApplied--;
-			// make an onexpire event?
-			if(statusEffects[i].statusEffectTurnsApplied <= 0) {
-				Debug.Log("\t" + givenName + " " + statusEffects[i].statusEffectName + " has expired\n");
-				statusEffects.Remove(statusEffects[i]);
-			}
-		}
-	}
 }
 
 public class Character : MonoBehaviour {
@@ -187,6 +166,43 @@ public class Character : MonoBehaviour {
 		StartCoroutine(GameManager.gm.MoveOverSeconds(gameObject, spawnSpot.position, .1f));
 	}
 
+	public BaseStatusEffect AddStatusEffect(BaseStatusEffect newStatusEffect) {
+		bool found = false;
+		OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.Miss, newStatusEffect.statusEffectName);
+		foreach(BaseStatusEffect se in data.statusEffects) {
+			if(se.statusEffectID == newStatusEffect.statusEffectID) {
+				se.statusEffectTurnsApplied = newStatusEffect.statusEffectTurnsApplied;
+				return se;
+			}
+		}
+		GameObject go = Instantiate(newStatusEffect.gameObject, headTransform, false);
+		go.transform.Translate(new Vector3(0f,1f,0f));
+		BaseStatusEffect ret = go.GetComponent<BaseStatusEffect>();
+		data.statusEffects.Add(ret);
+		return ret;
+	}
+
+	public void ProcessTurnForStatusEffects() {
+		for(int i=0; i<data.statusEffects.Count; i++) {
+			if(data.statusEffects[i].statusEffectTurnsApplied == -1)
+				continue;
+			data.statusEffects[i].statusEffectTurnsApplied--;
+			// make an onexpire event?
+			if(data.statusEffects[i].statusEffectTurnsApplied < 0) {
+				OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.Miss, "-" + data.statusEffects[i].statusEffectName);
+				Debug.Log("\t" + data.givenName + " " + data.statusEffects[i].statusEffectName + " has expired\n");
+				Destroy(data.statusEffects[i].gameObject);
+				data.statusEffects.Remove(data.statusEffects[i]);
+			}
+		}
+	}
+
+	public void RemoveAllStatusEffects() {
+		for(int i=0; i<data.statusEffects.Count; i++) {
+			Destroy(data.statusEffects[i].gameObject);
+			data.statusEffects.Remove(data.statusEffects[i]);
+		}
+	}
 
 }
 

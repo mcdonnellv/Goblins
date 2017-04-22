@@ -21,6 +21,20 @@ public class CombatMove : MonoBehaviour {
 		None,
 	}
 
+	public enum TargetType {
+		Opponent,
+		Self,
+		RandomAlly,
+		RandomOpponent,
+		MostDamagedAlly,
+		None,
+	}
+
+	public enum RangeType {
+		Melee,
+		Ranged,
+	}
+
 	public string moveName;
 	public string description;
 	public int effectiveness = 1;
@@ -28,6 +42,8 @@ public class CombatMove : MonoBehaviour {
 	public int weight = 10;
 	public int energyCost = 2;
 	public MoveType moveType = MoveType.Damage;
+	public RangeType rangeType = RangeType.Melee;
+	public TargetType targetType = TargetType.Opponent;
 	public DamageType damageType = DamageType.Slice;
 	public List<BaseStatusEffect> moveStatusEffects = new List<BaseStatusEffect>(); //this move may apply 1 to many status effects on its target
 	public bool displaceOpponent;
