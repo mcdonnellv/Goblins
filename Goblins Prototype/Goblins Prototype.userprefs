@@ -1,17 +1,20 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ExecutionPhaseManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\CombatMath.cs">
     <Files>
-      <File FileName="Assets/Scripts/Character.cs" Line="169" Column="2" />
-      <File FileName="Assets/Scripts/ExecutionPhaseManager.cs" Line="46" Column="1" />
-      <File FileName="Assets/Scripts/LaceratedStatusEffect.cs" Line="6" Column="44" />
-      <File FileName="Assets/Scripts/BracingStatusEffect.cs" Line="31" Column="1" />
-      <File FileName="Assets/Scripts/BashBonusStatusEffect.cs" Line="10" Column="78" />
-      <File FileName="Assets/Scripts/CombatMath.cs" Line="27" Column="28" />
-      <File FileName="Assets/Scripts/BaseStatusEffect.cs" Line="17" Column="2" />
-      <File FileName="Assets/Scripts/Arena.cs" Line="72" Column="1" />
-      <File FileName="Assets/Scripts/CombatMove.cs" Line="46" Column="53" />
-      <File FileName="Assets/Scripts/ProtectedtStatusEffect.cs" Line="11" Column="22" />
+      <File FileName="Assets\Scripts\Character.cs" Line="170" Column="1" />
+      <File FileName="Assets\Scripts\ExecutionPhaseManager.cs" Line="268" Column="1" />
+      <File FileName="Assets\Scripts\BaseStatusEffect.cs" Line="17" Column="22" />
+      <File FileName="Assets\Scripts\LaceratedStatusEffect.cs" Line="13" Column="2" />
+      <File FileName="Assets\Scripts\BracingStatusEffect.cs" Line="26" Column="21" />
+      <File FileName="Assets\Scripts\BashBonusStatusEffect.cs" Line="15" Column="21" />
+      <File FileName="Assets\Scripts\CombatMath.cs" Line="21" Column="74" />
+      <File FileName="Assets\Scripts\Arena.cs" Line="176" Column="36" />
+      <File FileName="Assets\Scripts\CombatMove.cs" Line="51" Column="39" />
+      <File FileName="Assets\FloatingCombatText\Scripts\CombatTextType.cs" Line="21" Column="21" />
+      <File FileName="Assets\Scripts\ProtectedStatusEffect.cs" Line="10" Column="2" />
+      <File FileName="Assets\Scripts\DotStatusEffect.cs" Line="16" Column="1" />
+      <File FileName="Assets\Scripts\CursedStatusEffect.cs" Line="9" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

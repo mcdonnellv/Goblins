@@ -7,11 +7,11 @@ public class BashBonusStatusEffect : BaseStatusEffect {
 	public float damageStored = 0f;
 	public CombatMove bashMovePrefab;
 
-	public override float OnDamageDealtByMeCalc(CombatMove move, float damage) {
-		if(move.moveName == bashMovePrefab.moveName) {
-			damage = damage + damageStored;
+	public override float OnDamageDealtByMeCalc(AttackTurnInfo ati) {
+		if(ati.attacker.queuedMove.moveName == bashMovePrefab.moveName) {
+			ati.damage = ati.damage + damageStored;
 			statusEffectTurnsApplied = 0;
 		}
-		return damage;
+		return ati.damage;
 	}
 }

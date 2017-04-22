@@ -18,5 +18,7 @@ namespace EckTechGames.FloatingCombatText
 		MoveAnnounce = 5,
 		EncounterStart = 6,
 		RoundAnnounce = 7,
+		StatusApplied = 8,
+		StatusExpired = 9,
 	}
 }

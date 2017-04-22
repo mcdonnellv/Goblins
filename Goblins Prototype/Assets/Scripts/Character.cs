@@ -167,8 +167,7 @@ public class Character : MonoBehaviour {
 	}
 
 	public BaseStatusEffect AddStatusEffect(BaseStatusEffect newStatusEffect) {
-		bool found = false;
-		OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.Miss, newStatusEffect.statusEffectName);
+		OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.StatusApplied, newStatusEffect.statusEffectName);
 		foreach(BaseStatusEffect se in data.statusEffects) {
 			if(se.statusEffectID == newStatusEffect.statusEffectID) {
 				se.statusEffectTurnsApplied = newStatusEffect.statusEffectTurnsApplied;
@@ -189,7 +188,7 @@ public class Character : MonoBehaviour {
 			data.statusEffects[i].statusEffectTurnsApplied--;
 			// make an onexpire event?
 			if(data.statusEffects[i].statusEffectTurnsApplied < 0) {
-				OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.Miss, "-" + data.statusEffects[i].statusEffectName);
+				OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.StatusExpired, data.statusEffects[i].statusEffectName);
 				Debug.Log("\t" + data.givenName + " " + data.statusEffects[i].statusEffectName + " has expired\n");
 				Destroy(data.statusEffects[i].gameObject);
 				data.statusEffects.Remove(data.statusEffects[i]);

@@ -10,11 +10,12 @@ public class BaseStatusEffect : MonoBehaviour {
 	public float statusEffectPower;
 	public int statusEffectTurnsApplied;
 
-	public virtual float OnDamageDealtToMeCalc(CombatMove move, float damage) {return damage;}
-	public virtual float OnDamageDealtByMeCalc(CombatMove move, float damage) {return damage;}
-	public virtual float OnDamageTakenCalc(CombatMove move, float damage) {return damage;}
-	public virtual void OnTargetted(CombatMove move, Character enemy) {}
-	public virtual void OnAdd(Character caster) {}
+	public virtual float OnDamageDealtToMeCalc(AttackTurnInfo ati) {return ati.damage;}
+	public virtual float OnDamageDealtByMeCalc(AttackTurnInfo ati) {return ati.damage;}
+	public virtual float OnDamageTakenCalc(AttackTurnInfo ati) {return ati.damage;}
+	public virtual void OnIGotTargetted(AttackTurnInfo ati) {}
+	public virtual void OnStatusEffectAddedToMe(AttackTurnInfo ati) {}
+	public virtual void OnMyTurnStarted(AttackTurnInfo ati) {}
 
 }
 

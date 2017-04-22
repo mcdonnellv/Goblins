@@ -15,7 +15,7 @@ public class CombatMath : MonoBehaviour {
 		return false;
 	}
 
-	public bool RollForCrit(CharacterData attacker, CharacterData defender) {
+	public bool RollForCrit(CharacterData attacker) {
 		float roll = UnityEngine.Random.Range(0f,1f);
 		float mindModified = Mathf.Max(0f, attacker.mind - 4f);
 		float chance = baseCritChance + (.01f * Mathf.Pow(mindModified, 1.5f));
@@ -24,19 +24,15 @@ public class CombatMath : MonoBehaviour {
 		return false;
 	}
 
-	public float RollForDamage(CombatMove combatMove, CharacterData attacker, CharacterData defender) {
+	public float RollForDamage(CombatMove combatMove, Character attacker, Character defender) {
 		if (combatMove == null)
 			return 0;
-		float resist = GetResistForDamageType(combatMove.damageType, defender);
-		float damage = combatMove.effectiveness * (1f + resist);
+		float resist = GetResistForDamageType(combatMove.damageType, defender.data);
+		float damage = combatMove.effectiveness * (1f - resist);
 		damage = Mathf.Max(0f, damage);
 		// status effects may alter the attack's damage value
-		foreach(BaseStatusEffect se in defender.statusEffects)
-			damage = se.OnDamageDealtToMeCalc(combatMove, damage);
-
-		foreach(BaseStatusEffect se in attacker.statusEffects)
-			damage = se.OnDamageDealtByMeCalc(combatMove, damage);
-		
+		defender.BroadcastMessage("OnDamageDealtToMeCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
+		attacker.BroadcastMessage("OnDamageDealtByMeCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
 		return damage;
 	}
 
@@ -52,7 +48,13 @@ public class CombatMath : MonoBehaviour {
 		return 0f;
 	}
 
-	public void ApplyDamage(CombatMove combatMove, int damage, CharacterData defender) {
+	public void ApplyDamage(int damage, CharacterData defender) {
 		defender.life = Mathf.Max(0, defender.life - damage);
+	}
+
+	public int ApplyHeal(int heal, CharacterData recipient) {
+		int damage = recipient.maxLife - recipient.life;
+		recipient.life = Mathf.Min(recipient.maxLife, recipient.life + heal);
+		return Mathf.Min(heal, damage);
 	}
 }

@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LaceratedStatusEffect : BaseStatusEffect {
-	
+public class CursedStatusEffect : BaseStatusEffect {
 	public override float OnDamageDealtToMeCalc(AttackTurnInfo ati) {
-		if(ati.attacker.queuedMove.moveName == "Wound") 
-			ati.damage = ati.damage * statusEffectPower;
+		ati.damage = ati.damage * statusEffectPower;
 		return ati.damage;
 	}
 }

@@ -3,6 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using EckTechGames.FloatingCombatText;
 
+public class AttackTurnInfo : Object {
+	public Character attacker;
+	public Character defender;
+	public float damage;
+	public BaseStatusEffect statusEffect;
+
+	public AttackTurnInfo(Character a) { attacker = a; }
+	public AttackTurnInfo(Character a, float d) { attacker = a; damage = d;}
+	public AttackTurnInfo(Character a, BaseStatusEffect s) { attacker = a; statusEffect = s;}
+}
+
 public class ExecutionPhaseManager : MonoBehaviour {
 	public List<Character> attackers = new List<Character>();
 	public bool isPlayerTurn = true;
@@ -40,12 +51,12 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator AttackState() {
 		Character attacker = attackers[curAttacker];
-		attacker.target = GetTarget(attacker);
-
-		foreach(BaseStatusEffect se in attacker.target.data.statusEffects)
-			se.OnTargetted(attacker.queuedMove, attacker);
-		
 		attackSkipped = false;
+		attacker.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
+		//attacker can die from dots
+		if(attacker.data.life <= 0) 
+			CharacterDeath(attacker);
+
 		//dead characters don't attack
 		if(attacker.state == Character.State.Dead) {
 			attackSkipped = true;
@@ -59,6 +70,10 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			yield break;
 		}
 
+		attacker.target = GetTarget(attacker);
+		if(attacker.target != null)
+			attacker.target.BroadcastMessage("OnIGotTargetted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
+		
 		//characters with no valid targets don't attack
 		if(attacker.target == null) {
 			attackSkipped= true;
@@ -181,6 +196,15 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				}
 				return tar;
 			}
+		case CombatMove.TargetType.MostDamagedAlly: {
+				Character tar = null;
+				List<Character> aliveAllies = new List<Character>();
+				Character mosthurt = attacker;
+				foreach(Character a in attackers)
+					if(a.state != Character.State.Dead && a.data.life != a.data.maxLife && a.data.life < mosthurt.data.life)
+						mosthurt = a;
+				return mosthurt;
+			}
 		}
 		return null;
 	}
@@ -197,27 +221,27 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	public void CastOnFriendlyCharacter(Character caster, Character target) {
 		OverlayCanvasController occ = OverlayCanvasController.instance;
-		string text = caster.queuedMove.moveName;
-
+		//add any status effects that may come from the spell
 		foreach(BaseStatusEffect se in caster.queuedMove.moveStatusEffects){
 			target.AddStatusEffect(se);
-			se.OnAdd(caster);
+			target.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(caster, se), SendMessageOptions.DontRequireReceiver);
 		}
-
-		List<Transform> clashPts = isPlayerTurn ? playerClashPt : enemyClashPt;
-		int pos1 = caster.combatPosition;
-		int pos2 = target.combatPosition;
-		AnimateCamera(pos1);
-
 		caster.Idle();
-		caster.transform.SetParent(clashPts[pos1-1].transform, false);
-		if(caster != target) {
-			target.Idle();
-			target.transform.SetParent(clashPts[pos2-1].transform, false);
-		}
-			
 		caster.GetComponentInChildren<Animator>().SetTrigger("Ranged Cast");
-		occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Miss, text);
+
+		if(caster.queuedMove.moveType == CombatMove.MoveType.Heal) {
+			float damageHealed = 0f;
+			int finalDamageHealed = 0;
+			bool crit = false;
+			damageHealed = caster.queuedMove.effectiveness;
+			crit = arena.cm.RollForCrit(caster.data);
+			if(crit)
+				damageHealed = damageHealed * arena.cm.baseCritDamage;
+			finalDamageHealed = Mathf.FloorToInt(damageHealed);
+			int amountHealed = arena.cm.ApplyHeal(finalDamageHealed, target.data);
+			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, (crit ? "CRIT!\n" : "") + amountHealed.ToString());
+
+		}
 	}
 
 	public void ClashCharacters(Character attacker, Character defender) {
@@ -228,29 +252,28 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		int finalDamage = 0;
 		string damageString = attacker.data.givenName + " misses";
 		if(hit) {
-			damage = arena.cm.RollForDamage(attacker.queuedMove, attacker.data, defender.data);
-			crit = arena.cm.RollForCrit(attacker.data, defender.data);
-			if(crit)
-				damage = damage * arena.cm.baseCritDamage;
-			int statusEffectCount = defender.data.statusEffects.Count;
-			for(int i=0; i < statusEffectCount; i++) {
-				BaseStatusEffect se = defender.data.statusEffects[i];
-				damage = se.OnDamageTakenCalc(attacker.queuedMove, damage);
-				statusEffectCount = defender.data.statusEffects.Count;
+			if(!attacker.queuedMove.isDot) {
+				damage = arena.cm.RollForDamage(attacker.queuedMove, attacker, defender);
+				crit = arena.cm.RollForCrit(attacker.data);
+				if(crit)
+					damage = damage * arena.cm.baseCritDamage;
+				defender.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
+				finalDamage = Mathf.FloorToInt(damage);
+				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Hit, (crit ? "CRIT!\n" : "") + finalDamage.ToString());
+				damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
 			}
-			finalDamage = Mathf.FloorToInt(damage);
-			occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Hit, (crit ? "CRIT!\n" : "") + finalDamage.ToString());
-			damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
 
 			//add any status effects that may come from the attack
-			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects)
+			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects) {
 				defender.AddStatusEffect(se);
+				defender.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(attacker, se), SendMessageOptions.DontRequireReceiver);
+			}
 		}
 		else
 			occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Miss, "Miss");
 		
 		Debug.Log("\t" + damageString + "\n");
-		arena.cm.ApplyDamage(attacker.queuedMove, finalDamage, defender.data);
+		arena.cm.ApplyDamage(finalDamage, defender.data);
 
 		int pos = attacker.combatPosition;
 		AnimateCamera(pos);
