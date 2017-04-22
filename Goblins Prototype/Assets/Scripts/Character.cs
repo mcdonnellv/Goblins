@@ -167,7 +167,6 @@ public class Character : MonoBehaviour {
 	}
 
 	public BaseStatusEffect AddStatusEffect(BaseStatusEffect newStatusEffect) {
-		OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.StatusApplied, newStatusEffect.statusEffectName);
 		foreach(BaseStatusEffect se in data.statusEffects) {
 			if(se.statusEffectID == newStatusEffect.statusEffectID) {
 				se.statusEffectTurnsApplied = newStatusEffect.statusEffectTurnsApplied;

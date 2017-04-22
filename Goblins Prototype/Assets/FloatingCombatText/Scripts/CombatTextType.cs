@@ -18,7 +18,8 @@ namespace EckTechGames.FloatingCombatText
 		MoveAnnounce = 5,
 		EncounterStart = 6,
 		RoundAnnounce = 7,
-		StatusApplied = 8,
+		StatusAppliedGood = 8,
 		StatusExpired = 9,
+		StatusAppliedBad = 10,
 	}
 }

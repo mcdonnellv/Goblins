@@ -224,6 +224,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		//add any status effects that may come from the spell
 		foreach(BaseStatusEffect se in caster.queuedMove.moveStatusEffects){
 			target.AddStatusEffect(se);
+			OverlayCanvasController.instance.ShowCombatText(target.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
 			target.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(caster, se), SendMessageOptions.DontRequireReceiver);
 		}
 		caster.Idle();
@@ -266,6 +267,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			//add any status effects that may come from the attack
 			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects) {
 				defender.AddStatusEffect(se);
+				OverlayCanvasController.instance.ShowCombatText(defender.headTransform.gameObject, CombatTextType.StatusAppliedBad, se.statusEffectName);
 				defender.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(attacker, se), SendMessageOptions.DontRequireReceiver);
 			}
 		}
