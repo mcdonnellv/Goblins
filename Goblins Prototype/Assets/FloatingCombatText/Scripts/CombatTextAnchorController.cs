@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 
 namespace EckTechGames.FloatingCombatText
@@ -42,6 +44,22 @@ namespace EckTechGames.FloatingCombatText
 			{
 				gameObject.SetActive(false);
 			}
+		}
+
+		public void ShowCombatTextDelay(GameObject targetGameObject, CombatTextType combatTextType, string combatText, float delay) {
+			StartCoroutine(ShowCombatTextWithPackage(targetGameObject, combatTextType, combatText, delay));
+		}
+
+		IEnumerator ShowCombatTextWithPackage(GameObject targetGameObject, CombatTextType combatTextType, string combatText, float delayTime) {
+			yield return new WaitForSeconds(delayTime);
+			// Now do your thing here
+			this.targetGameObject = targetGameObject;
+			targetRectTransform = targetGameObject.GetComponent<RectTransform>();
+
+			UpdatePosition();
+			combatTextController.ShowCombatText(combatTextType, combatText);
+
+			gameObject.SetActive(true);
 		}
 
 		/// <summary>

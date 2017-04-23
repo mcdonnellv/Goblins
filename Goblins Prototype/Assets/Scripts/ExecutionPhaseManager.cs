@@ -240,7 +240,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				damageHealed = damageHealed * arena.cm.baseCritDamage;
 			finalDamageHealed = Mathf.FloorToInt(damageHealed);
 			int amountHealed = arena.cm.ApplyHeal(finalDamageHealed, target.data);
-			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, (crit ? "CRIT!\n" : "") + amountHealed.ToString());
+			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, amountHealed);
 
 		}
 	}
@@ -258,10 +258,15 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				crit = arena.cm.RollForCrit(attacker.data);
 				if(crit)
 					damage = damage * arena.cm.baseCritDamage;
+
 				defender.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
 				finalDamage = Mathf.FloorToInt(damage);
-				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.Hit, (crit ? "CRIT!\n" : "") + finalDamage.ToString());
+				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, finalDamage);
 				damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
+
+				float resist = arena.cm.GetResistForDamageType(attacker.queuedMove.damageType, defender.data);
+				if(resist > 0)
+					occ.ShowCombatTextDelay(defender.headTransform.gameObject, CombatTextType.Miss, resist.ToString() + " resisted", 1.5f);
 			}
 
 			//add any status effects that may come from the attack

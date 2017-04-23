@@ -51,6 +51,14 @@ namespace EckTechGames.FloatingCombatText
 			}
 		}
 
+		public void ShowCombatTextDelay(GameObject targetGameObject, CombatTextType combatTextType, string combatText, float delay) {
+			CombatTextAnchorController combatTextAnchorInstance;
+			combatTextAnchorInstance = EnsureCombatTextAnchor(targetGameObject, combatTextType);
+			combatTextAnchorInstance.mainCamera = mainCamera;
+			combatTextAnchorInstance.transform.SetParent(transform);
+			combatTextAnchorInstance.ShowCombatTextDelay(targetGameObject, combatTextType, combatText, delay);
+		}
+
 		/// <summary>
 		/// This is the function you will call to show combat text on the screen.
 		/// See ReadMe.txt for detailed usage instructions.
