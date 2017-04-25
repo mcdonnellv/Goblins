@@ -26,19 +26,19 @@ public class PartyPanel : MonoBehaviour {
 
 	void Update() {
 		if(!ready) {
-			ready = true;
-			//not ready if at least one party member is null
+			//ready if at least one party member is filled
 			foreach(PartyMemberPanel p  in partyPanels) {
-				if(p.character == null) {
-					ready = false;
+				if(p.character != null) {
+					ready = true;
 					break;
 				}
 			}
 		}
 		else {
+			ready = false;
 			foreach(PartyMemberPanel p  in partyPanels) {
-				if(p.character == null) {
-					ready = false;
+				if(p.character != null) {
+					ready = true;
 					break;
 				}
 			}

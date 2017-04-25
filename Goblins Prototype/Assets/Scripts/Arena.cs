@@ -73,6 +73,10 @@ public class Arena : MonoBehaviour {
 		combatUI.rollButton.gameObject.SetActive(true);
 		combatUI.roundText.text = "Round " + round.ToString();
 		combatUI.stateText.text = "Move Roll Phase";
+
+		if(GameManager.gm.autoplay)
+			state = Arena.State.MoveRollPhase;
+			
 		while (state == State.WaitForRollPhase)
 			yield return 0;
 		NextState();
@@ -93,6 +97,7 @@ public class Arena : MonoBehaviour {
 		foreach(Character c in goblins)
 			c.queuedMove = null;
 		combatUI.StartMoveRoll();
+		
 		while (state == State.MoveRollPhase)
 			yield return 0;
 		NextState();
@@ -105,6 +110,9 @@ public class Arena : MonoBehaviour {
 		combatUI.ActivatePanels();
 		foreach(GoblinCombatPanel panel in combatUI.goblinPanels)
 			panel.GetComponent<DragMe>().interactable = true;
+
+		if(GameManager.gm.autoplay)
+			state = Arena.State.PlayerExecutionPhase;
 
 		while (state == State.PositionPhase)
 			yield return 0;
@@ -133,6 +141,7 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator EnemyExecutionPhaseState () {
 		Debug.Log("***Arena EnemyExecutionPhase State***\n");
+		RepositionEnemies();
 		em.Setup(enemySpawnSpots, false);
 		while (state == State.EnemyExecutionPhase)
 			yield return 0;
@@ -233,6 +242,38 @@ public class Arena : MonoBehaviour {
 		}
 	}
 
+	public void RepositionEnemies() {
+		//reposition enemies with no glive goblins in their lane
+		foreach(Character enemy in enemies) {
+			if(enemy.state == Character.State.Dead)
+				continue;
+			bool seekNewPos = true;
+			foreach(Character g in goblins) {
+				if(g.combatPosition == enemy.combatPosition && g.state != Character.State.Dead) {
+					seekNewPos = false;
+					break;
+				}
+			}
+
+			if(seekNewPos) {
+				foreach(Transform pt in enemySpawnSpots) {
+					int i = pt.GetSiblingIndex();
+					if(i == enemy.combatPosition - 1)
+						continue;
+					if(playerSpawnSpots[i].childCount == 0)
+						continue;
+					if(pt.childCount != 0 && pt.GetChild(0).GetComponentInChildren<Character>().state != Character.State.Dead)
+						continue;
+					if(playerSpawnSpots[i].GetChild(0).GetComponentInChildren<Character>().state == Character.State.Dead)
+						continue;
+					enemy.combatPosition = i+1;
+					break;
+				}
+				MoveCharacterToNewPosition(enemy, enemy.combatPosition);
+			}
+		}
+	}
+
 
 	public GoblinCombatPanel GetPanelForGoblin(Character c){
 		foreach(GoblinCombatPanel p in combatUI.goblinPanels)
@@ -275,7 +316,7 @@ public class Arena : MonoBehaviour {
 			RaycastHit hitInfo = new RaycastHit();
 			bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
 			if(hit) {
-				Character hitchar = hitInfo.transform.GetComponent<Character>();
+				Character hitchar = hitInfo.transform.GetComponentInParent<Character>();
 				if(hitchar != null && !hitchar.isPlayerCharacter)
 					enemyCharHit = hitchar;
 			}

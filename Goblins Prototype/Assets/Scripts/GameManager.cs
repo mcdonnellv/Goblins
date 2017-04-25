@@ -14,6 +14,10 @@ public class GameManager : MonoBehaviour {
 	public Camera fightCam;
 	public Arena arena;
 	public GameObject prepUI;
+	public GameObject winScreen;
+	public GameObject loseScreen;
+	public bool superfast = false;
+	public bool autoplay = false;
 
 	public enum State {
 		Init,
@@ -75,19 +79,42 @@ public class GameManager : MonoBehaviour {
 		pp.gameObject.SetActive(true);
 		int i=0;
 		foreach(Character goblin in arena.goblins) {
-			if(goblin.state != Character.State.Dead)
+			bool removeFromRoster = false;
+			if(goblin.state != Character.State.Dead) {
+				goblin.RecoverFull();
 				pp.partyPanels[i].Setup(goblin.data);
+			}
+			else {
+				pp.partyPanels[i].RemoveButtonPressed();
+				foreach(CharacterData d in roster.goblins)
+					if(d == goblin.data)
+					 removeFromRoster = true;	
+			}
+
+			if(removeFromRoster)
+				roster.goblins.Remove(goblin.data);
 			i++;
 		}
 
+		foreach(Character goblin in arena.goblins)
+			goblin.DeSpawn();
+		
 		foreach(Character enemy in arena.enemies)
 			enemy.DeSpawn();
+
+		if(roster.goblins.Count <= 0) {
+			loseScreen.SetActive(true);
+			state = State.GameEnd;
+		}
+
 
 		enemies.curPartyIndex++;
 		if(enemies.curPartyIndex < enemies.stageEnemySets.Length)
 			state = State.Prep;
-		else 
+		else {
+			winScreen.SetActive(true);
 			state = State.GameEnd;
+		}
 		while (state == State.Result) {
 			yield return 0;
 		}
@@ -119,7 +146,7 @@ public class GameManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-
+		Time.timeScale = superfast ? 10f : 1f;
 	}
 
 	public IEnumerator MoveOverSeconds (GameObject objectToMove, Vector3 end, float seconds) {

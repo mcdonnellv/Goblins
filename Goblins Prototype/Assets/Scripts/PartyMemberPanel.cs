@@ -80,7 +80,7 @@ public class PartyMemberPanel : MonoBehaviour {
 	}
 
 	public void RemoveButtonPressed() {
-		if(character.characterGameObject != null) {
+		if(character != null && character.characterGameObject != null) {
 			Character c = character.characterGameObject.GetComponent<Character>();
 			if(c != null)
 				c.DeSpawn();

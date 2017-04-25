@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 [Serializable]
 public class StageEnemyList {
-	public static int minEnemies = 2;
+	public static int minEnemies = 3;
 	public static int maxEnemies = 4;
 	public List<Transform> enemyPrefabs = new List<Transform>();
 	public List<Transform> enemies = new List<Transform>();
@@ -41,6 +41,7 @@ public class Enemies : MonoBehaviour {
 	public StageEnemyList[] stageEnemySets;
 	public List<Transform> enemyParty;
 	public Text enemyDescription;
+	public Text enemyGroupNumber;
 	public int curPartyIndex = 0;
 	public int enemySetsCount;
 	public List<Transform> enemyPrefabs;
@@ -50,7 +51,7 @@ public class Enemies : MonoBehaviour {
 	public void Setup () {
 		// roll for enemies
 		stageEnemySets = new StageEnemyList[enemySetsCount];
-		for(int i=0; i< stageEnemySets.Length; i++) {
+		for(int i=0; i < stageEnemySets.Length; i++) {
 			stageEnemySets[i] = new StageEnemyList();
 			stageEnemySets[i].PopulateEnemyList(transform, enemyPrefabs);
 		}
@@ -66,6 +67,7 @@ public class Enemies : MonoBehaviour {
 		stageEnemySets[index].SpawnEnemies();
 		enemyParty = stageEnemySets[index].enemies;
 		enemyDescription.text = DescribeEnemyParty();
+		enemyGroupNumber.text = "Enemy Group " + (index+1).ToString() + " of " + enemySetsCount.ToString();
 	}
 
 

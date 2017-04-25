@@ -15,25 +15,34 @@ public class AttackTurnInfo : Object {
 }
 
 public class ExecutionPhaseManager : MonoBehaviour {
-	public List<Character> attackers = new List<Character>();
-	public bool isPlayerTurn = true;
 	public Arena arena;
-	public float timeDelayBetweenAttacks;
-	public float timeDelayBetweenTurns;
-	private int curAttacker;
+	public List<Character> attackers = new List<Character>();
 	public List<Transform> playerClashPt;
 	public List<Transform> enemyClashPt;
-	private bool attackSkipped = false;
+	public bool isPlayerTurn = true;
+	public float timeDelayBetweenAttacks;
+	public float timeDelayBetweenTurns;
 	public float moveAnnounceTimer;
+	public GameObject curtain;
+
+	private int curAttacker;
+	private bool attackSkipped = false;
+	private bool crit = false;
+	public float critModifer = 0f;
+	private bool hit = false;
 
 	public enum State {
 		Inactive,
 		Init,
+		PreAttack,
+		CritGame,
 		Attack,
 		AttackDone,
 		End,
 	}
 	public State state;
+
+	public Character GetCurrentAttacker() { return attackers[curAttacker]; }
 
 	IEnumerator InactiveState () {
 		while (state == State.Inactive)
@@ -43,13 +52,13 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator InitState () {
 		curAttacker = 0;
-		state = State.Attack;
+		state = State.PreAttack;
 		while (state == State.Init)
 			yield return 0;
 		NextState();
 	}
 
-	IEnumerator AttackState() {
+	IEnumerator PreAttackState () {
 		Character attacker = attackers[curAttacker];
 		attackSkipped = false;
 		attacker.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
@@ -65,7 +74,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			if (curAttacker >= attackers.Count)
 				state = State.End;
 			else
-				state = State.Attack;
+				state = State.PreAttack;
 			NextState();
 			yield break;
 		}
@@ -73,16 +82,17 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		attacker.target = GetTarget(attacker);
 		if(attacker.target != null)
 			attacker.target.BroadcastMessage("OnIGotTargetted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
-		
+
 		//characters with no valid targets don't attack
 		if(attacker.target == null) {
-			attackSkipped= true;
+			attackSkipped = true;
 			Debug.Log("\t" + attacker.data.givenName + " has no target, skipping attack\n");
 			state = State.AttackDone;
 			NextState();
 			yield break;
 		}
 
+		//announce move
 		GameObject moveTextMarker = isPlayerTurn ? GameManager.gm.arena.combatUI.moveAnnouncePlayerMarker : GameManager.gm.arena.combatUI.moveAnnounceEnemyMarker;
 		OverlayCanvasController.instance.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, attacker.queuedMove.moveName);
 		float timer = moveAnnounceTimer;
@@ -90,28 +100,73 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
-			
+
+		//roll for hit
+		hit = (attacker.target == null) ? true : arena.cm.RollForHit(attacker.data, attacker.target.data);
+
+		//roll for crit
+		crit = hit ? arena.cm.RollForCrit(attacker.queuedMove, attacker.data) : false;
+
+		if(isPlayerTurn && crit)
+			state = State.CritGame;
+		else
+			state = State.Attack;
+
+		while (state == State.PreAttack) {
+			yield return 0;
+		}
+		NextState();
+	}
+
+
+	IEnumerator CritGameState () {
+		Character attacker = attackers[curAttacker];
+		arena.combatUI.StartCritGameUI(attacker.headTransform.gameObject);
+		while (state == State.CritGame) {
+			yield return 0;
+		}
+		NextState();
+	}
+
+	IEnumerator AttackState() {
+		Character attacker = GetCurrentAttacker();
 		if(attacker.queuedMove.targetType == CombatMove.TargetType.Opponent || attacker.queuedMove.targetType == CombatMove.TargetType.RandomOpponent)
 			ClashCharacters(attacker, attacker.target);
 		else
 			CastOnFriendlyCharacter(attacker, attacker.target);
 
+		if(attacker.isPlayerCharacter)
+			arena.combatUI.GetPanelForPlayer(attacker).RefreshBars();
+
+		if(attacker.target != null && attacker.target.isPlayerCharacter)
+			arena.combatUI.GetPanelForPlayer(attacker.target).RefreshBars();
+		
+		if(attacker.target != null && !attacker.target.isPlayerCharacter)
+			arena.combatUI.ShowEnemyPanel(attacker.target);
+		
 		while (state == State.Attack)
 			yield return 0;	
 		NextState();
 	}
 
+
 	IEnumerator AttackDoneState () {
-		
+		ResetClashPoints();
+		curtain.SetActive(false);
+		arena.combatUI.HideEnemyPanel();
 		//do any post attack combat move effects
 		CombatMove move = attackers[curAttacker].queuedMove;
-		Character attacker = attackers[curAttacker];
-		if(move.displaceOpponent && attacker.target != null && attacker.target.state != Character.State.Dead) {
-			int pos = attacker.target.combatPosition;
-			arena.MoveCharacterToNewPosition(attackers[curAttacker].target, pos + 1);
+		Character attacker = GetCurrentAttacker();
+		attacker.GetComponentInChildren<SpriteRenderer>().material.shader = attacker.bwShader;
+
+		if(hit) {
+			if(move.displaceOpponent && attacker.target != null && attacker.target.state != Character.State.Dead) {
+				int pos = attacker.target.combatPosition;
+				arena.MoveCharacterToNewPosition(attackers[curAttacker].target, pos + 1);
+			}
 		}
 
-		float timer = attackSkipped ? 0f : timeDelayBetweenAttacks;
+		float timer = attackSkipped ? .2f : timeDelayBetweenAttacks;
 		while(timer > 0f) {
 			timer-=Time.deltaTime;
 			yield return 0;
@@ -121,7 +176,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if (curAttacker >= attackers.Count)
 			state = State.End;
 		else
-			state = State.Attack;
+			state = State.PreAttack;
 		while (state == State.AttackDone) {
 			yield return 0;
 		}
@@ -134,7 +189,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 		foreach(Character c in arena.enemies)
 			c.ProcessTurnForStatusEffects();
-		
+
 		BackToIdle();
 		BackToSpawnSpot();
 		attackers.Clear();
@@ -197,7 +252,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				return tar;
 			}
 		case CombatMove.TargetType.MostDamagedAlly: {
-				Character tar = null;
 				List<Character> aliveAllies = new List<Character>();
 				Character mosthurt = attacker;
 				foreach(Character a in attackers)
@@ -233,11 +287,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(caster.queuedMove.moveType == CombatMove.MoveType.Heal) {
 			float damageHealed = 0f;
 			int finalDamageHealed = 0;
-			bool crit = false;
 			damageHealed = caster.queuedMove.effectiveness;
-			crit = arena.cm.RollForCrit(caster.data);
 			if(crit)
-				damageHealed = damageHealed * arena.cm.baseCritDamage;
+				damageHealed = damageHealed * (arena.cm.baseCritDamageMultiplier + critModifer);
 			finalDamageHealed = Mathf.FloorToInt(damageHealed);
 			int amountHealed = arena.cm.ApplyHeal(finalDamageHealed, target.data);
 			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, amountHealed);
@@ -247,18 +299,14 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	public void ClashCharacters(Character attacker, Character defender) {
 		OverlayCanvasController occ = OverlayCanvasController.instance;
-		bool hit = arena.cm.RollForHit(attacker.data, defender.data);
-		bool crit = false;
 		float damage = 0f;
 		int finalDamage = 0;
 		string damageString = attacker.data.givenName + " misses";
 		if(hit) {
 			if(!attacker.queuedMove.isDot) {
 				damage = arena.cm.RollForDamage(attacker.queuedMove, attacker, defender);
-				crit = arena.cm.RollForCrit(attacker.data);
-				if(crit)
-					damage = damage * arena.cm.baseCritDamage;
-
+				if(crit) 
+					damage = damage * (arena.cm.baseCritDamageMultiplier + critModifer);
 				defender.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
 				finalDamage = Mathf.FloorToInt(damage);
 				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, finalDamage);
@@ -287,10 +335,21 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 		attacker.Idle();
 		defender.Idle();
+		curtain.SetActive(true);
+
+		Vector3 clashPtPos;
+		clashPtPos = playerClashPt[pos-1].position;
+		clashPtPos.z = -9f;
+		playerClashPt[pos-1].position = clashPtPos;
+
+		clashPtPos = enemyClashPt[pos-1].position;
+		clashPtPos.z = -9f;
+		enemyClashPt[pos-1].position = clashPtPos;
 
 		if(isPlayerTurn) {
 			attacker.transform.SetParent(playerClashPt[pos-1].transform, false);
 			defender.transform.SetParent(enemyClashPt[pos-1].transform, false);
+
 		}
 		else {
 			attacker.transform.SetParent(enemyClashPt[pos-1].transform, false);
@@ -342,6 +401,24 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			c.GoBackToSpawnSpot();
 		foreach(Character c in arena.enemies) 
 			c.GoBackToSpawnSpot();
+	}
+
+	private void ResetClashPoints() {
+		for( int i=0; i < playerClashPt.Count; i++) {
+			Transform clashPt = playerClashPt[i];
+			Transform spawnPt = arena.playerSpawnSpots[i];
+			Vector3 clashPtPos = clashPt.position;
+			clashPtPos.z = spawnPt.position.z;
+			clashPt.position = clashPtPos;
+		}
+
+		for( int i=0; i < enemyClashPt.Count; i++) {
+			Transform clashPt = enemyClashPt[i];
+			Transform spawnPt = arena.enemySpawnSpots[i];
+			Vector3 clashPtPos = clashPt.position;
+			clashPtPos.z = spawnPt.position.z;
+			clashPt.position = clashPtPos;
+		}
 	}
 }
 

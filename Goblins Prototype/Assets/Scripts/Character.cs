@@ -19,7 +19,8 @@ public class CharacterData {
 
 	public int attributeBudget = 10;
 	public static float standardCritChance = .1f;
-
+	public static int baseLife = 10;
+	public static int bodyBonusLife = 10;
 	public string givenName;
 	public string enemyRace;
 	public string enemyClass;
@@ -69,7 +70,7 @@ public class CharacterData {
 	}
 
 	void ApplyAttributesToStats() {
-		maxLife = 100 + body * 15;
+		maxLife = baseLife + body * bodyBonusLife;
 		maxEnergy = 50 + spirit * 10;
 		critChance = standardCritChance + mind * 0.02f;
 		life = maxLife;
@@ -200,6 +201,11 @@ public class Character : MonoBehaviour {
 			Destroy(data.statusEffects[i].gameObject);
 			data.statusEffects.Remove(data.statusEffects[i]);
 		}
+	}
+
+	public void RecoverFull() {
+		data.life = data.maxLife;
+		data.energy = data.maxEnergy;
 	}
 
 }

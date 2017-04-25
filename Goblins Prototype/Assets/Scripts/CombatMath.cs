@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class CombatMath : MonoBehaviour {
 
-	public float baseCritDamage = 1.5f;
+	public float baseCritDamageMultiplier = 1.5f;
+	public float baseCritDamageMultiplierIncrement = .5f;
 	public float baseCritChance = 0.1f;
 
 	public bool RollForHit(CharacterData attacker, CharacterData defender) {
@@ -15,10 +16,10 @@ public class CombatMath : MonoBehaviour {
 		return false;
 	}
 
-	public bool RollForCrit(CharacterData attacker) {
+	public bool RollForCrit(CombatMove combatMove, CharacterData attacker) {
 		float roll = UnityEngine.Random.Range(0f,1f);
 		float mindModified = Mathf.Max(0f, attacker.mind - 4f);
-		float chance = baseCritChance + (.01f * Mathf.Pow(mindModified, 1.5f));
+		float chance = combatMove.critChance + (.01f * Mathf.Pow(mindModified, 1.5f));
 		if (roll < chance)
 			return true;
 		return false;

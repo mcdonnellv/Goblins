@@ -39,7 +39,14 @@ public class InfiniteScroll : MonoBehaviour {
 	}
 
 	public void StartMoveScroll(float speed) {
-		scroll.velocity = new Vector2(0f, -speed);
-		rolling = true;
+		if(GameManager.gm.superfast) {
+			int roll = UnityEngine.Random.Range(0, 3);
+			string indexText = scroll.content.GetChild(roll).GetComponentInChildren<Text>().text;
+			GetComponentInParent<GoblinCombatPanel>().SetSelectedMove(int.Parse(indexText) - 1);
+		}
+		else {
+			scroll.velocity = new Vector2(0f, -speed);
+			rolling = true;
+		}
 	}
 }
