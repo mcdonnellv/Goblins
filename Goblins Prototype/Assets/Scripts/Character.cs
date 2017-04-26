@@ -197,7 +197,9 @@ public class Character : MonoBehaviour {
 	}
 
 	public void RemoveAllStatusEffects() {
-		for(int i=0; i<data.statusEffects.Count; i++) {
+		for(int i=0; i < data.statusEffects.Count; i++) {
+			if(data.statusEffects[i] == null)
+				continue;
 			Destroy(data.statusEffects[i].gameObject);
 			data.statusEffects.Remove(data.statusEffects[i]);
 		}

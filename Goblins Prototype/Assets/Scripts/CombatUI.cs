@@ -89,6 +89,14 @@ public class CombatUI : MonoBehaviour {
 		critButton.gameObject.SetActive(false);
 		string message = "Good";
 
+		if(GameManager.gm.autoplay) {
+			message = "Great!";
+			em.critModifer += cm.baseCritDamageMultiplierIncrement;
+			OverlayCanvasController.instance.ShowCombatText(focusRing.targetGameObject,  CombatTextType.MoveAnnounce, message);
+			StartCoroutine(FadeOutRings());
+			return;
+		}
+
 		if(focusRing.rectTransform.rect.width <= 0f) {
 			message = "Miss!";
 			em.critModifer -= cm.baseCritDamageMultiplierIncrement;
@@ -111,8 +119,7 @@ public class CombatUI : MonoBehaviour {
 				message = "Perfect!";
 			}
 		}
-
-		//Pos transform.position = mainCamera.WorldToScreenPoint(go.transform.position);
+			
 		OverlayCanvasController.instance.ShowCombatText(focusRing.targetGameObject,  CombatTextType.MoveAnnounce, message);
 		StartCoroutine(FadeOutRings());
 	}

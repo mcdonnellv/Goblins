@@ -287,7 +287,39 @@ public class Arena : MonoBehaviour {
 			if(goblin.queuedMove == null)
 				return;
 		}
+
+		//check if all wheel results match for a nice combat bonus
+		int move1Count = 0;
+		int move2Count = 0;
+		int move3Count = 0;
+		foreach(Character goblin in goblins) {
+			int i = GetNumberForMove(goblin.data, goblin.queuedMove);
+			if(i == 1)
+				move1Count++;
+			if(i == 2)
+				move2Count++;
+			if(i == 3)
+				move3Count++;
+		}
+
+		if(move1Count == 4 || move2Count == 4 || move3Count == 4) {
+			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "4 MATCHES!!!");
+			OverlayCanvasController.instance.ShowCombatTextDelay(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "Super Attack Bonus", 1.5f);
+
+		}
+		else if(move1Count == 3 || move2Count == 3 || move3Count == 3) {
+			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "3 MATCHES!");
+			OverlayCanvasController.instance.ShowCombatTextDelay(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "Attack Bonus", 1.5f);
+		}
+
 		state = State.PositionPhase;
+	}
+
+	private int GetNumberForMove(CharacterData c, CombatMove m) {
+		for (int i=0; i< c.moves.Count; i++)
+			if(c.moves[i] == m)
+				return i+1;
+		return 0;
 	}
 		
 	public void MoveCharacterToNewPosition(Character character, int newPos) {
@@ -304,6 +336,7 @@ public class Arena : MonoBehaviour {
 		}
 
 		character.transform.SetParent(newPt, true);
+		character.transform.SetAsFirstSibling();
 		character.spawnSpot = newPt;
 		character.combatPosition = newPos;
 		StartCoroutine(GameManager.gm.MoveOverSeconds(character.gameObject, newPt.position, .5f));

@@ -59,6 +59,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator PreAttackState () {
+		critModifer = 0f;
 		Character attacker = attackers[curAttacker];
 		attackSkipped = false;
 		attacker.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
