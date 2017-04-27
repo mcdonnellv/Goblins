@@ -18,6 +18,8 @@ public class Arena : MonoBehaviour {
 	public float encounterStartAnnounceTimer;
 	public float roundAnnounceTimer;
 	public float victoryAnnounceTimer;
+	public MoveRollBonusStatusEffect superRollBonusStatusEffect;
+	public MoveRollBonusStatusEffect rollBonusStatusEffect;
 
 	public enum State {
 		Inactive,
@@ -284,6 +286,8 @@ public class Arena : MonoBehaviour {
 
 	public void CheckAllGoblinMovesSelected() {
 		foreach(Character goblin in goblins) {
+			if(goblin.state == Character.State.Dead)
+				continue;
 			if(goblin.queuedMove == null)
 				return;
 		}
@@ -302,14 +306,25 @@ public class Arena : MonoBehaviour {
 				move3Count++;
 		}
 
-		if(move1Count == 4 || move2Count == 4 || move3Count == 4) {
-			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "4 MATCHES!!!");
-			OverlayCanvasController.instance.ShowCombatTextDelay(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "Super Attack Bonus", 1.5f);
-
-		}
+		MoveRollBonusStatusEffect se = null;
+		string text1 = "4 MATCHES!!!";
+		string text2 = "Super Attack Bonus";
+		if(move1Count == 4 || move2Count == 4 || move3Count == 4)
+			se = superRollBonusStatusEffect;
 		else if(move1Count == 3 || move2Count == 3 || move3Count == 3) {
-			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "3 MATCHES!");
-			OverlayCanvasController.instance.ShowCombatTextDelay(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "Attack Bonus", 1.5f);
+			se = rollBonusStatusEffect;
+			text1 = "3 MATCHES";
+			text2 = "Attack Bonus";
+		}
+		
+		if(se != null) {
+			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, text1);
+			OverlayCanvasController.instance.ShowCombatTextDelay(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, text2, 1.5f);
+			foreach(Character goblin in goblins) {
+				goblin.AddStatusEffect(se);
+				OverlayCanvasController.instance.ShowCombatText(goblin.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
+				goblin.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(goblin, se), SendMessageOptions.DontRequireReceiver);
+			}
 		}
 
 		state = State.PositionPhase;

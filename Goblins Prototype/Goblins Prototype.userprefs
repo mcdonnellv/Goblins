@@ -1,13 +1,18 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Arena.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Arena.cs">
     <Files>
-      <File FileName="Assets/Scripts/ExecutionPhaseManager.cs" Line="384" Column="21" />
-      <File FileName="Assets/Scripts/CombatMath.cs" Line="61" Column="2" />
-      <File FileName="Assets/Scripts/CombatUI.cs" Line="91" Column="3" />
-      <File FileName="Assets/Scripts/Arena.cs" Line="308" Column="4" />
-      <File FileName="Assets/Scripts/Character.cs" Line="200" Column="20" />
-      <File FileName="Assets/Scripts/InfiniteScroll.cs" Line="36" Column="56" />
+      <File FileName="Assets\Scripts\ExecutionPhaseManager.cs" Line="282" Column="4" />
+      <File FileName="Assets\Scripts\CombatMath.cs" Line="61" Column="2" />
+      <File FileName="Assets\Scripts\CombatUI.cs" Line="42" Column="53" />
+      <File FileName="Assets\Scripts\Arena.cs" Line="302" Column="5" />
+      <File FileName="Assets\Scripts\InfiniteScroll.cs" Line="36" Column="55" />
+      <File FileName="Assets\FloatingCombatText\Scripts\OverlayCanvasController.cs" Line="54" Column="3" />
+      <File FileName="Assets\FloatingCombatText\Scripts\CombatTextAnchorController.cs" Line="50" Column="31" />
+      <File FileName="Assets\Scripts\GoblinCombatPanel.cs" Line="52" Column="43" />
+      <File FileName="Assets\Scripts\DragMe.cs" Line="30" Column="20" />
+      <File FileName="Assets\Scripts\Character.cs" Line="170" Column="26" />
+      <File FileName="Assets\Scripts\BracingStatusEffect.cs" Line="23" Column="45" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

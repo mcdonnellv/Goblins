@@ -26,7 +26,9 @@ public class DragMe : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 		m_DraggingIcons[eventData.pointerId].transform.SetAsLastSibling();
 	
 		// We want it to be ignored by the event system.
-		var group = m_DraggingIcons[eventData.pointerId].AddComponent<CanvasGroup>();
+		var group = m_DraggingIcons[eventData.pointerId].GetComponent<CanvasGroup>();
+		if(group == null)
+			group = m_DraggingIcons[eventData.pointerId].AddComponent<CanvasGroup>();
 		group.blocksRaycasts = false;
 
 		var rectTransform = m_DraggingIcons[eventData.pointerId].GetComponent<RectTransform>();

@@ -47,6 +47,7 @@ namespace EckTechGames.FloatingCombatText
 		}
 
 		public void ShowCombatTextDelay(GameObject targetGameObject, CombatTextType combatTextType, string combatText, float delay) {
+			gameObject.SetActive(true);
 			StartCoroutine(ShowCombatTextWithPackage(targetGameObject, combatTextType, combatText, delay));
 		}
 

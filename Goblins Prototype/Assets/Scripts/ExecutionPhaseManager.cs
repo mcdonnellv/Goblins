@@ -382,7 +382,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		a.SetBool("Alive", false);
 		c.state = Character.State.Dead;
 		c.RemoveAllStatusEffects();
-
+		if(c.isPlayerCharacter)
+			arena.combatUI.GetPanelForPlayer(c).GetComponent<CanvasGroup>().alpha = .3f;
 	}
 
 	public void AttackDone() {

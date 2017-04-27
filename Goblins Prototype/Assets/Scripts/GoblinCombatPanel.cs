@@ -20,6 +20,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 		classText.text = character.data.combatClass.type.ToString();
 		RefreshMoveNames();
 		RefreshBars();
+		GetComponent<CanvasGroup>().alpha = 1f;
 	}
 
 	public void RefreshBars() {
