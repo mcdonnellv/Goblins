@@ -83,6 +83,9 @@ public class CharacterDetails : MonoBehaviour {
 
 	public void ClassChanged(int ind) {
 		CombatClassType newClassType = roster.classes[ind].type;
+		if(newClassType == CombatClassType.Ghost)
+			return; //changing to ghost not allowed
+		
 		if(newClassType == character.combatClass.type)
 			return;
 		character.AssignClass(roster.classes[ind]);

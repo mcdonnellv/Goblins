@@ -9,7 +9,6 @@ public class Roster : MonoBehaviour {
 	public Transform contentPanel;
 	public Text rosterCountLabel;
 	public SimpleObjectPool buttonObjectPool;
-	public Transform goblinPrefab;
 	public List<CombatClass> classes;
 	public Transform characterDetailsPanel;
 	public Transform partyGrid;
@@ -64,7 +63,7 @@ public class Roster : MonoBehaviour {
 
 			//assign classes
 			if(classes.Count > 1) {
-				int randClassIndex = UnityEngine.Random.Range(1, classes.Count);
+				int randClassIndex = UnityEngine.Random.Range(1, 4); //exclude ghost
 				data.AssignClass(classes[randClassIndex]);
 			}
 		}
@@ -79,13 +78,6 @@ public class Roster : MonoBehaviour {
 		Debug.Log(rosterSize.ToString() + " goblins created");
 	}
 		
-
-	public void SpawnGoblin(int i) {
-		Transform goblinTransform = Instantiate(goblinPrefab);
-		Character goblin = goblinTransform.GetComponent<Character>();
-		goblin.data = goblins[i];
-		Debug.Log("Goblin spawned");
-	}
 
 	public void CloseButtonPressed() {
 		transform.gameObject.SetActive(false);

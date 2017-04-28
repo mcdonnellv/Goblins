@@ -41,7 +41,7 @@ public class CombatUI : MonoBehaviour {
 	public void StartMoveRoll() {
 		float r1 = UnityEngine.Random.Range(1000f, 2000f);
 		foreach(GoblinCombatPanel panel in goblinPanels) {
-			if(panel.character.state == Character.State.Dead)
+			if(panel.character.state == Character.State.Dead || panel.character.state == Character.State.Ghost)
 				continue;
 			float r2 = UnityEngine.Random.Range(0f, 1000f * goblinPanels.IndexOf(panel));
 			panel.wheel.StartMoveScroll(r1 + r2);

@@ -91,13 +91,17 @@ public class Arena : MonoBehaviour {
 		foreach(Character c in enemies) {
 			if(c.state == Character.State.Dead)
 				continue;
-			int roll = UnityEngine.Random.Range(0, c.data.moves.Count -1);
+			int roll = UnityEngine.Random.Range(0, c.data.moves.Count);
 			c.queuedMove = c.data.moves[roll];
 			Debug.Log("\tEnemy " + c.data.givenName +  " has rolled: " + c.queuedMove.moveName + "\n");
 		}
 		
-		foreach(Character c in goblins)
-			c.queuedMove = null;
+		foreach(Character c in goblins) {
+			if(c.state == Character.State.Ghost)
+				c.queuedMove = c.data.moves[UnityEngine.Random.Range(0, c.data.moves.Count -1)];
+			else
+				c.queuedMove = null;
+		}
 		combatUI.StartMoveRoll();
 		
 		while (state == State.MoveRollPhase)
@@ -137,7 +141,6 @@ public class Arena : MonoBehaviour {
 		while (state == State.PlayerExecutionPhase)
 			yield return 0;
 
-
 		NextState();
 	}
 
@@ -152,15 +155,7 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator ConclusionState () {
 		Debug.Log("***Arena Conclusion State***\n");
-
-
-		bool allGoblinsDead = true;
-		foreach(Character goblin in goblins) {
-			if(goblin.state != Character.State.Dead) {
-				allGoblinsDead = false;
-				break;
-			}
-		}
+		bool allGoblinsDead = AreAllGoblinsDead();
 		bool allEnemiesDead = true;
 		foreach(Character enemy in enemies) {
 			if(enemy.state != Character.State.Dead) {
@@ -193,12 +188,28 @@ public class Arena : MonoBehaviour {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
-			
+
+		for( int i = 0; i < goblins.Count; i++)
+			goblins[i].RemoveAllStatusEffects();
+
+		for( int i = 0; i < enemies.Count; i++)
+			enemies[i].RemoveAllStatusEffects();
+		
 		GameManager.gm.state = GameManager.State.Result;
 		state = State.Inactive;
 		while (state == State.Conclusion)
 			yield return 0;
 		NextState();
+	}
+
+	public bool AreAllGoblinsDead() {
+		foreach(Character goblin in goblins) {
+			if(goblin.state != Character.State.Dead && goblin.state != Character.State.Ghost) {
+				return false;
+				break;
+			}
+		}
+		return true;
 	}
 
 
@@ -221,10 +232,19 @@ public class Arena : MonoBehaviour {
 			combatPosition++;
 			if(child.childCount == 0)
 				continue;
-			Transform charObj = child.GetChild(0);
-			if(charObj == null)
+
+			Character c = null;
+			foreach(Transform charObj in child) {
+				if(charObj == null)
+					continue;
+				c = charObj.GetComponent<Character>();
+				if(c == null || c.state == Character.State.Dead)
+					continue;
+			}
+
+			if(c == null)
 				continue;
-			Character c = charObj.GetComponent<Character>();
+			
 			c.combatPosition = combatPosition;
 			partyList.Add(c);
 		}
@@ -235,6 +255,13 @@ public class Arena : MonoBehaviour {
 			if(spawnSpot.childCount == 0)
 				continue;
 			Transform charObj = spawnSpot.GetChild(0);
+			foreach(Transform child in spawnSpot) {
+				if(child.GetComponent<Character>().state == Character.State.Ghost) {
+					charObj = child;
+					break;
+				}
+			}
+				
 			Character c = charObj.GetComponent<Character>();
 			GoblinCombatPanel p = GetPanelForGoblin(c);
 			int ind = playerSpawnSpots.IndexOf(spawnSpot);
@@ -244,33 +271,65 @@ public class Arena : MonoBehaviour {
 		}
 	}
 
+	public bool IsThereValidTargetInLane(int combatPosition) {
+		foreach(Character g in goblins) {//check if the gonli in my lane is not a valid target. dead or ghost
+			if(g.combatPosition != combatPosition)
+				continue;
+			// this is my lane
+			if(g.state == Character.State.Dead || g.state == Character.State.Ghost)
+				return false;
+			return true;
+		}
+		return false;
+	}
+
 	public void RepositionEnemies() {
-		//reposition enemies with no glive goblins in their lane
+		//reposition enemies with no live goblins in their lane
 		foreach(Character enemy in enemies) {
 			if(enemy.state == Character.State.Dead)
 				continue;
-			bool seekNewPos = true;
-			foreach(Character g in goblins) {
-				if(g.combatPosition == enemy.combatPosition && g.state != Character.State.Dead) {
-					seekNewPos = false;
+
+			if(IsThereValidTargetInLane(enemy.combatPosition))
+				continue; //we have a target dont move;
+
+			int moveToPos = -1;
+			foreach(Transform pt in enemySpawnSpots) {
+				int i = pt.GetSiblingIndex();
+				if(i == enemy.combatPosition - 1)
+					continue; // don't consider our current pos
+				if(playerSpawnSpots[i].childCount == 0)
+					continue; //dont consider lanes with no goblins in them
+				if(IsThereValidTargetInLane(i+1) == false)
+					continue; //dont consider lanes with dead or ghost goblins in them
+
+				if(pt.childCount == 0) { //no allies here go here!
+					moveToPos = i+1;
+					break;
+				}
+				else {
+					//there's an ally... but are any in this spot alive?
+					bool someoneIsHereAndAlive = false;
+					foreach(Transform charObj in pt) {
+						Character ally = charObj.GetComponent<Character>();
+						if(ally == null)
+							continue;
+						if(ally.state != Character.State.Dead) {
+							someoneIsHereAndAlive = true;
+							break;
+						}
+					}
+
+					if(someoneIsHereAndAlive)
+						continue;
+						
+					// no ones here! lets go here.
+					moveToPos = i+1;
 					break;
 				}
 			}
 
-			if(seekNewPos) {
-				foreach(Transform pt in enemySpawnSpots) {
-					int i = pt.GetSiblingIndex();
-					if(i == enemy.combatPosition - 1)
-						continue;
-					if(playerSpawnSpots[i].childCount == 0)
-						continue;
-					if(pt.childCount != 0 && pt.GetChild(0).GetComponentInChildren<Character>().state != Character.State.Dead)
-						continue;
-					if(playerSpawnSpots[i].GetChild(0).GetComponentInChildren<Character>().state == Character.State.Dead)
-						continue;
-					enemy.combatPosition = i+1;
-					break;
-				}
+			if(moveToPos != -1) {
+				enemy.combatPosition = moveToPos;
 				MoveCharacterToNewPosition(enemy, enemy.combatPosition);
 			}
 		}
@@ -297,6 +356,8 @@ public class Arena : MonoBehaviour {
 		int move2Count = 0;
 		int move3Count = 0;
 		foreach(Character goblin in goblins) {
+			if(goblin.state == Character.State.Dead || goblin.state == Character.State.Ghost)
+				continue;
 			int i = GetNumberForMove(goblin.data, goblin.queuedMove);
 			if(i == 1)
 				move1Count++;

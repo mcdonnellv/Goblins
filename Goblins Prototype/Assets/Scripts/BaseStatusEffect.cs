@@ -16,6 +16,8 @@ public class BaseStatusEffect : MonoBehaviour {
 	public virtual void OnIGotTargetted(AttackTurnInfo ati) {}
 	public virtual void OnStatusEffectAddedToMe(AttackTurnInfo ati) {}
 	public virtual void OnMyTurnStarted(AttackTurnInfo ati) {}
+	public virtual void OnStatusExpired(AttackTurnInfo ati) {}
+	public virtual void OnStatusRemoved(AttackTurnInfo ati) {}
 
 }
 

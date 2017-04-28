@@ -32,9 +32,10 @@ public class CombatMath : MonoBehaviour {
 		float damage = combatMove.effectiveness * (1f - resist);
 		damage = Mathf.Max(0f, damage);
 		// status effects may alter the attack's damage value
-		defender.BroadcastMessage("OnDamageDealtToMeCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
-		attacker.BroadcastMessage("OnDamageDealtByMeCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
-		return damage;
+		AttackTurnInfo ati = new AttackTurnInfo(attacker, damage);
+		defender.BroadcastMessage("OnDamageDealtToMeCalc", ati, SendMessageOptions.DontRequireReceiver);
+		attacker.BroadcastMessage("OnDamageDealtByMeCalc", ati, SendMessageOptions.DontRequireReceiver);
+		return ati.damage;
 	}
 
 	public float GetResistForDamageType(CombatMove.DamageType dt, CharacterData defender) {

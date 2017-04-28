@@ -11,7 +11,8 @@ public class AnimationEventReceiver : MonoBehaviour {
 
 	public void AttackDone() {
 		//return to spawn position
-		character.GetComponentInChildren<SpriteRenderer>().material.shader = character.bwShader;
+		if(character.state != Character.State.Ghost)
+			character.GetComponentInChildren<SpriteRenderer>().material.shader = character.bwShader;
 		GameManager.gm.arena.em.AttackDone();
 
 

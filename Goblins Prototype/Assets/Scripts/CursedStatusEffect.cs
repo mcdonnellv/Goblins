@@ -9,3 +9,5 @@ public class CursedStatusEffect : BaseStatusEffect {
 		return ati.damage;
 	}
 }
+
+

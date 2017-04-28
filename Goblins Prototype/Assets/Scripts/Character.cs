@@ -10,89 +10,11 @@ public enum CombatClassType {
 	Guard,
 	Raider,
 	Shaman,
+	Ghost,
 	COUNT
 }
 
 
-[Serializable]
-public class CharacterData {
-
-	public int attributeBudget = 10;
-	public static float standardCritChance = .1f;
-	public static int baseLife = 10;
-	public static int bodyBonusLife = 10;
-	public string givenName;
-	public string enemyRace;
-	public string enemyClass;
-	public int maxLife;
-	public int life;
-	public int maxEnergy;
-	public int energy;
-	public float critChance;
-	public float defense;
-
-	//goblin specific
-	public int body;
-	public int mind;
-	public int spirit;
-	public int age;
-	public CombatClass combatClass;
-
-	//resistances
-	public float sliceRes;
-	public float crushRes;
-	public float aracaneRes;
-	public float darkRes;
-	public float coldRes;
-	public float fireRes;
-
-	public List<CombatMove> moves = new List<CombatMove>();
-	public List<BaseStatusEffect> statusEffects = new List<BaseStatusEffect>();
-
-	public GameObject characterGameObject = null;
-
-	public void RollStats() {
-		RollAttributes();
-		ApplyAttributesToStats();
-	}
-
-	void RollAttributes() {
-		body = 0;
-		mind = 0;
-		spirit = 0;
-		for(int i = attributeBudget; i > 0; i--) {
-			switch (UnityEngine.Random.Range(0,3)) {
-			case 0: body++; break;
-			case 1: mind++; break;
-			case 2: spirit++; break;
-			}
-		}
-	}
-
-	void ApplyAttributesToStats() {
-		maxLife = baseLife + body * bodyBonusLife;
-		maxEnergy = 50 + spirit * 10;
-		critChance = standardCritChance + mind * 0.02f;
-		life = maxLife;
-		energy = maxEnergy;
-	}
-
-	public void AssignClass(CombatClass cc) {
-		combatClass = cc;
-		moves.Clear();
-		foreach(Transform t in combatClass.movePrefabs){
-			CombatMove cm = t.GetComponent<CombatMove>();
-			moves.Add(cm);
-		}
-
-		if(characterGameObject != null) {
-			Character c = characterGameObject.GetComponent<Character>();
-			if(c!= null)
-				c.UpdateSprite();
-		}
-	}
-
-}
 
 public class Character : MonoBehaviour {
 	public CharacterData data;
@@ -111,6 +33,7 @@ public class Character : MonoBehaviour {
 		Unspawned,
 		Alive,
 		Dead,
+		Ghost,
 	}
 
 
@@ -151,7 +74,7 @@ public class Character : MonoBehaviour {
 	}
 
 	public void Idle() {
-		if(state == State.Dead)
+		if(state == State.Dead || state == State.Ghost)
 			return;
 		RestoreShader();
 		Animator animator = GetComponentInChildren<Animator>();
@@ -159,7 +82,9 @@ public class Character : MonoBehaviour {
 	}
 
 	public void RestoreShader() {
-		GetComponentInChildren<SpriteRenderer>().material.shader = originalShader;
+		SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+		if(sr != null)
+			sr.material.shader = originalShader;
 	}
 
 	public void GoBackToSpawnSpot() {
@@ -182,26 +107,31 @@ public class Character : MonoBehaviour {
 	}
 
 	public void ProcessTurnForStatusEffects() {
-		for(int i=0; i<data.statusEffects.Count; i++) {
-			if(data.statusEffects[i].statusEffectTurnsApplied == -1)
+		for(int i=0; i < data.statusEffects.Count; i++) {
+			BaseStatusEffect se = data.statusEffects[i];
+			if(se.statusEffectTurnsApplied == -1)
 				continue;
-			data.statusEffects[i].statusEffectTurnsApplied--;
-			// make an onexpire event?
-			if(data.statusEffects[i].statusEffectTurnsApplied < 0) {
-				OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.StatusExpired, data.statusEffects[i].statusEffectName);
-				Debug.Log("\t" + data.givenName + " " + data.statusEffects[i].statusEffectName + " has expired\n");
-				Destroy(data.statusEffects[i].gameObject);
-				data.statusEffects.Remove(data.statusEffects[i]);
+			se.statusEffectTurnsApplied--;
+			if(se.statusEffectTurnsApplied < 0) {
+				BroadcastMessage("OnStatusExpired",  new AttackTurnInfo(this), SendMessageOptions.DontRequireReceiver);
+				OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.StatusExpired, se.statusEffectName);
+				Debug.Log("\t" + data.givenName + " " + se.statusEffectName + " has expired\n");
+				data.statusEffects.Remove(se);
+				Destroy(se.gameObject);
+				i--;
 			}
 		}
 	}
 
 	public void RemoveAllStatusEffects() {
 		for(int i=0; i < data.statusEffects.Count; i++) {
-			if(data.statusEffects[i] == null)
+			BaseStatusEffect se = data.statusEffects[i];
+			if(se == null)
 				continue;
-			Destroy(data.statusEffects[i].gameObject);
-			data.statusEffects.Remove(data.statusEffects[i]);
+			BroadcastMessage("OnStatusRemoved",  new AttackTurnInfo(this), SendMessageOptions.DontRequireReceiver);
+			data.statusEffects.Remove(se);
+			Destroy(se.gameObject);
+			i--;
 		}
 	}
 

@@ -16,6 +16,7 @@ public class AttackTurnInfo : Object {
 
 public class ExecutionPhaseManager : MonoBehaviour {
 	public Arena arena;
+	public Transform ghostPrefab;
 	public List<Character> attackers = new List<Character>();
 	public List<Transform> playerClashPt;
 	public List<Transform> enemyClashPt;
@@ -52,7 +53,10 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator InitState () {
 		curAttacker = 0;
-		state = State.PreAttack;
+		if(attackers.Count == 0)
+			state = State.End;
+		else
+			state = State.PreAttack;
 		while (state == State.Init)
 			yield return 0;
 		NextState();
@@ -60,12 +64,19 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator PreAttackState () {
 		critModifer = 0f;
+		if(curAttacker >=  attackers.Count) {
+			state = State.End;
+			NextState();
+			yield break;
+		}
+
 		Character attacker = attackers[curAttacker];
 		attackSkipped = false;
 		attacker.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
 		//attacker can die from dots
-		if(attacker.data.life <= 0) 
+		if(attacker.data.life <= 0) {
 			CharacterDeath(attacker);
+		}
 
 		//dead characters don't attack
 		if(attacker.state == Character.State.Dead) {
@@ -139,8 +150,11 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(attacker.isPlayerCharacter)
 			arena.combatUI.GetPanelForPlayer(attacker).RefreshBars();
 
-		if(attacker.target != null && attacker.target.isPlayerCharacter)
-			arena.combatUI.GetPanelForPlayer(attacker.target).RefreshBars();
+		if(attacker.target != null && attacker.target.isPlayerCharacter) {
+			GoblinCombatPanel gcp = arena.combatUI.GetPanelForPlayer(attacker.target);
+			if(gcp != null)
+				gcp.RefreshBars();
+		}
 		
 		if(attacker.target != null && !attacker.target.isPlayerCharacter)
 			arena.combatUI.ShowEnemyPanel(attacker.target);
@@ -158,8 +172,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		//do any post attack combat move effects
 		CombatMove move = attackers[curAttacker].queuedMove;
 		Character attacker = GetCurrentAttacker();
-		attacker.GetComponentInChildren<SpriteRenderer>().material.shader = attacker.bwShader;
-
+		if(attacker.state != Character.State.Ghost)
+			attacker.GetComponentInChildren<SpriteRenderer>().material.shader = attacker.bwShader;
+			
 		if(hit) {
 			if(move.displaceOpponent && attacker.target != null && attacker.target.state != Character.State.Dead) {
 				int pos = attacker.target.combatPosition;
@@ -185,11 +200,11 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator EndState () {
-		foreach(Character c in arena.goblins)
-			c.ProcessTurnForStatusEffects();
+		for( int i = 0; i < arena.goblins.Count; i++)
+			arena.goblins[i].ProcessTurnForStatusEffects();
 
-		foreach(Character c in arena.enemies)
-			c.ProcessTurnForStatusEffects();
+		for( int i = 0; i < arena.enemies.Count; i++)
+			arena.enemies[i].ProcessTurnForStatusEffects();
 
 		BackToIdle();
 		BackToSpawnSpot();
@@ -230,7 +245,17 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		foreach(Transform spawnPt in spawnPts) {
 			if(spawnPt.childCount == 0)
 				continue;
-			attackers.Add(spawnPt.GetChild(0).GetComponent<Character>());
+
+			Character c = null;
+			foreach(Transform charObj in spawnPt) {
+				if(charObj == null)
+					continue;
+				c = charObj.GetComponent<Character>();
+				if(c == null || c.state == Character.State.Dead)
+					continue;
+				attackers.Add(c);
+				break;
+			}
 		}
 			
 		state = State.Init;
@@ -244,7 +269,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				Character tar = null;
 				List<Character> aliveAllies = new List<Character>();
 				foreach(Character a in attackers)
-					if(a.state != Character.State.Dead && a != attacker)
+					if(a.state != Character.State.Dead && a.state != Character.State.Ghost && a != attacker)
 						aliveAllies.Add(a);
 				if(aliveAllies.Count > 0) {
 					int roll = UnityEngine.Random.Range(0, aliveAllies.Count);
@@ -256,7 +281,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				List<Character> aliveAllies = new List<Character>();
 				Character mosthurt = attacker;
 				foreach(Character a in attackers)
-					if(a.state != Character.State.Dead && a.data.life != a.data.maxLife && a.data.life < mosthurt.data.life)
+					if(a.state != Character.State.Dead && a.state != Character.State.Ghost && a.data.life != a.data.maxLife && a.data.life < mosthurt.data.life)
 						mosthurt = a;
 				return mosthurt;
 			}
@@ -267,7 +292,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public Character GetOpponent(Character attacker) {
 		List<Character> opponents = isPlayerTurn ? arena.enemies : arena.goblins;
 		foreach(Character c in opponents) {
-			if(c.combatPosition == attacker.combatPosition && c.state != Character.State.Dead) {
+			if(c.combatPosition == attacker.combatPosition && c.state != Character.State.Dead && c.state != Character.State.Ghost) {
 				return c;	
 			}
 		}
@@ -377,13 +402,28 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	public void CharacterDeath(Character c) {
 		Debug.Log("\t" + (c.isPlayerCharacter ? "Goblin " :"Enemy ") + c.data.givenName + " DIES!\n");
-		c.GetComponentInChildren<SpriteRenderer>().material.shader = c.bwShader;
+		if(c.state != Character.State.Ghost)
+			c.GetComponentInChildren<SpriteRenderer>().material.shader = c.bwShader;
 		Animator a = c.GetComponentInChildren<Animator>();
 		a.SetBool("Alive", false);
 		c.state = Character.State.Dead;
 		c.RemoveAllStatusEffects();
-		if(c.isPlayerCharacter)
-			arena.combatUI.GetPanelForPlayer(c).GetComponent<CanvasGroup>().alpha = .3f;
+		if(c.isPlayerCharacter) {
+			GoblinCombatPanel gcp = arena.combatUI.GetPanelForPlayer(c);
+			gcp.GetComponent<CanvasGroup>().alpha = .3f;
+
+			//spawn a ghost
+			Character g = Character.Spawn(ghostPrefab, c.spawnSpot, null, true).GetComponent<Character>();
+			g.state = Character.State.Ghost;
+			g.combatPosition = c.combatPosition;
+			GhostDeathStatusEffect gdse = (GhostDeathStatusEffect)g.data.statusEffects[0];
+			gdse.body = c;
+			gcp.character = g;
+			int ind = arena.goblins.IndexOf(c);
+			arena.goblins[ind] = g;
+			c.transform.SetAsLastSibling();
+			Debug.Log("\t" + g.data.givenName + " appears!\n");
+		}
 	}
 
 	public void AttackDone() {
@@ -393,7 +433,10 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	private void BackToIdle() {
 		foreach(Character c in arena.goblins)
-			c.Idle();
+			if(c == null)
+				Debug.Log("WTF!");
+			else
+				c.Idle();
 		foreach(Character c in arena.enemies) 
 			c.Idle();
 	}
