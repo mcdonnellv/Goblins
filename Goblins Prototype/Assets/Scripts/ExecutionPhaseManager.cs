@@ -243,19 +243,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public void Setup(List<Transform> spawnPts, bool playerTurn) {
 		isPlayerTurn = playerTurn;
 		foreach(Transform spawnPt in spawnPts) {
-			if(spawnPt.childCount == 0)
-				continue;
-
-			Character c = null;
-			foreach(Transform charObj in spawnPt) {
-				if(charObj == null)
-					continue;
-				c = charObj.GetComponent<Character>();
-				if(c == null || c.state == Character.State.Dead)
-					continue;
+			Character c = arena.GetTransformCharacter(spawnPt, false, true);
+			if(c != null)
 				attackers.Add(c);
-				break;
-			}
 		}
 			
 		state = State.Init;
@@ -278,7 +268,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				return tar;
 			}
 		case CombatMove.TargetType.MostDamagedAlly: {
-				List<Character> aliveAllies = new List<Character>();
 				Character mosthurt = attacker;
 				foreach(Character a in attackers)
 					if(a.state != Character.State.Dead && a.state != Character.State.Ghost && a.data.life != a.data.maxLife && a.data.life < mosthurt.data.life)

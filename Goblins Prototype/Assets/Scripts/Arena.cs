@@ -203,12 +203,9 @@ public class Arena : MonoBehaviour {
 	}
 
 	public bool AreAllGoblinsDead() {
-		foreach(Character goblin in goblins) {
-			if(goblin.state != Character.State.Dead && goblin.state != Character.State.Ghost) {
+		foreach(Character goblin in goblins)
+			if(goblin.state != Character.State.Dead && goblin.state != Character.State.Ghost)
 				return false;
-				break;
-			}
-		}
 		return true;
 	}
 
@@ -230,21 +227,9 @@ public class Arena : MonoBehaviour {
 		int combatPosition = 0;
 		foreach(Transform child in spawnSpots) {
 			combatPosition++;
-			if(child.childCount == 0)
-				continue;
-
-			Character c = null;
-			foreach(Transform charObj in child) {
-				if(charObj == null)
-					continue;
-				c = charObj.GetComponent<Character>();
-				if(c == null || c.state == Character.State.Dead)
-					continue;
-			}
-
+			Character c = GetTransformCharacter(child, false, true);
 			if(c == null)
 				continue;
-			
 			c.combatPosition = combatPosition;
 			partyList.Add(c);
 		}
@@ -252,17 +237,7 @@ public class Arena : MonoBehaviour {
 
 	public void RepositionGoblins() {
 		foreach(Transform spawnSpot in playerSpawnSpots) {
-			if(spawnSpot.childCount == 0)
-				continue;
-			Transform charObj = spawnSpot.GetChild(0);
-			foreach(Transform child in spawnSpot) {
-				if(child.GetComponent<Character>().state == Character.State.Ghost) {
-					charObj = child;
-					break;
-				}
-			}
-				
-			Character c = charObj.GetComponent<Character>();
+			Character c = GetTransformCharacter(spawnSpot, false, true);
 			GoblinCombatPanel p = GetPanelForGoblin(c);
 			int ind = playerSpawnSpots.IndexOf(spawnSpot);
 			if(p.position - 1 == ind)
@@ -284,6 +259,7 @@ public class Arena : MonoBehaviour {
 	}
 
 	public void RepositionEnemies() {
+
 		//reposition enemies with no live goblins in their lane
 		foreach(Character enemy in enemies) {
 			if(enemy.state == Character.State.Dead)
@@ -292,45 +268,19 @@ public class Arena : MonoBehaviour {
 			if(IsThereValidTargetInLane(enemy.combatPosition))
 				continue; //we have a target dont move;
 
-			int moveToPos = -1;
 			foreach(Transform pt in enemySpawnSpots) {
+				Character c = GetTransformCharacter(pt, false, false);
+				if(c == enemy)
+					continue; // don't consider ourself
+
 				int i = pt.GetSiblingIndex();
-				if(i == enemy.combatPosition - 1)
-					continue; // don't consider our current pos
-				if(playerSpawnSpots[i].childCount == 0)
-					continue; //dont consider lanes with no goblins in them
-				if(IsThereValidTargetInLane(i+1) == false)
-					continue; //dont consider lanes with dead or ghost goblins in them
+				Character goblin = GetTransformCharacter(playerSpawnSpots[i], false, false);
 
-				if(pt.childCount == 0) { //no allies here go here!
-					moveToPos = i+1;
+				if(goblin != null && c == null) { //theres a goblin to fight AND no live allies... here go here!
+					enemy.combatPosition = i + 1;
+					MoveCharacterToNewPosition(enemy, enemy.combatPosition);
 					break;
 				}
-				else {
-					//there's an ally... but are any in this spot alive?
-					bool someoneIsHereAndAlive = false;
-					foreach(Transform charObj in pt) {
-						Character ally = charObj.GetComponent<Character>();
-						if(ally == null)
-							continue;
-						if(ally.state != Character.State.Dead) {
-							someoneIsHereAndAlive = true;
-							break;
-						}
-					}
-
-					if(someoneIsHereAndAlive)
-						continue;
-						
-					// no ones here! lets go here.
-					moveToPos = i+1;
-					break;
-				}
-			}
-
-			if(moveToPos != -1) {
-				enemy.combatPosition = moveToPos;
-				MoveCharacterToNewPosition(enemy, enemy.combatPosition);
 			}
 		}
 	}
@@ -402,9 +352,11 @@ public class Arena : MonoBehaviour {
 		newPos = Mathf.Min(newPos, 4);
 		Transform oldPt = character.transform.parent;
 		Transform newPt = character.isPlayerCharacter ? playerSpawnSpots[newPos - 1] : enemySpawnSpots[newPos - 1];
-		if(newPt.childCount > 0) {
+
+		Character inhabitant = GetTransformCharacter(newPt, true, true);
+
+		if(inhabitant != null) {
 			// already has a prior inhabitant, swap positions
-			Character inhabitant = newPt.GetChild(0).GetComponent<Character>();
 			inhabitant.transform.SetParent(oldPt, true);
 			inhabitant.combatPosition = character.combatPosition;
 			inhabitant.spawnSpot = inhabitant.isPlayerCharacter ? playerSpawnSpots[inhabitant.combatPosition-1] : enemySpawnSpots[inhabitant.combatPosition-1];
@@ -417,6 +369,28 @@ public class Arena : MonoBehaviour {
 		character.combatPosition = newPos;
 		StartCoroutine(GameManager.gm.MoveOverSeconds(character.gameObject, newPt.position, .5f));
 
+	}
+
+
+	public Character GetTransformCharacter(Transform t, bool allowDead, bool allowGhost) {
+		if(t.childCount == 0)
+			return null;
+		foreach(Transform child in t) {
+			Character c = child.GetComponent<Character>();
+			if(c == null)
+				continue;
+			
+			if(allowGhost && c.state == Character.State.Ghost)
+				return c;
+
+			if(allowDead && c.state == Character.State.Dead)
+				return c;
+
+			if(c.state != Character.State.Dead)
+				return c;
+		}
+		
+		return null;
 	}
 
 	public void Update() {

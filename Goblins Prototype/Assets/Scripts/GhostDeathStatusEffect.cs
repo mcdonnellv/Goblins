@@ -23,17 +23,4 @@ public class GhostDeathStatusEffect : BaseStatusEffect {
 		Debug.Log("\t" + g.data.givenName + " fades away\n");
 		g.DeSpawn();
 	}
-
-	private Character CheckForDeadGoblin(Transform pt) {
-		foreach(Transform child in pt) {
-			Character d = child.GetComponent<Character>();
-			if(d == null)
-				continue;
-			if(d.state == Character.State.Ghost)
-				continue;
-			return d;
-		}
-		return null;
-	}
-
 }
