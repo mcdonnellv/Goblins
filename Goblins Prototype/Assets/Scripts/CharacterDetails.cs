@@ -27,6 +27,7 @@ public class CharacterDetails : MonoBehaviour {
 	public Text fireResLabel;
 	public Image iconImage;
 	public Dropdown classDropdown;
+	public bool canChangeClass;
 
 
 	public GameObject movePanelPrefab;
@@ -50,6 +51,10 @@ public class CharacterDetails : MonoBehaviour {
 	}
 
 	void Refresh () {
+		if(canChangeClass == false)
+			classDropdown.gameObject.SetActive(false);
+		iconImage.sprite = character.combatClass.sprite;
+		iconImage.SetNativeSize();
 		bodyLabel.text = character.body.ToString();
 		mindLabel.text = character.mind.ToString();
 		spiritLabel.text = character.spirit.ToString();

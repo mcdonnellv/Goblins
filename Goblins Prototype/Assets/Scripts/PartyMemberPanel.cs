@@ -17,6 +17,7 @@ public class PartyMemberPanel : MonoBehaviour {
 	public GameObject cell;
 	public Button addButton;
 	public Button removeButton;
+	public Button detailsButton;
 
 	public Transform spawnPt;
 	public Transform goblinPrefab;
@@ -36,6 +37,7 @@ public class PartyMemberPanel : MonoBehaviour {
 		}
 
 		character = characterParam;
+		iconImage.sprite = character.combatClass.icon;
 		nameLabel.text = character.combatClass.type.ToString();
 		lifeLabel.text = "Life: " + character.maxLife.ToString();
 		energyLabel.text = "Energy: " + character.maxEnergy.ToString();
@@ -55,6 +57,7 @@ public class PartyMemberPanel : MonoBehaviour {
 		}
 		roster.gameObject.SetActive(true);
 		roster.RefreshDisplay();
+		roster.Highlight(character);
 		addButton.gameObject.SetActive(false);
 		removeButton.gameObject.SetActive(true);
 	}
@@ -91,6 +94,20 @@ public class PartyMemberPanel : MonoBehaviour {
 		addButton.gameObject.SetActive(true);
 		removeButton.gameObject.SetActive(false);
 		cell.SetActive(false);
+	}
+
+	public void DetailsButtonPressed() {
+		roster.gameObject.SetActive(true);
+		if(roster.characterDetailsPanel.gameObject.activeSelf) {
+			roster.characterDetailsPanel.gameObject.SetActive(false);
+		}
+		else {
+			CharacterDetails characterDetails = roster.characterDetailsPanel.GetComponent<CharacterDetails>();
+			characterDetails.AssignCharacter(character);
+			roster.characterDetailsPanel.gameObject.SetActive(true);
+		}
+		roster.RefreshDisplay();
+		roster.Highlight(character);
 	}
 
 }

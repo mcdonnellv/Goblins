@@ -71,6 +71,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		}
 
 		Character attacker = attackers[curAttacker];
+		if(isPlayerTurn)
+			arena.combatUI.FocusPanel(attacker.combatPosition);
 		attackSkipped = false;
 		attacker.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
 		//attacker can die from dots
@@ -92,8 +94,11 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		}
 
 		attacker.target = GetTarget(attacker);
-		if(attacker.target != null)
+		if(attacker.target != null) {
 			attacker.target.BroadcastMessage("OnIGotTargetted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
+			if(attacker.target.isPlayerCharacter && !isPlayerTurn)
+				arena.combatUI.FocusPanel(attacker.target.combatPosition);
+		}
 
 		//characters with no valid targets don't attack
 		if(attacker.target == null) {
@@ -206,6 +211,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		for( int i = 0; i < arena.enemies.Count; i++)
 			arena.enemies[i].ProcessTurnForStatusEffects();
 
+		arena.combatUI.UnFocusPanels();
 		BackToIdle();
 		BackToSpawnSpot();
 		attackers.Clear();

@@ -39,7 +39,7 @@ public class InfiniteScroll : MonoBehaviour {
 	}
 
 	public void StartMoveScroll(float speed) {
-		if(GameManager.gm.superfast) {
+		if(GameManager.gm.useTimeScale) {
 			int roll = UnityEngine.Random.Range(0, 3);
 			Transform res = scroll.content.GetChild(roll);
 			SnapTo(res.GetComponent<RectTransform>(), roll);

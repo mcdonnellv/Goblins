@@ -12,6 +12,7 @@ public class Roster : MonoBehaviour {
 	public List<CombatClass> classes;
 	public Transform characterDetailsPanel;
 	public Transform partyGrid;
+	public CharacterData highlightedCharacter;
 
 	public List<CharacterData> party = new List<CharacterData>();
 
@@ -82,6 +83,12 @@ public class Roster : MonoBehaviour {
 	public void CloseButtonPressed() {
 		transform.gameObject.SetActive(false);
 	}
+
+	public void Highlight(CharacterData character) {
+		highlightedCharacter = character; 
+		RefreshDisplay();
+	}
+
 	// Update is called once per frame
 	void Update () {
 		

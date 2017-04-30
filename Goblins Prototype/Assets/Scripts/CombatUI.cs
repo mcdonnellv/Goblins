@@ -22,10 +22,25 @@ public class CombatUI : MonoBehaviour {
 	public float critScore;
 
 	public void RefreshPanelPositionNumbers () {
-		foreach(Transform child in goblinPanelGrid) {
-			GoblinCombatPanel panel = child.GetComponentInChildren<GoblinCombatPanel>();
-			panel.position = child.GetSiblingIndex() + 1;
+		Arena arena = GameManager.gm.arena;
+		foreach(Transform panelTrans in goblinPanelGrid) {
+			GoblinCombatPanel panel = panelTrans.GetComponentInChildren<GoblinCombatPanel>();
+
+			int i = panel.transform.parent.GetSiblingIndex();
+			switch(i){
+			case 0: i=3; break;
+			case 1: i=2; break;
+			case 2: i=1; break;
+			case 3: i=0; break;
+			}
+
+			panel.position = i + 1;
 			panel.positionText.text = panel.position.ToString();
+			if(panel.character != null) {
+				Transform newPt = arena.enemySpawnSpots[panel.position - 1];
+				Character inhabitant = arena.GetTransformCharacter(newPt, true, true);
+				panel.SetOpponent(inhabitant);
+			}
 		}
 	}
 
@@ -41,6 +56,8 @@ public class CombatUI : MonoBehaviour {
 	public void StartMoveRoll() {
 		float r1 = UnityEngine.Random.Range(1000f, 2000f);
 		foreach(GoblinCombatPanel panel in goblinPanels) {
+			if(panel.character == null)
+				continue;
 			if(panel.character.state == Character.State.Dead || panel.character.state == Character.State.Ghost)
 				continue;
 			float r2 = UnityEngine.Random.Range(0f, 1000f * goblinPanels.IndexOf(panel));
@@ -56,6 +73,16 @@ public class CombatUI : MonoBehaviour {
 	public void DeactivatePanels() {
 		foreach(GoblinCombatPanel panel in goblinPanels)
 			panel.transform.parent.GetComponent<DropMe>().Deactivate();
+	}
+
+	public void FocusPanel(int combatPos) {
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			panel.curtain.SetActive(panel.position != combatPos);
+	}
+
+	public void UnFocusPanels() {
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			panel.curtain.SetActive(false);
 	}
 
 	public void RollButtonPressed() {

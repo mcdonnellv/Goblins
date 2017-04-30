@@ -16,8 +16,9 @@ public class GameManager : MonoBehaviour {
 	public GameObject prepUI;
 	public GameObject winScreen;
 	public GameObject loseScreen;
-	public bool superfast = false;
+	public bool useTimeScale = false;
 	public bool autoplay = false;
+	public float timeScaleMultiplier;
 
 	public enum State {
 		Init,
@@ -146,7 +147,7 @@ public class GameManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		Time.timeScale = superfast ? 10f : 1f;
+		Time.timeScale = useTimeScale ? timeScaleMultiplier : 1f;
 	}
 
 	public IEnumerator MoveOverSeconds (GameObject objectToMove, Vector3 end, float seconds) {

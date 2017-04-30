@@ -47,15 +47,15 @@ public class Arena : MonoBehaviour {
 		enemies.Clear();
 		GetListFromSpawnPts(enemySpawnSpots, enemies);
 		GetListFromSpawnPts(playerSpawnSpots, goblins);
-		combatUI.RefreshPanelPositionNumbers();
 		combatUI.rollButton.gameObject.SetActive(false);
 		combatUI.fightButton.gameObject.SetActive(false);
 		combatUI.DeactivatePanels();
 		combatUI.HideEnemyPanel();
 		foreach(Character c in goblins) {
-			int ind = goblins.IndexOf(c);
+			int ind = c.combatPosition -1;
 			combatUI.goblinPanels[ind].Setup(c);
 		}
+		combatUI.RefreshPanelPositionNumbers();
 
 		OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "ENCOUNTER!");
 		float timer = encounterStartAnnounceTimer;
@@ -349,6 +349,8 @@ public class Arena : MonoBehaviour {
 	}
 		
 	public void MoveCharacterToNewPosition(Character character, int newPos) {
+		if(character == null)
+			return;
 		newPos = Mathf.Min(newPos, 4);
 		Transform oldPt = character.transform.parent;
 		Transform newPt = character.isPlayerCharacter ? playerSpawnSpots[newPos - 1] : enemySpawnSpots[newPos - 1];
