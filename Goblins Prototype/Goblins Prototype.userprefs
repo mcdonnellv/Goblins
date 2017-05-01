@@ -1,17 +1,12 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Arena.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Character.cs">
     <Files>
-      <File FileName="Assets\Scripts\GoblinCombatPanel.cs" Line="25" Column="14" />
-      <File FileName="Assets\Scripts\CombatUI.cs" Line="59" Column="13" />
-      <File FileName="Assets\Scripts\ExecutionPhaseManager.cs" Line="252" Column="24" />
-      <File FileName="Assets\Scripts\DropMe.cs" Line="43" Column="1" />
-      <File FileName="Assets\Scripts\Arena.cs" Line="55" Column="33" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="150" Column="54" />
-      <File FileName="Assets\Scripts\InfiniteScroll.cs" Line="42" Column="33" />
-      <File FileName="Assets\Scripts\PartyPanel.cs" Line="26" Column="8" />
-      <File FileName="Assets\Scripts\Character.cs" Line="22" Column="13" />
-      <File FileName="Assets\Scripts\CharacterDetails.cs" Line="49" Column="3" />
+      <File FileName="Assets\Scripts\Arena.cs" Line="335" Column="1" />
+      <File FileName="Assets\Scripts\Character.cs" Line="145" Column="24" />
+      <File FileName="Assets\FloatingCombatText\Scripts\OverlayCanvasController.cs" Line="75" Column="37" />
+      <File FileName="Assets\FloatingCombatText\Scripts\CombatTextAnchorController.cs" Line="106" Column="3" />
+      <File FileName="Assets\Scripts\CombatUI.cs" Line="12" Column="35" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
@@ -21,7 +16,6 @@
       <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\unity-ui-extensions\Scripts\Layout\UIVerticalScroller.cs" line="176" column="1" />
       <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\unity-ui-extensions\Scripts\Layout\UIVerticalScroller.cs" line="156" column="1" />
       <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/ProtectedtStatusEffect.cs" line="15" column="120" />
-      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\Scripts\Arena.cs" line="233" column="6" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

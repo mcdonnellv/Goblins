@@ -11,6 +11,8 @@ public class CharacterData {
 	public static float standardCritChance = .1f;
 	public static int baseLife = 10;
 	public static int bodyBonusLife = 10;
+	public static int baseEnergy = 5;
+	public static int spiritBonusEnergy = 5;
 	public string givenName;
 	public string enemyRace;
 	public string enemyClass;
@@ -61,7 +63,7 @@ public class CharacterData {
 
 	void ApplyAttributesToStats() {
 		maxLife = baseLife + body * bodyBonusLife;
-		maxEnergy = 50 + spirit * 10;
+		maxEnergy = baseEnergy + spirit * spiritBonusEnergy;
 		critChance = standardCritChance + mind * 0.02f;
 		life = maxLife;
 		energy = maxEnergy;

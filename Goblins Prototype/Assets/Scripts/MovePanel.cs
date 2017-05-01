@@ -17,7 +17,7 @@ public class MovePanel : MonoBehaviour {
 	
 	public void Setup (CombatMove combatMove) {
 		nameLabel.text = combatMove.moveName;
-		descriptionLabel.text = combatMove.GenerateDesciption();
+		descriptionLabel.text = combatMove.description;//GenerateDesciption();
 		energyCostLabel.text = combatMove.energyCost + " Energy";
 	}
 }

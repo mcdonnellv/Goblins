@@ -20,6 +20,7 @@ public class Arena : MonoBehaviour {
 	public float victoryAnnounceTimer;
 	public MoveRollBonusStatusEffect superRollBonusStatusEffect;
 	public MoveRollBonusStatusEffect rollBonusStatusEffect;
+	private float generalTimer = 0f;
 
 	public enum State {
 		Inactive,
@@ -29,7 +30,7 @@ public class Arena : MonoBehaviour {
 		PositionPhase,
 		PlayerExecutionPhase,
 		EnemyExecutionPhase,
-		Conclusion,
+		EndOfTurn,
 	}
 	public State state;
 
@@ -102,10 +103,16 @@ public class Arena : MonoBehaviour {
 			else
 				c.queuedMove = null;
 		}
+		combatUI.RevealWheels();
 		combatUI.StartMoveRoll();
-		
+		generalTimer = .5f;
 		while (state == State.MoveRollPhase)
 			yield return 0;
+
+		while(generalTimer > 0f) {
+			generalTimer-=Time.deltaTime;
+			yield return 0;
+		}
 		NextState();
 	}
 
@@ -114,6 +121,9 @@ public class Arena : MonoBehaviour {
 		combatUI.stateText.text = "Positioning Phase";
 		combatUI.fightButton.gameObject.SetActive(true);
 		combatUI.ActivatePanels();
+		combatUI.DisplayMoves();
+		combatUI.HideWheels();
+
 		foreach(GoblinCombatPanel panel in combatUI.goblinPanels)
 			panel.GetComponent<DragMe>().interactable = true;
 
@@ -153,8 +163,9 @@ public class Arena : MonoBehaviour {
 		NextState();
 	}
 
-	IEnumerator ConclusionState () {
-		Debug.Log("***Arena Conclusion State***\n");
+	IEnumerator EndOfTurnState () {
+		Debug.Log("***Arena End Of Turn State***\n");
+		combatUI.HideMoves();
 		bool allGoblinsDead = AreAllGoblinsDead();
 		bool allEnemiesDead = true;
 		foreach(Character enemy in enemies) {
@@ -165,6 +176,10 @@ public class Arena : MonoBehaviour {
 		}
 
 		if(!allGoblinsDead && !allEnemiesDead) {
+			//regenerate a bit of energy each turn
+			foreach(Character goblin in goblins)
+				goblin.data.energy = Mathf.Min(goblin.data.maxEnergy, goblin.data.energy + 1);
+
 			round++;
 			state = State.WaitForRollPhase;
 			NextState();
@@ -197,7 +212,7 @@ public class Arena : MonoBehaviour {
 		
 		GameManager.gm.state = GameManager.State.Result;
 		state = State.Inactive;
-		while (state == State.Conclusion)
+		while (state == State.EndOfTurn)
 			yield return 0;
 		NextState();
 	}
@@ -319,22 +334,20 @@ public class Arena : MonoBehaviour {
 
 		MoveRollBonusStatusEffect se = null;
 		string text1 = "4 MATCHES!!!";
-		string text2 = "Super Attack Bonus";
 		if(move1Count == 4 || move2Count == 4 || move3Count == 4)
 			se = superRollBonusStatusEffect;
 		else if(move1Count == 3 || move2Count == 3 || move3Count == 3) {
 			se = rollBonusStatusEffect;
 			text1 = "3 MATCHES";
-			text2 = "Attack Bonus";
 		}
 		
 		if(se != null) {
 			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, text1);
-			OverlayCanvasController.instance.ShowCombatTextDelay(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, text2, 1.5f);
 			foreach(Character goblin in goblins) {
 				goblin.AddStatusEffect(se);
 				OverlayCanvasController.instance.ShowCombatText(goblin.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
 				goblin.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(goblin, se), SendMessageOptions.DontRequireReceiver);
+				generalTimer = 3f;
 			}
 		}
 

@@ -24,6 +24,8 @@ public class Character : MonoBehaviour {
 	public State state = State.Unspawned;
 	public Transform spawnSpot;
 	public Transform headTransform;
+	public Transform statusContainerPrefab;
+	private Transform statusContainer;
 	public Character target;
 	public Shader bwShader;
 	private Shader originalShader;
@@ -99,8 +101,8 @@ public class Character : MonoBehaviour {
 				return se;
 			}
 		}
-		GameObject go = Instantiate(newStatusEffect.gameObject, headTransform, false);
-		go.transform.Translate(new Vector3(0f,1f,0f));
+		GameObject go = Instantiate(newStatusEffect.gameObject, statusContainer, false);///////////////////////
+		//go.transform.Translate(new Vector3(0f,1f,0f));
 		BaseStatusEffect ret = go.GetComponent<BaseStatusEffect>();
 		data.statusEffects.Add(ret);
 		return ret;
@@ -138,6 +140,12 @@ public class Character : MonoBehaviour {
 	public void RecoverFull() {
 		data.life = data.maxLife;
 		data.energy = data.maxEnergy;
+	}
+
+	public void Update() {
+		if(statusContainer == null)
+			statusContainer = GameObject.Instantiate(statusContainerPrefab, GameManager.gm.arena.combatUI.statusContainers, false);
+		statusContainer.position = Camera.main.WorldToScreenPoint(headTransform.position + new Vector3(0f,.7f,0f));
 	}
 
 }

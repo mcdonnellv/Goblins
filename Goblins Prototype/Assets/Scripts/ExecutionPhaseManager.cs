@@ -75,10 +75,10 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			arena.combatUI.FocusPanel(attacker.combatPosition);
 		attackSkipped = false;
 		attacker.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
+
 		//attacker can die from dots
-		if(attacker.data.life <= 0) {
+		if(attacker.data.life <= 0)
 			CharacterDeath(attacker);
-		}
 
 		//dead characters don't attack
 		if(attacker.state == Character.State.Dead) {
@@ -92,6 +92,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			NextState();
 			yield break;
 		}
+
+
+
 
 		attacker.target = GetTarget(attacker);
 		if(attacker.target != null) {
@@ -107,6 +110,21 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			state = State.AttackDone;
 			NextState();
 			yield break;
+		}
+
+		//check if we have enough energy to perform the move
+		if(isPlayerTurn) {
+			if (attacker.queuedMove.energyCost > attacker.data.energy) {
+				attackSkipped = true;
+				Debug.Log("\t" + attacker.data.givenName + " does not have enough energy to attack, skipping attack\n");
+				GameObject mtm = isPlayerTurn ? GameManager.gm.arena.combatUI.moveAnnouncePlayerMarker : GameManager.gm.arena.combatUI.moveAnnounceEnemyMarker;
+				OverlayCanvasController.instance.ShowCombatText(mtm,  CombatTextType.MoveAnnounce, "Not Enough energy");
+				state = State.AttackDone;
+				NextState();
+				yield break;
+			}
+			else
+				attacker.data.energy -= attacker.queuedMove.energyCost;
 		}
 
 		//announce move
@@ -225,7 +243,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(isPlayerTurn)
 			arena.state = Arena.State.EnemyExecutionPhase;
 		else
-			arena.state = Arena.State.Conclusion;
+			arena.state = Arena.State.EndOfTurn;
 		state = State.Inactive;
 		while (state == State.End)
 			yield return 0;

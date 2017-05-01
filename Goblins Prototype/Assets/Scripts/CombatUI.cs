@@ -9,6 +9,7 @@ public class CombatUI : MonoBehaviour {
 	public List <GoblinCombatPanel> goblinPanels;
 	public EnemyCombatPanel enemyPanel;
 	public Transform goblinPanelGrid;
+	public Transform statusContainers;
 	public Button rollButton;
 	public Button fightButton;
 	public Text roundText;
@@ -63,6 +64,26 @@ public class CombatUI : MonoBehaviour {
 			float r2 = UnityEngine.Random.Range(0f, 1000f * goblinPanels.IndexOf(panel));
 			panel.wheel.StartMoveScroll(r1 + r2);
 		}
+	}
+
+	public void HideWheels() {
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			panel.HideWheel();
+	}
+
+	public void RevealWheels() {
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			panel.RevealWheel();
+	}
+
+	public void DisplayMoves() {
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			panel.DisplayMove();
+	}
+
+	public void HideMoves() {
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			panel.moveDetails.SetActive(false);
 	}
 
 	public void ActivatePanels() {

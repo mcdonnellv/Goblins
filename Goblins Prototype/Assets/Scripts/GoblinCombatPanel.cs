@@ -10,6 +10,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public Text lifeText;
 	public Text energyText;
 	public GameObject curtain;
+	public GameObject wheelCover;
 	public Image lifeBar;
 	public Image energyBar;
 	public Image iconImage;
@@ -21,6 +22,11 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public InfiniteScroll wheel;
 	public List<Text> moveLabels;
 	public CharacterDetails characterDetails;
+	public GameObject moveDetails;
+	public Text moveNameText;
+	public Text moveDescriptionText;
+	public Text moveEnergyText;
+	public Text moveDamageText;
 
 	public void Setup(Character c) {
 		character = c;
@@ -30,7 +36,9 @@ public class GoblinCombatPanel : MonoBehaviour {
 		RefreshBars();
 		GetComponent<CanvasGroup>().alpha = 1f;
 		SetOpponent(null);
+		moveDetails.SetActive(false);
 		curtain.SetActive(false);
+		HideWheel();
 	}
 
 	public void RefreshBars() {
@@ -79,6 +87,25 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public void Pressed() {
 		characterDetails.AssignCharacter(character.data);
 		characterDetails.gameObject.SetActive(true);
+	}
+
+	public void HideWheel() {
+		wheelCover.GetComponent<Animator>().SetBool("revealed", false);
+	}
+	public void RevealWheel() {
+		wheelCover.GetComponent<Animator>().SetBool("revealed", true);
+	}
+
+	public void DisplayMove() {
+		if(character != null && character.queuedMove != null) {
+			moveDetails.SetActive(true);
+			moveNameText.text = character.queuedMove.moveName;
+			moveDescriptionText.text = character.queuedMove.description;
+			moveEnergyText.text = character.queuedMove.energyCost.ToString() + " energy";
+			moveDamageText.text = character.queuedMove.damageType.ToString();
+			if(character.queuedMove.damageType == CombatMove.DamageType.None)
+				moveDamageText.text = "";
+		}
 	}
 }
 
