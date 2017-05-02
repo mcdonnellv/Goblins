@@ -74,7 +74,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(isPlayerTurn)
 			arena.combatUI.FocusPanel(attacker.combatPosition);
 		attackSkipped = false;
-		attacker.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
+		attacker.statusContainer.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
 
 		//attacker can die from dots
 		if(attacker.data.life <= 0)
@@ -98,7 +98,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 		attacker.target = GetTarget(attacker);
 		if(attacker.target != null) {
-			attacker.target.BroadcastMessage("OnIGotTargetted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
+			attacker.target.statusContainer.BroadcastMessage("OnIGotTargetted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
 			if(attacker.target.isPlayerCharacter && !isPlayerTurn)
 				arena.combatUI.FocusPanel(attacker.target.combatPosition);
 		}
@@ -155,6 +155,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 
 	IEnumerator CritGameState () {
+		OverlayCanvasController.instance.ShowCombatText(arena.combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "CRITICAL HIT!");
 		Character attacker = attackers[curAttacker];
 		arena.combatUI.StartCritGameUI(attacker.headTransform.gameObject);
 		while (state == State.CritGame) {
@@ -166,7 +167,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	IEnumerator AttackState() {
 		Character attacker = GetCurrentAttacker();
 		if(attacker.queuedMove.targetType == CombatMove.TargetType.Opponent || attacker.queuedMove.targetType == CombatMove.TargetType.RandomOpponent)
-			ClashCharacters(attacker, attacker.target);
+		//	ClashCharacters(attacker, attacker.target);
+			StartCoroutine(GotoClashPositions(attacker, attacker.target));
 		else
 			CastOnFriendlyCharacter(attacker, attacker.target);
 
@@ -189,7 +191,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 
 	IEnumerator AttackDoneState () {
-		ResetClashPoints();
 		curtain.SetActive(false);
 		arena.combatUI.HideEnemyPanel();
 		//do any post attack combat move effects
@@ -232,13 +233,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		arena.combatUI.UnFocusPanels();
 		BackToIdle();
 		BackToSpawnSpot();
+		StartCoroutine(GotoSpawnPositions());
 		attackers.Clear();
-
-		float timer = timeDelayBetweenTurns;
-		while(timer > 0f) {
-			timer-=Time.deltaTime;
-			yield return 0;
-		}
 
 		if(isPlayerTurn)
 			arena.state = Arena.State.EnemyExecutionPhase;
@@ -318,7 +314,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		foreach(BaseStatusEffect se in caster.queuedMove.moveStatusEffects){
 			target.AddStatusEffect(se);
 			OverlayCanvasController.instance.ShowCombatText(target.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
-			target.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(caster, se), SendMessageOptions.DontRequireReceiver);
+			target.statusContainer.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(caster, se), SendMessageOptions.DontRequireReceiver);
 		}
 		caster.Idle();
 		caster.GetComponentInChildren<Animator>().SetTrigger("Ranged Cast");
@@ -336,6 +332,33 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		}
 	}
 
+	IEnumerator GotoClashPositions(Character attacker, Character defender) {
+		int pos = attacker.combatPosition;
+		if(isPlayerTurn) {
+			attacker.transform.SetParent(playerClashPt[pos-1].transform, false);
+			defender.transform.SetParent(enemyClashPt[pos-1].transform, false);
+
+		}
+		else {
+			attacker.transform.SetParent(enemyClashPt[pos-1].transform, false);
+			defender.transform.SetParent(playerClashPt[pos-1].transform, false);
+		}
+
+		Animator a = playerClashPt[pos-1].GetComponent<Animator>();
+		if(a != null) 
+			a.SetBool("active", true);
+		a = enemyClashPt[pos-1].GetComponent<Animator>();
+		if(a != null) 
+			a.SetBool("active", true);
+		
+		float timer = .34f / 1.5f;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
+		ClashCharacters(attacker, defender);
+	}
+
 	public void ClashCharacters(Character attacker, Character defender) {
 		OverlayCanvasController occ = OverlayCanvasController.instance;
 		float damage = 0f;
@@ -346,7 +369,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				damage = arena.cm.RollForDamage(attacker.queuedMove, attacker, defender);
 				if(crit) 
 					damage = damage * (arena.cm.baseCritDamageMultiplier + critModifer);
-				defender.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
+				defender.statusContainer.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
 				finalDamage = Mathf.FloorToInt(damage);
 				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, finalDamage);
 				damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
@@ -360,7 +383,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects) {
 				defender.AddStatusEffect(se);
 				OverlayCanvasController.instance.ShowCombatText(defender.headTransform.gameObject, CombatTextType.StatusAppliedBad, se.statusEffectName);
-				defender.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(attacker, se), SendMessageOptions.DontRequireReceiver);
+				defender.statusContainer.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(attacker, se), SendMessageOptions.DontRequireReceiver);
 			}
 		}
 		else
@@ -374,26 +397,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 		attacker.Idle();
 		defender.Idle();
-		curtain.SetActive(true);
+		//curtain.SetActive(true);
 
-		Vector3 clashPtPos;
-		clashPtPos = playerClashPt[pos-1].position;
-		clashPtPos.z = -9f;
-		playerClashPt[pos-1].position = clashPtPos;
-
-		clashPtPos = enemyClashPt[pos-1].position;
-		clashPtPos.z = -9f;
-		enemyClashPt[pos-1].position = clashPtPos;
-
-		if(isPlayerTurn) {
-			attacker.transform.SetParent(playerClashPt[pos-1].transform, false);
-			defender.transform.SetParent(enemyClashPt[pos-1].transform, false);
-
-		}
-		else {
-			attacker.transform.SetParent(enemyClashPt[pos-1].transform, false);
-			defender.transform.SetParent(playerClashPt[pos-1].transform, false);
-		}
 		Animator a = attacker.GetComponentInChildren<Animator>();
 		if(attacker.queuedMove.rangeType == CombatMove.RangeType.Melee)
 			a.SetTrigger("Melee Attack");
@@ -454,29 +459,35 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			c.Idle();
 	}
 
+	IEnumerator GotoSpawnPositions() {
+		for( int i=0; i < playerClashPt.Count; i++) {
+			Transform clashPt = playerClashPt[i];
+			Animator a = clashPt.GetComponent<Animator>();
+			if(a != null) 
+				a.SetBool("active", false);
+		}
+
+		for( int i=0; i < enemyClashPt.Count; i++) {
+			Transform clashPt = enemyClashPt[i];
+			Animator a = clashPt.GetComponent<Animator>();
+			if(a != null) 
+				a.SetBool("active", false);
+		}
+
+
+		float timer = .34f / 1.5f;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
+		BackToSpawnSpot();
+	}
+
 	private void BackToSpawnSpot() {
 		foreach(Character c in arena.goblins)
 			c.GoBackToSpawnSpot();
 		foreach(Character c in arena.enemies) 
 			c.GoBackToSpawnSpot();
-	}
-
-	private void ResetClashPoints() {
-		for( int i=0; i < playerClashPt.Count; i++) {
-			Transform clashPt = playerClashPt[i];
-			Transform spawnPt = arena.playerSpawnSpots[i];
-			Vector3 clashPtPos = clashPt.position;
-			clashPtPos.z = spawnPt.position.z;
-			clashPt.position = clashPtPos;
-		}
-
-		for( int i=0; i < enemyClashPt.Count; i++) {
-			Transform clashPt = enemyClashPt[i];
-			Transform spawnPt = arena.enemySpawnSpots[i];
-			Vector3 clashPtPos = clashPt.position;
-			clashPtPos.z = spawnPt.position.z;
-			clashPt.position = clashPtPos;
-		}
 	}
 }
 

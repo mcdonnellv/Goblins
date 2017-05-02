@@ -23,6 +23,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public List<Text> moveLabels;
 	public CharacterDetails characterDetails;
 	public GameObject moveDetails;
+	public Image moveIcon;
 	public Text moveNameText;
 	public Text moveDescriptionText;
 	public Text moveEnergyText;
@@ -85,8 +86,18 @@ public class GoblinCombatPanel : MonoBehaviour {
 	}
 
 	public void Pressed() {
-		characterDetails.AssignCharacter(character.data);
-		characterDetails.gameObject.SetActive(true);
+		float time = 5f;
+		CombatUI cui = GameManager.gm.arena.combatUI;
+		cui.HideEnemyPanel();
+		foreach(Transform child in cui.targetPointerContainers)
+			Destroy(child.gameObject);
+
+		if(character != null)
+			cui.ShowTargetPointer(character.headTransform, time);
+		if(opponent != null){
+			cui.ShowTargetPointer(opponent.headTransform, time);
+			cui.ShowEnemyPanel(opponent);
+		}
 	}
 
 	public void HideWheel() {
@@ -99,6 +110,8 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public void DisplayMove() {
 		if(character != null && character.queuedMove != null) {
 			moveDetails.SetActive(true);
+			moveIcon.sprite = character.queuedMove.sprite;
+			moveIcon.color = character.queuedMove.ColorFromDamageType();
 			moveNameText.text = character.queuedMove.moveName;
 			moveDescriptionText.text = character.queuedMove.description;
 			moveEnergyText.text = character.queuedMove.energyCost.ToString() + " energy";

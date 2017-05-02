@@ -21,6 +21,7 @@ public class Arena : MonoBehaviour {
 	public MoveRollBonusStatusEffect superRollBonusStatusEffect;
 	public MoveRollBonusStatusEffect rollBonusStatusEffect;
 	private float generalTimer = 0f;
+	private OverlayCanvasController occ;
 
 	public enum State {
 		Inactive,
@@ -42,6 +43,7 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator InitState () {
 		Debug.Log("***Arena Init State***\n");
+		occ = OverlayCanvasController.instance;
 		round = 1;
 		combatUI.gameObject.SetActive(true);
 		goblins.Clear();
@@ -58,10 +60,10 @@ public class Arena : MonoBehaviour {
 		}
 		combatUI.RefreshPanelPositionNumbers();
 
-		OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "ENCOUNTER!");
-		float timer = encounterStartAnnounceTimer;
-		while(timer > 0f) {
-			timer-=Time.deltaTime;
+		occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "ENCOUNTER!");
+		generalTimer = encounterStartAnnounceTimer;
+		while(generalTimer > 0f) {
+			generalTimer-=Time.deltaTime;
 			yield return 0;
 		}
 
@@ -73,6 +75,7 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator WaitForRollPhaseState () {
 		Debug.Log("***Arena WaitforRollPhase State***\n");
+		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Roll Your Moves");
 		combatUI.rollButton.gameObject.SetActive(true);
 		combatUI.roundText.text = "Round " + round.ToString();
 		combatUI.stateText.text = "Move Roll Phase";
@@ -118,6 +121,7 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator PositionPhaseState () {
 		Debug.Log("***Arena PositionPhase State***\n");
+		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Position Your Goblins");
 		combatUI.stateText.text = "Positioning Phase";
 		combatUI.fightButton.gameObject.SetActive(true);
 		combatUI.ActivatePanels();
@@ -133,10 +137,10 @@ public class Arena : MonoBehaviour {
 		while (state == State.PositionPhase)
 			yield return 0;
 		combatUI.fightButton.gameObject.SetActive(false);
-		OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "ROUND " + round.ToString());
-		float timer = roundAnnounceTimer;
-		while(timer > 0f) {
-			timer-=Time.deltaTime;
+		occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "ROUND " + round.ToString());
+		generalTimer = roundAnnounceTimer;
+		while(generalTimer > 0f) {
+			generalTimer-=Time.deltaTime;
 			yield return 0;
 		}
 		NextState();
@@ -150,12 +154,19 @@ public class Arena : MonoBehaviour {
 
 		while (state == State.PlayerExecutionPhase)
 			yield return 0;
-
+		
 		NextState();
 	}
 
 	IEnumerator EnemyExecutionPhaseState () {
 		Debug.Log("***Arena EnemyExecutionPhase State***\n");
+		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Enemy's Turn");
+		generalTimer = em.timeDelayBetweenTurns;
+		while(generalTimer > 0f) {
+			generalTimer-=Time.deltaTime;
+			yield return 0;
+		}
+
 		RepositionEnemies();
 		em.Setup(enemySpawnSpots, false);
 		while (state == State.EnemyExecutionPhase)
@@ -188,19 +199,19 @@ public class Arena : MonoBehaviour {
 
 		if(allGoblinsDead) {
 			combatUI.roundText.text = "DEFEAT";
-			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "DEFEAT!");
+			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "DEFEAT!");
 			//show defeat banner;
 		}
 
 		if(allEnemiesDead) {
 			combatUI.roundText.text = "VICTORY";
-			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "VICTORY!");
+			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "VICTORY!");
 			//show victory banner;
 		}
 
-		float timer = victoryAnnounceTimer;
-		while(timer > 0f) {
-			timer-=Time.deltaTime;
+		generalTimer = victoryAnnounceTimer;
+		while(generalTimer > 0f) {
+			generalTimer-=Time.deltaTime;
 			yield return 0;
 		}
 
@@ -342,11 +353,11 @@ public class Arena : MonoBehaviour {
 		}
 		
 		if(se != null) {
-			OverlayCanvasController.instance.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, text1);
+			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, text1);
 			foreach(Character goblin in goblins) {
 				goblin.AddStatusEffect(se);
-				OverlayCanvasController.instance.ShowCombatText(goblin.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
-				goblin.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(goblin, se), SendMessageOptions.DontRequireReceiver);
+				occ.ShowCombatText(goblin.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
+				goblin.statusContainer.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(goblin, se), SendMessageOptions.DontRequireReceiver);
 				generalTimer = 3f;
 			}
 		}
@@ -411,18 +422,30 @@ public class Arena : MonoBehaviour {
 	public void Update() {
 		if(Input.GetMouseButtonDown(0)) {
 			Character enemyCharHit = null;
+			Character playerCharHit = null;
 			RaycastHit hitInfo = new RaycastHit();
 			bool hit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
 			if(hit) {
 				Character hitchar = hitInfo.transform.GetComponentInParent<Character>();
-				if(hitchar != null && !hitchar.isPlayerCharacter)
-					enemyCharHit = hitchar;
+				if(hitchar != null) {
+					if(!hitchar.isPlayerCharacter)
+						enemyCharHit = hitchar;
+					else
+						playerCharHit = hitchar;
+				}
 			}
 
 			if(enemyCharHit != null)
 				combatUI.ShowEnemyPanel(enemyCharHit);
 			else
 				combatUI.HideEnemyPanel();
+
+			if(playerCharHit != null) {
+				combatUI.characterDetails.gameObject.SetActive(true);
+				combatUI.characterDetails.AssignCharacter(playerCharHit.data);
+			}
+			else
+				combatUI.characterDetails.gameObject.SetActive(false);
 		}
 	}
 }

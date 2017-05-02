@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Serializable]
 public class CombatMove : MonoBehaviour {
@@ -41,6 +42,7 @@ public class CombatMove : MonoBehaviour {
 	public float critChance = .1f;
 	public int weight = 10;
 	public int energyCost = 2;
+	public Sprite sprite;
 	public MoveType moveType = MoveType.Damage;
 	public RangeType rangeType = RangeType.Melee;
 	public TargetType targetType = TargetType.Opponent;
@@ -68,4 +70,16 @@ public class CombatMove : MonoBehaviour {
 
 		return description;
 	} 
+
+	public Color ColorFromDamageType () {
+		switch(damageType) {
+		case DamageType.Slice: return Color.magenta;
+		case DamageType.Crush: return Color.yellow;
+		case DamageType.Arcane: return Color.blue;
+		case DamageType.Dark: return new Color(1f,0f,1f);
+		case DamageType.Fire: return Color.red;
+		case DamageType.Cold: return  Color.cyan;
+		}
+		return Color.white;
+	}
 }

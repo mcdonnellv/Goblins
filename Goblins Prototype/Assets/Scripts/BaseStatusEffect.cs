@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class BaseStatusEffect : MonoBehaviour {
+	public Character owner;
 	public string statusEffectName;
 	public string statusEffectDescription;
 	public int statusEffectID;
@@ -19,5 +20,8 @@ public class BaseStatusEffect : MonoBehaviour {
 	public virtual void OnStatusExpired(AttackTurnInfo ati) {}
 	public virtual void OnStatusRemoved(AttackTurnInfo ati) {}
 
+	public void Tapped() {
+		GameManager.gm.arena.combatUI.ShowToolTip(statusEffectName, statusEffectDescription, 3f);
+	}
 }
 

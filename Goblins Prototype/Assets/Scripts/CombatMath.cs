@@ -33,8 +33,8 @@ public class CombatMath : MonoBehaviour {
 		damage = Mathf.Max(0f, damage);
 		// status effects may alter the attack's damage value
 		AttackTurnInfo ati = new AttackTurnInfo(attacker, damage);
-		defender.BroadcastMessage("OnDamageDealtToMeCalc", ati, SendMessageOptions.DontRequireReceiver);
-		attacker.BroadcastMessage("OnDamageDealtByMeCalc", ati, SendMessageOptions.DontRequireReceiver);
+		defender.statusContainer.BroadcastMessage("OnDamageDealtToMeCalc", ati, SendMessageOptions.DontRequireReceiver);
+		attacker.statusContainer.BroadcastMessage("OnDamageDealtByMeCalc", ati, SendMessageOptions.DontRequireReceiver);
 		return ati.damage;
 	}
 

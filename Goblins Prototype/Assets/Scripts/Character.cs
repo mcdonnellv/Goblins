@@ -25,7 +25,7 @@ public class Character : MonoBehaviour {
 	public Transform spawnSpot;
 	public Transform headTransform;
 	public Transform statusContainerPrefab;
-	private Transform statusContainer;
+	public Transform statusContainer;
 	public Character target;
 	public Shader bwShader;
 	private Shader originalShader;
@@ -101,9 +101,9 @@ public class Character : MonoBehaviour {
 				return se;
 			}
 		}
-		GameObject go = Instantiate(newStatusEffect.gameObject, statusContainer, false);///////////////////////
-		//go.transform.Translate(new Vector3(0f,1f,0f));
+		GameObject go = Instantiate(newStatusEffect.gameObject, statusContainer, false);
 		BaseStatusEffect ret = go.GetComponent<BaseStatusEffect>();
+		ret.owner = this;
 		data.statusEffects.Add(ret);
 		return ret;
 	}
@@ -115,7 +115,7 @@ public class Character : MonoBehaviour {
 				continue;
 			se.statusEffectTurnsApplied--;
 			if(se.statusEffectTurnsApplied < 0) {
-				BroadcastMessage("OnStatusExpired",  new AttackTurnInfo(this), SendMessageOptions.DontRequireReceiver);
+				statusContainer.BroadcastMessage("OnStatusExpired",  new AttackTurnInfo(this), SendMessageOptions.DontRequireReceiver);
 				OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.StatusExpired, se.statusEffectName);
 				Debug.Log("\t" + data.givenName + " " + se.statusEffectName + " has expired\n");
 				data.statusEffects.Remove(se);
@@ -130,7 +130,7 @@ public class Character : MonoBehaviour {
 			BaseStatusEffect se = data.statusEffects[i];
 			if(se == null)
 				continue;
-			BroadcastMessage("OnStatusRemoved",  new AttackTurnInfo(this), SendMessageOptions.DontRequireReceiver);
+			statusContainer.BroadcastMessage("OnStatusRemoved",  new AttackTurnInfo(this), SendMessageOptions.DontRequireReceiver);
 			data.statusEffects.Remove(se);
 			Destroy(se.gameObject);
 			i--;

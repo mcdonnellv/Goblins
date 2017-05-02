@@ -7,9 +7,12 @@ using EckTechGames.FloatingCombatText;
 public class CombatUI : MonoBehaviour {
 
 	public List <GoblinCombatPanel> goblinPanels;
+	public CharacterDetails characterDetails;
 	public EnemyCombatPanel enemyPanel;
 	public Transform goblinPanelGrid;
 	public Transform statusContainers;
+	public Transform targetPointerContainers;
+	public Transform targetPointerPrefab;
 	public Button rollButton;
 	public Button fightButton;
 	public Text roundText;
@@ -17,6 +20,11 @@ public class CombatUI : MonoBehaviour {
 	public GameObject moveAnnouncePlayerMarker;
 	public GameObject moveAnnounceEnemyMarker;
 	public GameObject centerAnnounceMarker;
+	public GameObject upperAnnounceMarker;
+
+	public GameObject tooltipBox;
+	public Text tooltipBoxTitle;
+	public Text tooltipBoxDescription;
 	public CritTargetRing targetRing;
 	public CritFocusRing focusRing;
 	public Button critButton;
@@ -185,5 +193,45 @@ public class CombatUI : MonoBehaviour {
 		focusRing.gameObject.SetActive(false);
 		targetRing.gameObject.SetActive(false);
 		GameManager.gm.arena.em.state = ExecutionPhaseManager.State.Attack;
+	}
+
+	public void ShowToolTip(string title, string description, float time) {
+		StopCoroutine("HideToolTip");
+		tooltipBox.SetActive(true);
+		tooltipBoxTitle.text = title;
+		tooltipBoxDescription.text = description;
+		if(time > 0f) {
+			StartCoroutine(HideToolTip(time));
+		}
+	}
+
+	IEnumerator HideToolTip(float t) {
+		float time = t;
+		while (time > 0f) {
+			time -= Time.deltaTime;
+			yield return 0;
+		}
+		tooltipBox.SetActive(false);
+	}
+
+	public void ShowTargetPointer(Transform target, float time) {
+		StopCoroutine("HideTargetPointer");
+		Vector3 pos = Camera.main.WorldToScreenPoint(target.position + new Vector3(0f,.7f,0f));
+		Transform tp = GameObject.Instantiate(targetPointerPrefab, targetPointerContainers);
+		tp.position = pos;
+		if(time > 0f) {
+			StartCoroutine(HideTargetPointer(time));
+		}
+	}
+
+	IEnumerator HideTargetPointer(float t) {
+		float time = t;
+		while (time > 0f) {
+			time -= Time.deltaTime;
+			yield return 0;
+		}
+
+		foreach(Transform child in targetPointerContainers)
+			Destroy(child.gameObject);
 	}
 }
