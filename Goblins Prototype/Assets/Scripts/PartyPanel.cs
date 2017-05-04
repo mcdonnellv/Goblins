@@ -25,7 +25,7 @@ public class PartyPanel : MonoBehaviour {
 			GameManager.gm.roster.party.Add(p.character);
 			Character.Spawn(p.goblinPrefab, GameManager.gm.arena.playerSpawnSpots[partyPanels.IndexOf(p)], p.character, true);
 			if(p.spawnPt.childCount > 0) //destry obj in the prep area
-				Destroy(p.spawnPt.GetChild(0).gameObject);
+				p.spawnPt.GetChild(0).GetComponent<Character>().DeSpawn();
 			p.character = null;
 		}
 	}

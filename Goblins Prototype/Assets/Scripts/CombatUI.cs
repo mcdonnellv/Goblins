@@ -214,14 +214,12 @@ public class CombatUI : MonoBehaviour {
 		tooltipBox.SetActive(false);
 	}
 
-	public void ShowTargetPointer(Transform target, float time) {
+	public void ShowTargetPointer(Character character, float time) {
 		StopCoroutine("HideTargetPointer");
-		Vector3 pos = Camera.main.WorldToScreenPoint(target.position + new Vector3(0f,.7f,0f));
 		Transform tp = GameObject.Instantiate(targetPointerPrefab, targetPointerContainers);
-		tp.position = pos;
-		if(time > 0f) {
+		character.targetPointer = tp;
+		if(time > 0f)
 			StartCoroutine(HideTargetPointer(time));
-		}
 	}
 
 	IEnumerator HideTargetPointer(float t) {

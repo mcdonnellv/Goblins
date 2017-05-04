@@ -26,6 +26,9 @@ public class Character : MonoBehaviour {
 	public Transform headTransform;
 	public Transform statusContainerPrefab;
 	public Transform statusContainer;
+	public Transform lifeBarPrefab;
+	public Transform lifeBar;
+	public Transform targetPointer;
 	public Character target;
 	public Shader bwShader;
 	private Shader originalShader;
@@ -65,6 +68,7 @@ public class Character : MonoBehaviour {
 
 	public void DeSpawn() {
 		state = State.Unspawned;
+		Cleanup();
 		data.characterGameObject = null;
 		Destroy(gameObject);
 	}
@@ -108,6 +112,15 @@ public class Character : MonoBehaviour {
 		return ret;
 	}
 
+	public void RefreshLifeBar() {
+		Vector2 s1 = lifeBar.GetComponent<RectTransform>().sizeDelta;
+		float v = s1.x;
+		float curval = data.life;
+		float totVal = data.maxLife;
+		Vector2 s = lifeBar.GetChild(1).GetComponent<RectTransform>().sizeDelta;
+		lifeBar.GetChild(1).GetComponent<RectTransform>().sizeDelta = new Vector2(v * curval/totVal, s.y);
+	}
+
 	public void ProcessTurnForStatusEffects() {
 		for(int i=0; i < data.statusEffects.Count; i++) {
 			BaseStatusEffect se = data.statusEffects[i];
@@ -142,10 +155,36 @@ public class Character : MonoBehaviour {
 		data.energy = data.maxEnergy;
 	}
 
+	public void Death() {
+		if(state != Character.State.Ghost)
+			GetComponentInChildren<SpriteRenderer>().material.shader = bwShader;
+		Animator a = GetComponentInChildren<Animator>();
+		a.SetBool("Alive", false);
+		state = Character.State.Dead;
+		Cleanup();
+	}
+
+	public void Cleanup() {
+		RemoveAllStatusEffects();
+		if(lifeBar != null)
+			Destroy(lifeBar.gameObject);
+	}
+
 	public void Update() {
-		if(statusContainer == null)
-			statusContainer = GameObject.Instantiate(statusContainerPrefab, GameManager.gm.arena.combatUI.statusContainers, false);
-		statusContainer.position = Camera.main.WorldToScreenPoint(headTransform.position + new Vector3(0f,.7f,0f));
+		if (state != Character.State.Dead) {
+			if(statusContainer == null)
+				statusContainer = GameObject.Instantiate(statusContainerPrefab, GameManager.gm.arena.combatUI.statusContainers, false);
+			statusContainer.position = Camera.main.WorldToScreenPoint(headTransform.position + new Vector3(0f,.7f,0f));
+
+			if(state != Character.State.Ghost) {
+				if(lifeBar == null)
+					lifeBar = GameObject.Instantiate(lifeBarPrefab, GameManager.gm.arena.combatUI.statusContainers, false);
+				lifeBar.position = Camera.main.WorldToScreenPoint(headTransform.position + new Vector3(0f,.7f,0f));
+			}
+
+			if(targetPointer != null)
+				targetPointer.position = Camera.main.WorldToScreenPoint(headTransform.position + new Vector3(0f,1f,0f));
+		}
 	}
 
 }

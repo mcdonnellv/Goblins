@@ -215,11 +215,11 @@ public class Arena : MonoBehaviour {
 			yield return 0;
 		}
 
-		for( int i = 0; i < goblins.Count; i++)
-			goblins[i].RemoveAllStatusEffects();
-
-		for( int i = 0; i < enemies.Count; i++)
-			enemies[i].RemoveAllStatusEffects();
+//		for( int i = 0; i < goblins.Count; i++)
+//			goblins[i].RemoveAllStatusEffects();
+//
+//		for( int i = 0; i < enemies.Count; i++)
+//			enemies[i].RemoveAllStatusEffects();
 		
 		GameManager.gm.state = GameManager.State.Result;
 		state = State.Inactive;

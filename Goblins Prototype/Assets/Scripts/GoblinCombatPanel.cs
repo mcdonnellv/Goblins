@@ -86,16 +86,16 @@ public class GoblinCombatPanel : MonoBehaviour {
 	}
 
 	public void Pressed() {
-		float time = 5f;
+		float time = 3f;
 		CombatUI cui = GameManager.gm.arena.combatUI;
 		cui.HideEnemyPanel();
 		foreach(Transform child in cui.targetPointerContainers)
 			Destroy(child.gameObject);
 
 		if(character != null)
-			cui.ShowTargetPointer(character.headTransform, time);
+			cui.ShowTargetPointer(character, time);
 		if(opponent != null){
-			cui.ShowTargetPointer(opponent.headTransform, time);
+			cui.ShowTargetPointer(opponent, time);
 			cui.ShowEnemyPanel(opponent);
 		}
 	}

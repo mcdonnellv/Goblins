@@ -1,12 +1,12 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Character.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Character.cs">
     <Files>
-      <File FileName="Assets\Scripts\Arena.cs" Line="335" Column="1" />
-      <File FileName="Assets\Scripts\Character.cs" Line="145" Column="24" />
-      <File FileName="Assets\FloatingCombatText\Scripts\OverlayCanvasController.cs" Line="75" Column="37" />
-      <File FileName="Assets\FloatingCombatText\Scripts\CombatTextAnchorController.cs" Line="106" Column="3" />
-      <File FileName="Assets\Scripts\CombatUI.cs" Line="12" Column="35" />
+      <File FileName="Assets/Scripts/Arena.cs" Line="218" Column="4" />
+      <File FileName="Assets/Scripts/GoblinCombatPanel.cs" Line="89" Column="17" />
+      <File FileName="Assets/Scripts/ExecutionPhaseManager.cs" Line="399" Column="154" />
+      <File FileName="Assets/Scripts/CombatUI.cs" Line="232" Column="54" />
+      <File FileName="Assets/Scripts/Character.cs" Line="160" Column="61" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
@@ -16,6 +16,7 @@
       <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\unity-ui-extensions\Scripts\Layout\UIVerticalScroller.cs" line="176" column="1" />
       <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\unity-ui-extensions\Scripts\Layout\UIVerticalScroller.cs" line="156" column="1" />
       <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/ProtectedtStatusEffect.cs" line="15" column="120" />
+      <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/PartyMemberPanel.cs" line="86" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

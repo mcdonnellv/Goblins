@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using EckTechGames.FloatingCombatText;
 
 public class AttackTurnInfo : Object {
@@ -74,7 +75,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(isPlayerTurn)
 			arena.combatUI.FocusPanel(attacker.combatPosition);
 		attackSkipped = false;
-		attacker.statusContainer.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
+		if(attacker.statusContainer != null)
+			attacker.statusContainer.BroadcastMessage("OnMyTurnStarted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
 
 		//attacker can die from dots
 		if(attacker.data.life <= 0)
@@ -92,9 +94,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			NextState();
 			yield break;
 		}
-
-
-
+			
 
 		attacker.target = GetTarget(attacker);
 		if(attacker.target != null) {
@@ -126,15 +126,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			else
 				attacker.data.energy -= attacker.queuedMove.energyCost;
 		}
-
-		//announce move
-		GameObject moveTextMarker = isPlayerTurn ? GameManager.gm.arena.combatUI.moveAnnouncePlayerMarker : GameManager.gm.arena.combatUI.moveAnnounceEnemyMarker;
-		OverlayCanvasController.instance.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, attacker.queuedMove.moveName);
-		float timer = moveAnnounceTimer;
-		while(timer > 0f) {
-			timer-=Time.deltaTime;
-			yield return 0;
-		}
+			
+		arena.combatUI.ShowTargetPointer(attacker, 3f);
 
 		//roll for hit
 		hit = (attacker.target == null) ? true : arena.cm.RollForHit(attacker.data, attacker.target.data);
@@ -167,10 +160,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	IEnumerator AttackState() {
 		Character attacker = GetCurrentAttacker();
 		if(attacker.queuedMove.targetType == CombatMove.TargetType.Opponent || attacker.queuedMove.targetType == CombatMove.TargetType.RandomOpponent)
-		//	ClashCharacters(attacker, attacker.target);
 			StartCoroutine(GotoClashPositions(attacker, attacker.target));
 		else
-			CastOnFriendlyCharacter(attacker, attacker.target);
+			StartCoroutine(GotoCastPositions(attacker, attacker.target));
 
 		if(attacker.isPlayerCharacter)
 			arena.combatUI.GetPanelForPlayer(attacker).RefreshBars();
@@ -308,8 +300,26 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		return null;
 	}
 
+	IEnumerator GotoCastPositions(Character caster, Character target) {
+		OverlayCanvasController occ = OverlayCanvasController.instance;
+		CombatUI ui = GameManager.gm.arena.combatUI;
+		GameObject moveTextMarker = isPlayerTurn ? ui.moveAnnouncePlayerMarker : ui.moveAnnounceEnemyMarker;
+		//Image i = moveTextMarker.GetComponent<Image>();
+		//i.canvasRenderer.SetAlpha(0.1f);
+		//i.CrossFadeAlpha(.5f,.15f,false);
+		occ.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, caster.queuedMove.moveName.ToUpper());
+		float timer = moveAnnounceTimer;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
+		//i.canvasRenderer.SetAlpha(0f);
+		CastOnFriendlyCharacter(caster, target);
+	}
+
 	public void CastOnFriendlyCharacter(Character caster, Character target) {
 		OverlayCanvasController occ = OverlayCanvasController.instance;
+
 		//add any status effects that may come from the spell
 		foreach(BaseStatusEffect se in caster.queuedMove.moveStatusEffects){
 			target.AddStatusEffect(se);
@@ -328,7 +338,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			finalDamageHealed = Mathf.FloorToInt(damageHealed);
 			int amountHealed = arena.cm.ApplyHeal(finalDamageHealed, target.data);
 			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, amountHealed);
-
 		}
 	}
 
@@ -356,6 +365,22 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
+
+
+		OverlayCanvasController occ = OverlayCanvasController.instance;
+		CombatUI ui = GameManager.gm.arena.combatUI;
+		GameObject moveTextMarker = isPlayerTurn ? ui.moveAnnouncePlayerMarker : ui.moveAnnounceEnemyMarker;
+		//Image i = moveTextMarker.GetComponent<Image>();
+		//i.canvasRenderer.SetAlpha(0.1f);
+		//i.CrossFadeAlpha(.5f,.15f,false);
+		occ.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, attacker.queuedMove.moveName.ToUpper());
+		timer = moveAnnounceTimer;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
+		//i.canvasRenderer.SetAlpha(0f);
+
 		ClashCharacters(attacker, defender);
 	}
 
@@ -371,7 +396,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 					damage = damage * (arena.cm.baseCritDamageMultiplier + critModifer);
 				defender.statusContainer.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
 				finalDamage = Mathf.FloorToInt(damage);
-				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, finalDamage);
+				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, crit ? ("Crit\n" + finalDamage.ToString()) : finalDamage.ToString());
 				damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
 
 				float resist = arena.cm.GetResistForDamageType(attacker.queuedMove.damageType, defender.data);
@@ -391,6 +416,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		
 		Debug.Log("\t" + damageString + "\n");
 		arena.cm.ApplyDamage(finalDamage, defender.data);
+		defender.RefreshLifeBar();
 
 		int pos = attacker.combatPosition;
 		AnimateCamera(pos);
@@ -420,12 +446,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	public void CharacterDeath(Character c) {
 		Debug.Log("\t" + (c.isPlayerCharacter ? "Goblin " :"Enemy ") + c.data.givenName + " DIES!\n");
-		if(c.state != Character.State.Ghost)
-			c.GetComponentInChildren<SpriteRenderer>().material.shader = c.bwShader;
-		Animator a = c.GetComponentInChildren<Animator>();
-		a.SetBool("Alive", false);
-		c.state = Character.State.Dead;
-		c.RemoveAllStatusEffects();
+		c.Death();
+
 		if(c.isPlayerCharacter) {
 			GoblinCombatPanel gcp = arena.combatUI.GetPanelForPlayer(c);
 			gcp.GetComponent<CanvasGroup>().alpha = .3f;
