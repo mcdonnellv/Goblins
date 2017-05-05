@@ -75,10 +75,10 @@ public class CombatMove : MonoBehaviour {
 		switch(damageType) {
 		case DamageType.Slice: return Color.magenta;
 		case DamageType.Crush: return Color.yellow;
-		case DamageType.Arcane: return Color.blue;
+		case DamageType.Arcane: return Color.cyan;
 		case DamageType.Dark: return new Color(1f,0f,1f);
 		case DamageType.Fire: return Color.red;
-		case DamageType.Cold: return  Color.cyan;
+		case DamageType.Cold: return  Color.blue;
 		}
 		return Color.white;
 	}

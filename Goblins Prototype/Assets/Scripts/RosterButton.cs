@@ -13,10 +13,11 @@ public class RosterButton : MonoBehaviour {
 	public Text mindLabel;
 	public Text spiritLabel;
 	public Image iconImage;
+	public GameObject highlight;
 	public Roster roster;
 	public CharacterData character;
 	public bool inParty = false;
-
+	private Color originalColor;
 
 	// Use this for initialization
 	void Start () {
@@ -24,31 +25,37 @@ public class RosterButton : MonoBehaviour {
 	}
 
 	public void Setup (CharacterData currentCharacter) {
+		Image bg = GetComponent<Image>();
+		if(originalColor.Equals(new Color(0,0,0,0)))
+			originalColor = bg.color;
 		character = currentCharacter;
 		iconImage.sprite = currentCharacter.combatClass.icon;
 		nameLabel.text = character.combatClass.type.ToString();
-		lifeLabel.text = "Life: " + character.maxLife.ToString();
-		energyLabel.text = "Energy: " + character.maxEnergy.ToString();
+		lifeLabel.text = character.maxLife.ToString();
+		energyLabel.text = character.maxEnergy.ToString();
 		bodyLabel.text = "Body: " + character.body.ToString();
 		mindLabel.text = "Mind: " + character.mind.ToString();
 		spiritLabel.text = "Spirit :" + character.spirit.ToString();
 		SetInPartyStatus();
 		SetInHighlightedStatus();
+
 	}
 
 	void SetInPartyStatus() {
 		Image bg = GetComponent<Image>();
-		bg.color = inParty ? new Color(.4f,.81f,.58f) : Color.white;
+		bg.color = inParty ? originalColor * .8f : originalColor;
 		transform.localScale = new Vector3(1,1,1);
 	}
 
 	public void SetInHighlightedStatus() {
+		highlight.SetActive(false);
 		if(GameManager.gm.roster.highlightedCharacter != character)
 			return;
-		
-		Image bg = GetComponent<Image>();
-		bg.color = new Color(1f,1f,0);
-		transform.localScale = new Vector3(1,1,1);
+		highlight.SetActive(true);
+		foreach(Transform t in roster.partyGrid) {
+			PartyMemberPanel pmp = t.GetComponent<PartyMemberPanel>();
+			pmp.SetInHighlightedStatus();
+		}
 	}
 		
 	public void Pressed () {

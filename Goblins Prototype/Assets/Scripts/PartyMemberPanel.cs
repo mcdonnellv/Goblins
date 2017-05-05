@@ -18,6 +18,7 @@ public class PartyMemberPanel : MonoBehaviour {
 	public Button addButton;
 	public Button removeButton;
 	public Button detailsButton;
+	public GameObject highlight;
 
 	public Transform spawnPt;
 	public Transform goblinPrefab;
@@ -39,10 +40,18 @@ public class PartyMemberPanel : MonoBehaviour {
 		character = characterParam;
 		iconImage.sprite = character.combatClass.icon;
 		nameLabel.text = character.combatClass.type.ToString();
-		lifeLabel.text = "Life: " + character.maxLife.ToString();
-		energyLabel.text = "Energy: " + character.maxEnergy.ToString();
+		lifeLabel.text = character.maxLife.ToString();
+		energyLabel.text = character.maxEnergy.ToString();
 		SpawnGoblin();
 		cell.SetActive(true);
+		SetInHighlightedStatus();
+	}
+
+	public void SetInHighlightedStatus() {
+		highlight.SetActive(false);
+		if(GameManager.gm.roster.highlightedCharacter != character)
+			return;
+		highlight.SetActive(true);
 	}
 
 	public void AddButtonPressed() {
@@ -60,6 +69,7 @@ public class PartyMemberPanel : MonoBehaviour {
 		roster.Highlight(character);
 		addButton.gameObject.SetActive(false);
 		removeButton.gameObject.SetActive(true);
+		SetInHighlightedStatus();
 	}
 
 	private void SpawnGoblin() {
@@ -94,6 +104,7 @@ public class PartyMemberPanel : MonoBehaviour {
 		addButton.gameObject.SetActive(true);
 		removeButton.gameObject.SetActive(false);
 		cell.SetActive(false);
+		SetInHighlightedStatus();
 	}
 
 	public void DetailsButtonPressed() {

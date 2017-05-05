@@ -78,23 +78,20 @@ public class GameManager : MonoBehaviour {
 		prepUI.gameObject.SetActive(true);
 		PartyPanel pp = prepUI.gameObject.GetComponentInChildren<PartyPanel>(true);
 		pp.gameObject.SetActive(true);
-		int i=0;
-		foreach(Character goblin in arena.goblins) {
+		foreach(Transform t in arena.playerSpawnSpots) {
+			Character goblin = arena.GetTransformCharacter(t, true, false);
+			if(goblin == null)
+				continue;
 			bool removeFromRoster = false;
-			if(goblin.state != Character.State.Dead) {
+			if(goblin.state != Character.State.Dead && goblin.state != Character.State.Ghost)
 				goblin.RecoverFull();
-				pp.partyPanels[i].Setup(goblin.data);
-			}
-			else {
-				pp.partyPanels[i].RemoveButtonPressed();
-				foreach(CharacterData d in roster.goblins)
+			else 
+				foreach(CharacterData d in roster.goblins) //ghosts appear and hosts dont get removed!
 					if(d == goblin.data)
 					 removeFromRoster = true;	
-			}
 
 			if(removeFromRoster)
 				roster.goblins.Remove(goblin.data);
-			i++;
 		}
 
 		foreach(Character goblin in arena.goblins)

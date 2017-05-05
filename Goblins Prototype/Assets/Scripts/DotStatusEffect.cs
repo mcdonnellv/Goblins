@@ -17,11 +17,12 @@ public class DotStatusEffect : BaseStatusEffect {
 
 	public override void OnMyTurnStarted(AttackTurnInfo ati) {
 		OverlayCanvasController occ = OverlayCanvasController.instance;
+		Character recipient = ati.attacker;
 		CombatMath cm = GameManager.gm.arena.cm;
-		float damage = cm.RollForDamage(move, applier, ati.attacker);
+		float damage = cm.RollForDamage(move, applier, recipient);
 		int finalDamage = Mathf.FloorToInt(damage);
-		cm.ApplyDamage(finalDamage, ati.attacker.data);
-		ati.attacker.RefreshLifeBar();
-		occ.ShowCombatText(ati.attacker.headTransform.gameObject, CombatTextType.Hit, finalDamage.ToString());
+		cm.ApplyDamage(finalDamage, recipient.data);
+		occ.ShowCombatText(recipient.headTransform.gameObject, CombatTextType.Hit, finalDamage.ToString());
+		recipient.RefreshLifeBar();
 	}
 }

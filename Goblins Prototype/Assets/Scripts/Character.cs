@@ -119,6 +119,15 @@ public class Character : MonoBehaviour {
 		float totVal = data.maxLife;
 		Vector2 s = lifeBar.GetChild(1).GetComponent<RectTransform>().sizeDelta;
 		lifeBar.GetChild(1).GetComponent<RectTransform>().sizeDelta = new Vector2(v * curval/totVal, s.y);
+
+		if(isPlayerCharacter)
+			GameManager.gm.arena.combatUI.GetPanelForPlayer(this).RefreshBars();
+
+		if(target != null && target.isPlayerCharacter) {
+			GoblinCombatPanel gcp = GameManager.gm.arena.combatUI.GetPanelForPlayer(target);
+			if(gcp != null)
+				gcp.RefreshBars();
+		}
 	}
 
 	public void ProcessTurnForStatusEffects() {
