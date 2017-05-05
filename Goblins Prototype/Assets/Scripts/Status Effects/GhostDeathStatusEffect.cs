@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class GhostDeathStatusEffect : BaseStatusEffect {
 	public Character body;
+	private bool applied = false;
 
 	public override void OnStatusRemoved(AttackTurnInfo ati) {
 		KillGhost(ati);
@@ -15,12 +16,14 @@ public class GhostDeathStatusEffect : BaseStatusEffect {
 	}
 
 	private void KillGhost(AttackTurnInfo ati) {
-		Character g = GetComponentInParent<Character>();
-		GoblinCombatPanel gcp = GameManager.gm.arena.combatUI.GetPanelForPlayer(g);
-		int i = GameManager.gm.arena.goblins.IndexOf(g);
+		if(applied)
+			return;
+		GoblinCombatPanel gcp = GameManager.gm.arena.combatUI.GetPanelForPlayer(owner);
+		int i = GameManager.gm.arena.goblins.IndexOf(owner);
 		GameManager.gm.arena.goblins[i] = body;
 		gcp.character = body;
-		Debug.Log("\t" + g.data.givenName + " fades away\n");
-		g.DeSpawn();
+		Debug.Log("\t" + owner.data.givenName + " fades away\n");
+		owner.DeSpawn();
+		applied = true;
 	}
 }

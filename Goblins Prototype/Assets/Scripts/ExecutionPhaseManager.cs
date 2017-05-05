@@ -26,6 +26,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public float timeDelayBetweenTurns;
 	public float moveAnnounceTimer;
 	public GameObject curtain;
+	public GhostDeathStatusEffect ghostDeathEffectPrefab;
 
 	private int curAttacker;
 	private bool attackSkipped = false;
@@ -258,6 +259,19 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		switch(attacker.queuedMove.targetType){
 		case CombatMove.TargetType.Self: return attacker;
 		case CombatMove.TargetType.Opponent: return GetOpponent(attacker);
+		case CombatMove.TargetType.RandomOpponent:{
+				Character tar = null;
+				List<Character> opponents = isPlayerTurn ? arena.enemies : arena.goblins;
+				List<Character> aliveOpponents = new List<Character>();
+				foreach(Character a in aliveOpponents)
+					if(a.state != Character.State.Dead && a.state != Character.State.Ghost)
+						aliveOpponents.Add(a);
+				if(aliveOpponents.Count > 0) {
+					int roll = UnityEngine.Random.Range(0, aliveOpponents.Count);
+					tar = aliveOpponents[roll];
+				}
+				return tar;
+			}
 		case CombatMove.TargetType.RandomAlly: {
 				Character tar = null;
 				List<Character> aliveAllies = new List<Character>();
@@ -448,7 +462,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			Character g = Character.Spawn(ghostPrefab, c.spawnSpot, null, true).GetComponent<Character>();
 			g.state = Character.State.Ghost;
 			g.combatPosition = c.combatPosition;
-			GhostDeathStatusEffect gdse = (GhostDeathStatusEffect)g.data.statusEffects[0];
+			g.statusContainer = GameObject.Instantiate(g.statusContainerPrefab, arena.combatUI.statusContainers, false);
+			GhostDeathStatusEffect gdse = (GhostDeathStatusEffect)g.AddStatusEffect(ghostDeathEffectPrefab);
 			gdse.body = c;
 			gcp.character = g;
 			int ind = arena.goblins.IndexOf(c);
