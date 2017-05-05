@@ -164,15 +164,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		else
 			StartCoroutine(GotoCastPositions(attacker, attacker.target));
 
-		if(attacker.isPlayerCharacter)
-			arena.combatUI.GetPanelForPlayer(attacker).RefreshBars();
-
-		if(attacker.target != null && attacker.target.isPlayerCharacter) {
-			GoblinCombatPanel gcp = arena.combatUI.GetPanelForPlayer(attacker.target);
-			if(gcp != null)
-				gcp.RefreshBars();
-		}
-		
 		if(attacker.target != null && !attacker.target.isPlayerCharacter)
 			arena.combatUI.ShowEnemyPanel(attacker.target);
 		
@@ -338,6 +329,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			finalDamageHealed = Mathf.FloorToInt(damageHealed);
 			int amountHealed = arena.cm.ApplyHeal(finalDamageHealed, target.data);
 			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, amountHealed);
+			target.RefreshLifeBar();
 		}
 	}
 

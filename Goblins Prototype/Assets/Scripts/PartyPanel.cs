@@ -13,6 +13,9 @@ public class PartyPanel : MonoBehaviour {
 	public void StartButtonPressed() {
 		gameObject.SetActive(false);
 		SpawnPartyInArena();
+
+		foreach(PartyMemberPanel pmp in partyPanels)
+			pmp.RemoveButtonPressed();
 	}
 
 	private void SpawnPartyInArena() {

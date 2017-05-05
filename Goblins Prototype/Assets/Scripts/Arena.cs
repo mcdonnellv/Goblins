@@ -406,14 +406,21 @@ public class Arena : MonoBehaviour {
 			if(c == null)
 				continue;
 			
-			if(allowGhost && c.state == Character.State.Ghost)
-				return c;
+			if(c.state == Character.State.Ghost) {
+				if(allowGhost)
+					return c;
+				else
+					continue;
+			}
 
-			if(allowDead && c.state == Character.State.Dead)
-				return c;
+			if(c.state == Character.State.Dead) {
+				if(allowDead)
+					return c;
+				else
+					continue;
+			}
 
-			if(c.state != Character.State.Dead)
-				return c;
+			return c;
 		}
 		
 		return null;

@@ -75,7 +75,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 
 	public void SetOpponent(Character o) {
 		opponent = o;
-		if(o == null) {
+		if(o == null || o.state == Character.State.Dead) {
 			opponentInfo.SetActive(false);
 			return;
 		}
@@ -109,15 +109,23 @@ public class GoblinCombatPanel : MonoBehaviour {
 
 	public void DisplayMove() {
 		if(character != null && character.queuedMove != null) {
+			CombatMove combatMove = character.queuedMove;
 			moveDetails.SetActive(true);
-			moveIcon.sprite = character.queuedMove.sprite;
-			moveIcon.color = character.queuedMove.ColorFromDamageType();
-			moveNameText.text = character.queuedMove.moveName;
-			moveDescriptionText.text = character.queuedMove.description;
-			moveEnergyText.text = character.queuedMove.energyCost.ToString() + " energy";
-			moveDamageText.text = character.queuedMove.damageType.ToString();
-			if(character.queuedMove.damageType == CombatMove.DamageType.None)
+
+			moveNameText.text = combatMove.moveName;
+			moveIcon.sprite = combatMove.sprite;
+			moveIcon.color = combatMove.ColorFromDamageType();
+			moveDescriptionText.text = combatMove.description;//GenerateDesciption();
+			moveEnergyText.text = combatMove.energyCost + " Energy";
+			moveDamageText.text = combatMove.damageType.ToString() + " Damage";
+			moveDamageText.color = moveIcon.color;
+			if(combatMove.damageType == CombatMove.DamageType.None)
 				moveDamageText.text = "";
+			if(combatMove.moveType == CombatMove.MoveType.Heal) {
+				moveDamageText.text = "Healing";
+				moveDamageText.color = Color.green;
+				moveIcon.color = Color.green;
+			}
 		}
 	}
 }

@@ -73,7 +73,8 @@ public class Roster : MonoBehaviour {
 		//sort by class
 		goblins.Sort(
 			delegate(CharacterData i1, CharacterData i2) { 
-				return i1.combatClass.type.ToString().CompareTo(i2.combatClass.type.ToString()); 
+				return i2.maxLife.CompareTo(i1.maxLife); 
+				//return i1.combatClass.type.ToString().CompareTo(i2.combatClass.type.ToString()); 
 			} 
 		);
 		Debug.Log(rosterSize.ToString() + " goblins created");
