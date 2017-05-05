@@ -1,12 +1,12 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Character.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Character.cs">
     <Files>
-      <File FileName="Assets/Scripts/Arena.cs" Line="218" Column="4" />
-      <File FileName="Assets/Scripts/GoblinCombatPanel.cs" Line="89" Column="17" />
-      <File FileName="Assets/Scripts/ExecutionPhaseManager.cs" Line="399" Column="154" />
-      <File FileName="Assets/Scripts/CombatUI.cs" Line="232" Column="54" />
-      <File FileName="Assets/Scripts/Character.cs" Line="160" Column="61" />
+      <File FileName="Assets\Scripts\Arena.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\GoblinCombatPanel.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\ExecutionPhaseManager.cs" Line="81" Column="3" />
+      <File FileName="Assets\Scripts\CombatUI.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Character.cs" Line="103" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

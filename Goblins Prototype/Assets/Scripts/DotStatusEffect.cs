@@ -21,6 +21,7 @@ public class DotStatusEffect : BaseStatusEffect {
 		float damage = cm.RollForDamage(move, applier, ati.attacker);
 		int finalDamage = Mathf.FloorToInt(damage);
 		cm.ApplyDamage(finalDamage, ati.attacker.data);
+		ati.attacker.RefreshLifeBar();
 		occ.ShowCombatText(ati.attacker.headTransform.gameObject, CombatTextType.Hit, finalDamage.ToString());
 	}
 }
