@@ -53,7 +53,9 @@
      <Compile Include="Assets\FloatingCombatText\Scripts\CombatTextController.cs" />
      <Compile Include="Assets\FloatingCombatText\Scripts\CombatTextType.cs" />
      <Compile Include="Assets\FloatingCombatText\Scripts\OverlayCanvasController.cs" />
+     <Compile Include="Assets\LifeBar.cs" />
      <Compile Include="Assets\Scripts\Arena.cs" />
+     <Compile Include="Assets\Scripts\AttackTurnInfo.cs" />
      <Compile Include="Assets\Scripts\Character.cs" />
      <Compile Include="Assets\Scripts\CharacterData.cs" />
      <Compile Include="Assets\Scripts\CharacterDetails.cs" />

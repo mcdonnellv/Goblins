@@ -28,6 +28,7 @@ public class CombatMove : MonoBehaviour {
 		RandomAlly,
 		RandomOpponent,
 		MostDamagedAlly,
+		AllyBehind,
 		None,
 	}
 

@@ -138,7 +138,6 @@ public class Character : MonoBehaviour {
 			se.statusEffectTurnsApplied--;
 			if(se.statusEffectTurnsApplied < 0) {
 				statusContainer.BroadcastMessage("OnStatusExpired",  new AttackTurnInfo(this), SendMessageOptions.DontRequireReceiver);
-				OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.StatusExpired, se.statusEffectName);
 				Debug.Log("\t" + data.givenName + " " + se.statusEffectName + " has expired\n");
 				data.statusEffects.Remove(se);
 				Destroy(se.gameObject);
@@ -177,6 +176,13 @@ public class Character : MonoBehaviour {
 		RemoveAllStatusEffects();
 		if(lifeBar != null)
 			Destroy(lifeBar.gameObject);
+	}
+
+	public void ShowLifeBar(bool show) {
+		if(lifeBar != null)
+			lifeBar.gameObject.SetActive(show);
+		if(statusContainer != null)
+			statusContainer.gameObject.SetActive(show);
 	}
 
 	public void Update() {

@@ -4,21 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using EckTechGames.FloatingCombatText;
 
-public class AttackTurnInfo : Object {
-	public Character attacker;
-	public Character defender;
-	public float damage;
-	public BaseStatusEffect statusEffect;
-
-	public AttackTurnInfo(Character a) { attacker = a; }
-	public AttackTurnInfo(Character a, float d) { attacker = a; damage = d;}
-	public AttackTurnInfo(Character a, BaseStatusEffect s) { attacker = a; statusEffect = s;}
-}
 
 public class ExecutionPhaseManager : MonoBehaviour {
 	public Arena arena;
 	public Transform ghostPrefab;
 	public List<Character> attackers = new List<Character>();
+	public List<Character> defenders = new List<Character>();
+
 	public List<Transform> playerClashPt;
 	public List<Transform> enemyClashPt;
 	public bool isPlayerTurn = true;
@@ -28,7 +20,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public GameObject curtain;
 	public GhostDeathStatusEffect ghostDeathEffectPrefab;
 
-	private int curAttacker;
+	private int curAttackPos;
 	private bool attackSkipped = false;
 	private bool crit = false;
 	public float critModifer = 0f;
@@ -45,7 +37,18 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 	public State state;
 
-	public Character GetCurrentAttacker() { return attackers[curAttacker]; }
+	public Character GetCurrentAttacker() { 
+		foreach(Character a in attackers)
+			if(a.combatPosition == curAttackPos)
+				return a; 
+		return null;
+	}
+	public Character GetCurrentDefender() { 
+		foreach(Character a in defenders)
+			if(a.combatPosition == curAttackPos)
+				return a; 
+		return null;
+	}
 
 	IEnumerator InactiveState () {
 		while (state == State.Inactive)
@@ -54,7 +57,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator InitState () {
-		curAttacker = 0;
+		curAttackPos = 1;
 		if(attackers.Count == 0)
 			state = State.End;
 		else
@@ -66,13 +69,15 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator PreAttackState () {
 		critModifer = 0f;
-		if(curAttacker >=  attackers.Count) {
-			state = State.End;
+		Character attacker = GetCurrentAttacker();
+		arena.selectedChar = attacker;
+		if(attacker == null) {
+			attackSkipped = true;
+			state = State.AttackDone;
 			NextState();
 			yield break;
 		}
-
-		Character attacker = attackers[curAttacker];
+			
 		if(isPlayerTurn)
 			arena.combatUI.FocusPanel(attacker.combatPosition);
 		attackSkipped = false;
@@ -87,16 +92,11 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(attacker.state == Character.State.Dead) {
 			attackSkipped = true;
 			Debug.Log("\t" + attacker.data.givenName + " is dead, skipping attack\n");
-			curAttacker++;
-			if (curAttacker >= attackers.Count)
-				state = State.End;
-			else
-				state = State.PreAttack;
+			state = State.AttackDone;
 			NextState();
 			yield break;
 		}
 			
-
 		attacker.target = GetTarget(attacker);
 		if(attacker.target != null) {
 			attacker.target.statusContainer.BroadcastMessage("OnIGotTargetted",  new AttackTurnInfo(attacker), SendMessageOptions.DontRequireReceiver);
@@ -150,7 +150,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator CritGameState () {
 		OverlayCanvasController.instance.ShowCombatText(arena.combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "CRITICAL HIT!");
-		Character attacker = attackers[curAttacker];
+		Character attacker = GetCurrentAttacker();
 		arena.combatUI.StartCritGameUI(attacker.headTransform.gameObject);
 		while (state == State.CritGame) {
 			yield return 0;
@@ -178,52 +178,102 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		curtain.SetActive(false);
 		arena.combatUI.HideEnemyPanel();
 		//do any post attack combat move effects
-		CombatMove move = attackers[curAttacker].queuedMove;
 		Character attacker = GetCurrentAttacker();
-		if(attacker.state != Character.State.Ghost)
-			attacker.GetComponentInChildren<SpriteRenderer>().material.shader = attacker.bwShader;
-			
-		if(hit) {
-			if(move.displaceOpponent && attacker.target != null && attacker.target.state != Character.State.Dead) {
-				int pos = attacker.target.combatPosition;
-				arena.MoveCharacterToNewPosition(attackers[curAttacker].target, pos + 1);
+		if(attacker != null) {
+			CombatMove move = attacker.queuedMove;
+			//if(attacker.state != Character.State.Ghost)
+				//attacker.GetComponentInChildren<SpriteRenderer>().material.shader = attacker.bwShader;
+				
+			if(hit) {
+				if(move.displaceOpponent && attacker.target != null && attacker.target.state != Character.State.Dead) {
+					int pos = attacker.target.combatPosition;
+					arena.MoveCharacterToNewPosition(attacker.target, pos + 1);
+				}
+			}
+
+			float timer = attackSkipped ? .2f : timeDelayBetweenAttacks;
+			while(timer > 0f) {
+				timer-=Time.deltaTime;
+				yield return 0;
 			}
 		}
 
-		float timer = attackSkipped ? .2f : timeDelayBetweenAttacks;
+		if(!isPlayerTurn) {
+			if(attacker != null) {
+				attacker.ShowLifeBar(false);
+				if(attacker.state != Character.State.Ghost)
+					attacker.GetComponentInChildren<SpriteRenderer>().material.shader = attacker.bwShader;
+			}
+			Character defender = GetCurrentDefender();
+			if(defender != null) {
+				defender.ShowLifeBar(false);
+				if(defender.state != Character.State.Ghost)
+					defender.GetComponentInChildren<SpriteRenderer>().material.shader = defender.bwShader;
+			}
+		}
+
+		if(!isPlayerTurn) {
+			curAttackPos++;
+			if(curAttackPos > 4) {
+				state = State.End;
+				NextState();
+				yield break;
+			}
+		}
+
+		//now swap attackers and defenders
+		isPlayerTurn = !isPlayerTurn;
+		List<Character> temp = attackers;
+		attackers = defenders;
+		defenders = temp;
+		state = State.PreAttack;
+		NextState();
+	}
+
+	IEnumerator EndState () {
+		foreach(Character a in attackers)
+			a.ShowLifeBar(true);
+		foreach(Character d in defenders)
+			d.ShowLifeBar(true);
+		
+		arena.combatUI.UnFocusPanels();
+		BackToIdle();
+
+		if(!isPlayerTurn) {
+			BackToSpawnSpot();
+			StartCoroutine(GotoSpawnPositions());
+		}
+
+		float timer = 1f;
 		while(timer > 0f) {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
 
-		curAttacker++;
-		if (curAttacker >= attackers.Count)
-			state = State.End;
-		else
-			state = State.PreAttack;
-		while (state == State.AttackDone) {
+		foreach(Character a in attackers){
+			if(a.statusContainer != null) {
+				a.statusContainer.BroadcastMessage("OnTurnEnded",  new AttackTurnInfo(a), SendMessageOptions.DontRequireReceiver);
+				if(a.data.life <= 0)
+					CharacterDeath(a);
+			}
+		}
+		foreach(Character a in defenders){
+			if(a.statusContainer != null) {
+				a.statusContainer.BroadcastMessage("OnTurnEnded",  new AttackTurnInfo(a), SendMessageOptions.DontRequireReceiver);
+				if(a.data.life <= 0)
+					CharacterDeath(a);
+			}
+		}
+
+		timer = timeDelayBetweenTurns;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
 			yield return 0;
 		}
-		NextState();
-	}
 
-	IEnumerator EndState () {
-		for( int i = 0; i < arena.goblins.Count; i++)
-			arena.goblins[i].ProcessTurnForStatusEffects();
-
-		for( int i = 0; i < arena.enemies.Count; i++)
-			arena.enemies[i].ProcessTurnForStatusEffects();
-
-		arena.combatUI.UnFocusPanels();
-		BackToIdle();
-		BackToSpawnSpot();
-		StartCoroutine(GotoSpawnPositions());
 		attackers.Clear();
-
-		if(isPlayerTurn)
-			arena.state = Arena.State.EnemyExecutionPhase;
-		else
-			arena.state = Arena.State.EndOfTurn;
+		defenders.Clear();
+		
 		state = State.Inactive;
 		while (state == State.End)
 			yield return 0;
@@ -244,14 +294,16 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		NextState();
 	}
 
-	public void Setup(List<Transform> spawnPts, bool playerTurn) {
+	public void Setup(bool playerTurn) {
 		isPlayerTurn = playerTurn;
-		foreach(Transform spawnPt in spawnPts) {
-			Character c = arena.GetTransformCharacter(spawnPt, false, true);
-			if(c != null)
+		attackers.Clear();
+		foreach(Character c in arena.goblins) 
+			if(c.state != Character.State.Dead)
 				attackers.Add(c);
-		}
-			
+		defenders.Clear();
+		foreach(Character c in arena.enemies) 
+			if(c.state != Character.State.Dead)
+				defenders.Add(c);
 		state = State.Init;
 	}
 
@@ -290,6 +342,13 @@ public class ExecutionPhaseManager : MonoBehaviour {
 					if(a.state != Character.State.Dead && a.state != Character.State.Ghost && a.data.life != a.data.maxLife && a.data.life < mosthurt.data.life)
 						mosthurt = a;
 				return mosthurt;
+			}
+		case CombatMove.TargetType.AllyBehind: {
+				int posbehind = Mathf.Min(attacker.combatPosition + 1, 4);
+				foreach(Character a in attackers)
+					if(a.combatPosition == posbehind)
+						return a;
+				return null;
 			}
 		}
 		return null;
@@ -451,6 +510,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	public void CharacterDeath(Character c) {
+		if(c.state == Character.State.Dead)
+			return;
 		Debug.Log("\t" + (c.isPlayerCharacter ? "Goblin " :"Enemy ") + c.data.givenName + " DIES!\n");
 		c.Death();
 

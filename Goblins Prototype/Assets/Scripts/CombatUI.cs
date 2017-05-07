@@ -105,13 +105,17 @@ public class CombatUI : MonoBehaviour {
 	}
 
 	public void FocusPanel(int combatPos) {
-		foreach(GoblinCombatPanel panel in goblinPanels)
+		foreach(GoblinCombatPanel panel in goblinPanels) {
 			panel.curtain.SetActive(panel.position != combatPos);
+			panel.SetInHighlightedStatus();
+		}
 	}
 
 	public void UnFocusPanels() {
-		foreach(GoblinCombatPanel panel in goblinPanels)
+		foreach(GoblinCombatPanel panel in goblinPanels) {
 			panel.curtain.SetActive(false);
+			panel.SetInHighlightedStatus();
+		}
 	}
 
 	public void RollButtonPressed() {

@@ -7,11 +7,10 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public int position;
 	public Text positionText;
 	public Text classText;
-	public Text lifeText;
 	public Text energyText;
 	public GameObject curtain;
 	public GameObject wheelCover;
-	public Image lifeBar;
+	public LifeBar lifeBar;
 	public Image energyBar;
 	public Image iconImage;
 	public Image opponentImage;
@@ -28,9 +27,11 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public Text moveDescriptionText;
 	public Text moveEnergyText;
 	public Text moveDamageText;
+	public GameObject highlight;
 
 	public void Setup(Character c) {
 		character = c;
+		lifeBar.Setup(c);
 		iconImage.sprite = character.data.combatClass.icon;
 		classText.text = character.data.combatClass.type.ToString();
 		RefreshMoveNames();
@@ -40,12 +41,21 @@ public class GoblinCombatPanel : MonoBehaviour {
 		moveDetails.SetActive(false);
 		curtain.SetActive(false);
 		HideWheel();
+		SetInHighlightedStatus();
+
 	}
 
+	public void SetInHighlightedStatus() {
+		highlight.SetActive(false);
+		if(GameManager.gm.arena.selectedChar != character)
+			return;
+		highlight.SetActive(true);
+	}
+
+
 	public void RefreshBars() {
-		lifeText.text = character.data.life.ToString() + "/" + character.data.maxLife.ToString();
+		lifeBar.Refresh();
 		energyText.text = character.data.energy.ToString() + "/" + character.data.maxEnergy.ToString();
-		RefreshBar(lifeBar, character.data.life, character.data.maxLife, 172f);
 		RefreshBar(energyBar, character.data.energy, character.data.maxEnergy, 172f);
 		if(opponent != null)
 			RefreshBar(opponentLifeBar, opponent.data.life, opponent.data.maxLife, 70f);
@@ -86,18 +96,22 @@ public class GoblinCombatPanel : MonoBehaviour {
 	}
 
 	public void Pressed() {
-		float time = 3f;
+		float time = float.MaxValue;
 		CombatUI cui = GameManager.gm.arena.combatUI;
 		cui.HideEnemyPanel();
 		foreach(Transform child in cui.targetPointerContainers)
 			Destroy(child.gameObject);
 
-		if(character != null)
+		if(character != null) {
+			GameManager.gm.arena.selectedChar = character;
 			cui.ShowTargetPointer(character, time);
+		}
 		if(opponent != null){
 			cui.ShowTargetPointer(opponent, time);
 			cui.ShowEnemyPanel(opponent);
 		}
+		foreach(GoblinCombatPanel gcp in cui.goblinPanels)
+			gcp.SetInHighlightedStatus();
 	}
 
 	public void HideWheel() {

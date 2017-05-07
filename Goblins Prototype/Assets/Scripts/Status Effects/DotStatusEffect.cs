@@ -15,7 +15,7 @@ public class DotStatusEffect : BaseStatusEffect {
 		}
 	}
 
-	public override void OnMyTurnStarted(AttackTurnInfo ati) {
+	public override void OnTurnEnded(AttackTurnInfo ati) {
 		OverlayCanvasController occ = OverlayCanvasController.instance;
 		Character recipient = ati.attacker;
 		CombatMath cm = GameManager.gm.arena.cm;

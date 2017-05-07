@@ -19,6 +19,7 @@ public class BaseStatusEffect : MonoBehaviour {
 	public virtual void OnMyTurnStarted(AttackTurnInfo ati) {}
 	public virtual void OnStatusExpired(AttackTurnInfo ati) {}
 	public virtual void OnStatusRemoved(AttackTurnInfo ati) {}
+	public virtual void OnTurnEnded(AttackTurnInfo ati) {}
 
 	public void Tapped() {
 		GameManager.gm.arena.combatUI.ShowToolTip(statusEffectName, statusEffectDescription, 3f);
