@@ -159,6 +159,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator AttackState() {
+		
 		Character attacker = GetCurrentAttacker();
 		if(attacker.queuedMove.targetType == CombatMove.TargetType.Opponent || attacker.queuedMove.targetType == CombatMove.TargetType.RandomOpponent)
 			StartCoroutine(GotoClashPositions(attacker, attacker.target));
@@ -213,6 +214,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		}
 
 		if(!isPlayerTurn) {
+			MoveCharactersBack(curAttackPos);
 			curAttackPos++;
 			if(curAttackPos > 4) {
 				state = State.End;
@@ -231,10 +233,15 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator EndState () {
-		foreach(Character a in attackers)
+
+		foreach(Character a in attackers) {
 			a.ShowLifeBar(true);
-		foreach(Character d in defenders)
+			a.transform.localScale = Vector3.one;
+		}
+		foreach(Character d in defenders) {
 			d.ShowLifeBar(true);
+			d.transform.localScale = Vector3.one;
+		}
 		
 		arena.combatUI.UnFocusPanels();
 		BackToIdle();
@@ -249,6 +256,9 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
+
+		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
+		camAnimator.Play("CamExecuteExit");
 
 		foreach(Character a in attackers){
 			if(a.statusContainer != null) {
@@ -354,6 +364,23 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		return null;
 	}
 
+	private void MoveCharactersBack(int pos) {
+		List<Character> l = new List<Character>();
+		foreach(Character c in attackers)
+			if(c.combatPosition == pos)
+				l.Add(c);
+		foreach(Character c in defenders)
+			if(c.combatPosition == pos)
+				l.Add(c);
+
+		foreach(Character c in l) {
+			float conv = (-c.combatPosition + 5f) * .25f; // .25 to 1
+			float s = .6f + (c.combatPosition / 4f * .4f);
+			c.transform.Translate(0, conv, conv);
+			c.transform.localScale = new Vector3(s,s,s);
+		}
+	}
+
 	public Character GetOpponent(Character attacker) {
 		List<Character> opponents = isPlayerTurn ? arena.enemies : arena.goblins;
 		foreach(Character c in opponents) {
@@ -365,23 +392,37 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator GotoCastPositions(Character caster, Character target) {
-		OverlayCanvasController occ = OverlayCanvasController.instance;
-		CombatUI ui = GameManager.gm.arena.combatUI;
-		GameObject moveTextMarker = isPlayerTurn ? ui.moveAnnouncePlayerMarker : ui.moveAnnounceEnemyMarker;
-		//Image i = moveTextMarker.GetComponent<Image>();
-		//i.canvasRenderer.SetAlpha(0.1f);
-		//i.CrossFadeAlpha(.5f,.15f,false);
-		occ.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, caster.queuedMove.moveName.ToUpper());
-		float timer = moveAnnounceTimer;
+		int pos = caster.combatPosition;
+		if(isPlayerTurn) 
+			caster.transform.SetParent(playerClashPt[pos-1].transform, false);
+		else 
+			caster.transform.SetParent(enemyClashPt[pos-1].transform, false);
+
+		Animator a = isPlayerTurn ? playerClashPt[pos-1].GetComponent<Animator>() : enemyClashPt[pos-1].GetComponent<Animator>();
+		if(a != null) 
+			a.SetBool("active", true);
+
+		float timer = .34f / 1.5f;
 		while(timer > 0f) {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
-		//i.canvasRenderer.SetAlpha(0f);
+
+		OverlayCanvasController occ = OverlayCanvasController.instance;
+		CombatUI ui = GameManager.gm.arena.combatUI;
+		GameObject moveTextMarker = isPlayerTurn ? ui.moveAnnouncePlayerMarker : ui.moveAnnounceEnemyMarker;
+		occ.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, caster.queuedMove.moveName.ToUpper());
+		timer = moveAnnounceTimer;
+		while(timer > 0f) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
 		CastOnFriendlyCharacter(caster, target);
 	}
 
 	public void CastOnFriendlyCharacter(Character caster, Character target) {
+		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
+		camAnimator.Play("CamZoomInCombat");
 		OverlayCanvasController occ = OverlayCanvasController.instance;
 
 		//add any status effects that may come from the spell
@@ -450,6 +491,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	public void ClashCharacters(Character attacker, Character defender) {
+		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
+		camAnimator.Play("CamZoomInCombat");
 		OverlayCanvasController occ = OverlayCanvasController.instance;
 		float damage = 0f;
 		int finalDamage = 0;
@@ -484,7 +527,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		defender.RefreshLifeBar();
 
 		int pos = attacker.combatPosition;
-		AnimateCamera(pos);
 
 		attacker.Idle();
 		defender.Idle();
@@ -504,10 +546,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			a.SetTrigger("Melee Defend");
 	}
 
-	public void AnimateCamera(int pos) {
-		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
-		camAnimator.Play("ZoomInCombat "+ pos.ToString());
-	}
+
 
 	public void CharacterDeath(Character c) {
 		if(c.state == Character.State.Dead)

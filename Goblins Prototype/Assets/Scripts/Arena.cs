@@ -137,6 +137,8 @@ public class Arena : MonoBehaviour {
 
 		while (state == State.PositionPhase)
 			yield return 0;
+		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
+		camAnimator.Play("CamExecuteEnter");
 		combatUI.fightButton.gameObject.SetActive(false);
 		occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "ROUND " + round.ToString());
 		generalTimer = roundAnnounceTimer;
@@ -149,13 +151,14 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator PlayerExecutionPhaseState () {
 		Debug.Log("***Arena ExecutionPhase State***\n");
+
+		combatUI.positionIndicator.SetActive(false);
 		combatUI.DeactivatePanels();
 		combatUI.stateText.text = "";
 		em.Setup(true);
 
 		while (em.state != ExecutionPhaseManager.State.Inactive)
 			yield return 0;
-
 		RepositionEnemies();
 		state = State.EndOfTurn;
 		NextState();
@@ -163,7 +166,7 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator EndOfTurnState () {
 		Debug.Log("***Arena End Of Turn State***\n");
-
+		combatUI.positionIndicator.SetActive(true);
 		for( int i = 0; i < goblins.Count; i++)
 			goblins[i].ProcessTurnForStatusEffects();
 

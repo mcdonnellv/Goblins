@@ -21,6 +21,7 @@ public class CombatUI : MonoBehaviour {
 	public GameObject moveAnnounceEnemyMarker;
 	public GameObject centerAnnounceMarker;
 	public GameObject upperAnnounceMarker;
+	public GameObject positionIndicator;
 
 	public GameObject tooltipBox;
 	public Text tooltipBoxTitle;
