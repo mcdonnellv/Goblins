@@ -14,7 +14,7 @@
 		void surf (Input IN, inout SurfaceOutput o) {
 			// Albedo comes from a texture tinted by color
 			half4 c = tex2D (_MainTex, IN.uv_MainTex);
-			o.Albedo = (c.r + c.g + c.b)/5;//dot(c.rgb, float3(0.3, 0.59, 0.11));
+			o.Albedo = (c.r + c.g + c.b)/4;
             o.Alpha = c.a;
 		}
 		ENDCG

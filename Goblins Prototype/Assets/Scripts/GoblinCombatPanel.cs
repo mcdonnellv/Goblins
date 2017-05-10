@@ -27,6 +27,8 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public Text moveDescriptionText;
 	public Text moveEnergyText;
 	public Text moveDamageText;
+	public Text moveNumberText;
+	public Image moveNumberBg;
 	public GameObject highlight;
 
 	public void Setup(Character c) {
@@ -133,6 +135,9 @@ public class GoblinCombatPanel : MonoBehaviour {
 			moveEnergyText.text = combatMove.energyCost + " Energy";
 			moveDamageText.text = combatMove.damageType.ToString() + " Damage";
 			moveDamageText.color = moveIcon.color;
+			int pos = character.data.moves.IndexOf(combatMove) + 1;
+			moveNumberText.text = pos.ToString();
+			moveNumberBg.color = CombatMove.ColorFromMovePosition(pos);
 			if(combatMove.damageType == CombatMove.DamageType.None)
 				moveDamageText.text = "";
 			if(combatMove.moveType == CombatMove.MoveType.Heal) {

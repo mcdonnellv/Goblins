@@ -1,10 +1,9 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ExecutionPhaseManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\CombatUI.cs">
     <Files>
-      <File FileName="Assets/Scripts/CombatUI.cs" Line="24" Column="37" />
-      <File FileName="Assets/Scripts/ExecutionPhaseManager.cs" Line="262" Column="3" />
-      <File FileName="Assets/Scripts/Arena.cs" Line="161" Column="19" />
+      <File FileName="Assets\Scripts\CombatUI.cs" Line="246" Column="52" />
+      <File FileName="Assets\Scripts\Character.cs" Line="201" Column="109" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

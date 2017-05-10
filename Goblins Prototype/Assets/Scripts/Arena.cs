@@ -76,12 +76,12 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator WaitForRollPhaseState () {
 		Debug.Log("***Arena WaitforRollPhase State***\n");
-		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Roll Your Moves");
+		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Rolling Moves");
 		combatUI.rollButton.gameObject.SetActive(true);
 		combatUI.roundText.text = "Round " + round.ToString();
 		combatUI.stateText.text = "Move Roll Phase";
 
-		if(GameManager.gm.autoplay)
+		if(true)//GameManager.gm.autoplay)
 			state = Arena.State.MoveRollPhase;
 			
 		while (state == State.WaitForRollPhase)

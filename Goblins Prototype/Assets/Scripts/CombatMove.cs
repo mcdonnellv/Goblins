@@ -83,4 +83,13 @@ public class CombatMove : MonoBehaviour {
 		}
 		return Color.white;
 	}
+
+	public static Color ColorFromMovePosition (int pos) {
+		switch(pos) {
+		case 1: return new Color(0.804f, 0.918f, 0.804f);
+		case 2: return new Color(0.918f, 0.678f, 0.376f);
+		case 3: return new Color(0.902f, 0.804f, 0.918f);
+		}
+		return Color.white;
+	}
 }

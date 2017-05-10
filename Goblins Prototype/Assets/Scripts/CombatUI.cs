@@ -237,4 +237,25 @@ public class CombatUI : MonoBehaviour {
 		foreach(Transform child in targetPointerContainers)
 			Destroy(child.gameObject);
 	}
+
+	public void Update() {
+		if(positionIndicator != null && positionIndicator.transform.childCount > 0) {
+			for(int i=0; i<4; i++) {
+				Transform c = positionIndicator.transform.GetChild(i);
+				Arena arena = GameManager.gm.arena;
+				Vector3 p = arena.playerSpawnSpots[i].position;
+				p.z = 0f;
+				c.position = Camera.main.WorldToScreenPoint(p + new Vector3(0f,-.5f,0f));
+			}
+
+			for(int i=0; i<4; i++) {
+				Transform c = positionIndicator.transform.GetChild(i+4);
+				Arena arena = GameManager.gm.arena;
+				Vector3 p = arena.enemySpawnSpots[i].position;
+				p.z = 0f;
+				c.position = Camera.main.WorldToScreenPoint(p + new Vector3(0f,-.5f,0f));
+			}
+
+		}
+	}
 }
