@@ -9,7 +9,12 @@ public class CombatMath : MonoBehaviour {
 	public float baseCritDamageMultiplierIncrement = .5f;
 	public float baseCritChance = 0.1f;
 
-	public bool RollForHit(CharacterData attacker, CharacterData defender) {
+	public bool RollForHit(CharacterData attacker, CharacterData defender, CombatMove move) {
+		//magical ranged attacks always hit
+		if(move.rangeType == CombatMove.RangeType.Ranged && 
+			!(move.damageType == CombatMove.DamageType.Crush || move.damageType == CombatMove.DamageType.Slice))
+			return true;
+		
 		float roll = UnityEngine.Random.Range(0f,1f);
 		if (roll > defender.defense)
 			return true;

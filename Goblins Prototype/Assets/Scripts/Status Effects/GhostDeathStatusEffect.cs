@@ -20,7 +20,14 @@ public class GhostDeathStatusEffect : BaseStatusEffect {
 			return;
 		GoblinCombatPanel gcp = GameManager.gm.arena.combatUI.GetPanelForPlayer(owner);
 		int i = GameManager.gm.arena.goblins.IndexOf(owner);
-		GameManager.gm.arena.goblins[i] = body;
+		if(i < 0 || i >= GameManager.gm.arena.goblins.Count) {
+			Debug.Log("WTF");
+			return;
+		}
+		else {
+			GameManager.gm.arena.goblins[i] = body;
+		}
+
 		gcp.character = body;
 		Debug.Log("\t" + owner.data.givenName + " fades away\n");
 		owner.DeSpawn();

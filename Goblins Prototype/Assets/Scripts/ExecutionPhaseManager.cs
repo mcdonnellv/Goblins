@@ -131,7 +131,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		arena.combatUI.ShowTargetPointer(attacker, 3f);
 
 		//roll for hit
-		hit = (attacker.target == null) ? true : arena.cm.RollForHit(attacker.data, attacker.target.data);
+		hit = (attacker.target == null) ? true : arena.cm.RollForHit(attacker.data, attacker.target.data, attacker.queuedMove);
 
 		//roll for crit
 		crit = hit ? arena.cm.RollForCrit(attacker.queuedMove, attacker.data) : false;
@@ -459,6 +459,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			defender.transform.SetParent(playerClashPt[pos-1].transform, false);
 		}
 
+		//hop to position
 		Animator a = playerClashPt[pos-1].GetComponent<Animator>();
 		if(a != null) 
 			a.SetBool("active", true);
@@ -472,20 +473,32 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			yield return 0;
 		}
 
-
+		//state the move name
 		OverlayCanvasController occ = OverlayCanvasController.instance;
 		CombatUI ui = GameManager.gm.arena.combatUI;
 		GameObject moveTextMarker = isPlayerTurn ? ui.moveAnnouncePlayerMarker : ui.moveAnnounceEnemyMarker;
-		//Image i = moveTextMarker.GetComponent<Image>();
-		//i.canvasRenderer.SetAlpha(0.1f);
-		//i.CrossFadeAlpha(.5f,.15f,false);
 		occ.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, attacker.queuedMove.moveName.ToUpper());
+
 		timer = moveAnnounceTimer;
 		while(timer > 0f) {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
-		//i.canvasRenderer.SetAlpha(0f);
+
+		//if attack is melee, dash to a suitable position
+		if(attacker.queuedMove.rangeType == CombatMove.RangeType.Melee) {
+			GameObject go = attacker.transform.parent.gameObject;
+			go.GetComponent<Animator>().enabled = false;
+			Vector3 newPos = defender.transform.position + new Vector3(attacker.isPlayerCharacter ? -4f : 4f, 0f, 0f);
+			float t = .1f;
+			StartCoroutine(GameManager.gm.MoveOverSeconds(go, newPos, t));
+
+			timer = t;
+			while(timer > 0f) {
+				timer-=Time.deltaTime;
+				yield return 0;
+			}
+		}
 
 		ClashCharacters(attacker, defender);
 	}
@@ -592,15 +605,20 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		for( int i=0; i < playerClashPt.Count; i++) {
 			Transform clashPt = playerClashPt[i];
 			Animator a = clashPt.GetComponent<Animator>();
-			if(a != null) 
+			if(a != null) {
+				a.enabled = true;
 				a.SetBool("active", false);
+			}
 		}
 
 		for( int i=0; i < enemyClashPt.Count; i++) {
 			Transform clashPt = enemyClashPt[i];
 			Animator a = clashPt.GetComponent<Animator>();
-			if(a != null) 
+			a.enabled = true;
+			if(a != null) {
+				a.enabled = true;
 				a.SetBool("active", false);
+			}
 		}
 
 

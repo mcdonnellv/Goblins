@@ -59,6 +59,11 @@ public class Character : MonoBehaviour {
 		if(c.isPlayerCharacter)
 			c.data.givenName = c.data.combatClass.type.ToString();
 
+		float dm = GameManager.gm.enemies.difficutlyModifier;
+		if(!playerChar && dm > 1f) {
+			c.data.maxLife = Mathf.FloorToInt(c.data.maxLife * dm);
+			c.data.life = c.data.maxLife;
+		}
 		return spawnedChar;
 	}
 

@@ -49,6 +49,7 @@ public class GameManager : MonoBehaviour {
 		fightCam.enabled = false;
 		//spawn enemies
 		enemies.SetAndSpawnParty(enemies.curPartyIndex);
+		enemies.difficutlyModifier += .5f;
 		while (state == State.Prep) {
 			yield return 0;
 		}
