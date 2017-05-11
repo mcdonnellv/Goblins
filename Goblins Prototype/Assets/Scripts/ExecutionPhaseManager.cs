@@ -25,6 +25,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	private bool crit = false;
 	public float critModifer = 0f;
 	private bool hit = false;
+	private OverlayCanvasController occ;
 
 	public enum State {
 		Inactive,
@@ -68,6 +69,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator PreAttackState () {
+		
 		critModifer = 0f;
 		Character attacker = GetCurrentAttacker();
 		arena.selectedChar = attacker;
@@ -108,6 +110,13 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(attacker.target == null) {
 			attackSkipped = true;
 			Debug.Log("\t" + attacker.data.givenName + " has no target, skipping attack\n");
+			occ.ShowCombatText(attacker.headTransform.gameObject, CombatTextType.MoveAnnounce, "Pass");
+			float timer = 2f;
+			while(timer > 0f) {
+				timer-=Time.deltaTime;
+				yield return 0;
+			}
+
 			state = State.AttackDone;
 			NextState();
 			yield break;
@@ -119,7 +128,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				attackSkipped = true;
 				Debug.Log("\t" + attacker.data.givenName + " does not have enough energy to attack, skipping attack\n");
 				GameObject mtm = isPlayerTurn ? GameManager.gm.arena.combatUI.moveAnnouncePlayerMarker : GameManager.gm.arena.combatUI.moveAnnounceEnemyMarker;
-				OverlayCanvasController.instance.ShowCombatText(mtm,  CombatTextType.MoveAnnounce, "Not Enough energy");
+				occ.ShowCombatText(mtm,  CombatTextType.MoveAnnounce, "Not Enough energy");
 				state = State.AttackDone;
 				NextState();
 				yield break;
@@ -149,7 +158,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 
 	IEnumerator CritGameState () {
-		OverlayCanvasController.instance.ShowCombatText(arena.combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "CRITICAL HIT!");
+		occ.ShowCombatText(arena.combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "CRITICAL HIT!");
 		Character attacker = GetCurrentAttacker();
 		arena.combatUI.StartCritGameUI(attacker.headTransform.gameObject);
 		while (state == State.CritGame) {
@@ -305,6 +314,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	public void Setup(bool playerTurn) {
+		occ = OverlayCanvasController.instance;
 		isPlayerTurn = playerTurn;
 		attackers.Clear();
 		foreach(Character c in arena.goblins) 
@@ -407,8 +417,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			timer-=Time.deltaTime;
 			yield return 0;
 		}
-
-		OverlayCanvasController occ = OverlayCanvasController.instance;
+				
 		CombatUI ui = GameManager.gm.arena.combatUI;
 		GameObject moveTextMarker = isPlayerTurn ? ui.moveAnnouncePlayerMarker : ui.moveAnnounceEnemyMarker;
 		occ.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, caster.queuedMove.moveName.ToUpper());
@@ -423,12 +432,11 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public void CastOnFriendlyCharacter(Character caster, Character target) {
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
 		camAnimator.Play("CamZoomInCombat");
-		OverlayCanvasController occ = OverlayCanvasController.instance;
 
 		//add any status effects that may come from the spell
 		foreach(BaseStatusEffect se in caster.queuedMove.moveStatusEffects){
 			target.AddStatusEffect(se);
-			OverlayCanvasController.instance.ShowCombatText(target.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
+			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
 			target.statusContainer.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(caster, se), SendMessageOptions.DontRequireReceiver);
 		}
 		caster.Idle();
@@ -474,7 +482,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		}
 
 		//state the move name
-		OverlayCanvasController occ = OverlayCanvasController.instance;
 		CombatUI ui = GameManager.gm.arena.combatUI;
 		GameObject moveTextMarker = isPlayerTurn ? ui.moveAnnouncePlayerMarker : ui.moveAnnounceEnemyMarker;
 		occ.ShowCombatText(moveTextMarker,  CombatTextType.MoveAnnounce, attacker.queuedMove.moveName.ToUpper());
@@ -506,7 +513,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	public void ClashCharacters(Character attacker, Character defender) {
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
 		camAnimator.Play("CamZoomInCombat");
-		OverlayCanvasController occ = OverlayCanvasController.instance;
 		float damage = 0f;
 		int finalDamage = 0;
 		string damageString = attacker.data.givenName + " misses";
@@ -528,7 +534,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			//add any status effects that may come from the attack
 			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects) {
 				defender.AddStatusEffect(se);
-				OverlayCanvasController.instance.ShowCombatText(defender.headTransform.gameObject, CombatTextType.StatusAppliedBad, se.statusEffectName);
+				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.StatusAppliedBad, se.statusEffectName);
 				defender.statusContainer.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(attacker, se), SendMessageOptions.DontRequireReceiver);
 			}
 		}
