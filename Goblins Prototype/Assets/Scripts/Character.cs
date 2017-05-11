@@ -59,6 +59,11 @@ public class Character : MonoBehaviour {
 		if(c.isPlayerCharacter)
 			c.data.givenName = c.data.combatClass.type.ToString();
 
+		float dm = GameManager.gm.enemies.difficutlyModifier;
+		if(!playerChar && dm > 1f) {
+			c.data.maxLife = Mathf.FloorToInt(c.data.maxLife * dm);
+			c.data.life = c.data.maxLife;
+		}
 		return spawnedChar;
 	}
 
@@ -138,7 +143,6 @@ public class Character : MonoBehaviour {
 			se.statusEffectTurnsApplied--;
 			if(se.statusEffectTurnsApplied < 0) {
 				statusContainer.BroadcastMessage("OnStatusExpired",  new AttackTurnInfo(this), SendMessageOptions.DontRequireReceiver);
-				OverlayCanvasController.instance.ShowCombatText(headTransform.gameObject, CombatTextType.StatusExpired, se.statusEffectName);
 				Debug.Log("\t" + data.givenName + " " + se.statusEffectName + " has expired\n");
 				data.statusEffects.Remove(se);
 				Destroy(se.gameObject);
@@ -177,6 +181,13 @@ public class Character : MonoBehaviour {
 		RemoveAllStatusEffects();
 		if(lifeBar != null)
 			Destroy(lifeBar.gameObject);
+	}
+
+	public void ShowLifeBar(bool show) {
+		if(lifeBar != null)
+			lifeBar.gameObject.SetActive(show);
+		if(statusContainer != null)
+			statusContainer.gameObject.SetActive(show);
 	}
 
 	public void Update() {

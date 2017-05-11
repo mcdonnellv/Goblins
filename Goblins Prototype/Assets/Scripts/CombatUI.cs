@@ -21,9 +21,11 @@ public class CombatUI : MonoBehaviour {
 	public GameObject moveAnnounceEnemyMarker;
 	public GameObject centerAnnounceMarker;
 	public GameObject upperAnnounceMarker;
+	public GameObject positionIndicator;
 
 	public GameObject tooltipBox;
 	public Text tooltipBoxTitle;
+	public Text tooltipBoxTurns;
 	public Text tooltipBoxDescription;
 	public CritTargetRing targetRing;
 	public CritFocusRing focusRing;
@@ -105,13 +107,17 @@ public class CombatUI : MonoBehaviour {
 	}
 
 	public void FocusPanel(int combatPos) {
-		foreach(GoblinCombatPanel panel in goblinPanels)
+		foreach(GoblinCombatPanel panel in goblinPanels) {
 			panel.curtain.SetActive(panel.position != combatPos);
+			panel.SetInHighlightedStatus();
+		}
 	}
 
 	public void UnFocusPanels() {
-		foreach(GoblinCombatPanel panel in goblinPanels)
+		foreach(GoblinCombatPanel panel in goblinPanels) {
 			panel.curtain.SetActive(false);
+			panel.SetInHighlightedStatus();
+		}
 	}
 
 	public void RollButtonPressed() {
@@ -195,14 +201,17 @@ public class CombatUI : MonoBehaviour {
 		GameManager.gm.arena.em.state = ExecutionPhaseManager.State.Attack;
 	}
 
-	public void ShowToolTip(string title, string description, float time) {
+	public void ShowToolTip(string title, string description, int turns, float time) {
 		StopCoroutine("HideToolTip");
 		tooltipBox.SetActive(true);
 		tooltipBoxTitle.text = title;
 		tooltipBoxDescription.text = description;
-		if(time > 0f) {
+		if(turns > 0 && turns < 99)
+			tooltipBoxTurns.text = turns.ToString() + (turns == 1 ? " turn": " turns") + " left";
+		else
+			tooltipBoxTurns.text = "";
+		if(time > 0f) 
 			StartCoroutine(HideToolTip(time));
-		}
 	}
 
 	IEnumerator HideToolTip(float t) {
@@ -231,5 +240,26 @@ public class CombatUI : MonoBehaviour {
 
 		foreach(Transform child in targetPointerContainers)
 			Destroy(child.gameObject);
+	}
+
+	public void Update() {
+		if(positionIndicator != null && positionIndicator.transform.childCount > 0) {
+			for(int i=0; i<4; i++) {
+				Transform c = positionIndicator.transform.GetChild(i);
+				Arena arena = GameManager.gm.arena;
+				Vector3 p = arena.playerSpawnSpots[i].position;
+				p.z = 0f;
+				c.position = Camera.main.WorldToScreenPoint(p + new Vector3(0f,-.5f,0f));
+			}
+
+			for(int i=0; i<4; i++) {
+				Transform c = positionIndicator.transform.GetChild(i+4);
+				Arena arena = GameManager.gm.arena;
+				Vector3 p = arena.enemySpawnSpots[i].position;
+				p.z = 0f;
+				c.position = Camera.main.WorldToScreenPoint(p + new Vector3(0f,-.5f,0f));
+			}
+
+		}
 	}
 }

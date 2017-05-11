@@ -7,8 +7,7 @@ public class EnemyCombatPanel : MonoBehaviour {
 	public int position;
 	public Text positionText;
 	public Text nameText;
-	public Text lifeText;
-	public Image lifeBar;
+	public LifeBar lifeBar;
 	public Text raceText;
 	public Text defenseText;
 	public Transform resistanceTextPrefab;
@@ -18,12 +17,17 @@ public class EnemyCombatPanel : MonoBehaviour {
 
 	public void Setup(Character c) {
 		character = c;
+		lifeBar.Setup(c);
 		nameText.text = character.data.givenName;
 		raceText.text = character.data.enemyRace;
-		defenseText.text = "Defense : " + (character.data.defense * 100f).ToString();
+		defenseText.text = "Evasion: " + (character.data.defense * 100f).ToString() + "%";
 		positionText.text = character.combatPosition.ToString();
-		foreach(Transform child in resistanceGrid)
+
+		while(resistanceGrid.childCount > 0) {
+			Transform child = resistanceGrid.GetChild(0);
+			child.SetParent(GameManager.gm.arena.combatUI.transform);
 			Destroy(child.gameObject);
+		}
 
 		if(character.data.sliceRes != 0)
 			MakeResitanceText("Slicing", character.data.sliceRes);
@@ -45,19 +49,16 @@ public class EnemyCombatPanel : MonoBehaviour {
 			resistanceText.text = "None";
 		}
 		
-		RefreshBars();
+		lifeBar.Refresh();
 	}
 
 	public void MakeResitanceText(string resName, float resVal) {
+		//string t = (resVal > 0f ? "Resits " : "Weak to ") + resName;
 		Text resistanceText = Instantiate(resistanceTextPrefab, resistanceGrid).GetComponent<Text>();
 		resistanceText.transform.SetParent(resistanceGrid, false);
 		resistanceText.transform.localScale = new Vector3(1f,1f,1f);
-		resistanceText.text = resName + ": " + (resVal * 100f).ToString() + "%";
-	}
-
-	public void RefreshBars() {
-		lifeText.text = character.data.life.ToString() + "/" + character.data.maxLife.ToString();
-		RefreshBar(lifeBar, character.data.life, character.data.maxLife);
+		resistanceText.text = resName + " " + (resVal * 100f).ToString() + "%";
+		resistanceText.color = resVal > 0f ? Color.white : new Color(1f, .4f, .4f);
 	}
 
 	void RefreshBar(Image bar, float curval, float totVal) {

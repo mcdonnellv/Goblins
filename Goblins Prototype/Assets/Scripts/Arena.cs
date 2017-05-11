@@ -22,6 +22,7 @@ public class Arena : MonoBehaviour {
 	public MoveRollBonusStatusEffect rollBonusStatusEffect;
 	private float generalTimer = 0f;
 	private OverlayCanvasController occ;
+	public Character selectedChar;
 
 	public enum State {
 		Inactive,
@@ -75,12 +76,12 @@ public class Arena : MonoBehaviour {
 
 	IEnumerator WaitForRollPhaseState () {
 		Debug.Log("***Arena WaitforRollPhase State***\n");
-		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Roll Your Moves");
+		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Rolling Moves");
 		combatUI.rollButton.gameObject.SetActive(true);
 		combatUI.roundText.text = "Round " + round.ToString();
 		combatUI.stateText.text = "Move Roll Phase";
 
-		if(GameManager.gm.autoplay)
+		if(true)//GameManager.gm.autoplay)
 			state = Arena.State.MoveRollPhase;
 			
 		while (state == State.WaitForRollPhase)
@@ -136,6 +137,8 @@ public class Arena : MonoBehaviour {
 
 		while (state == State.PositionPhase)
 			yield return 0;
+		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
+		camAnimator.Play("CamExecuteEnter");
 		combatUI.fightButton.gameObject.SetActive(false);
 		occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "ROUND " + round.ToString());
 		generalTimer = roundAnnounceTimer;
@@ -147,35 +150,29 @@ public class Arena : MonoBehaviour {
 	}
 
 	IEnumerator PlayerExecutionPhaseState () {
-		Debug.Log("***Arena PlayerExecutionPhase State***\n");
+		Debug.Log("***Arena ExecutionPhase State***\n");
+
+		combatUI.positionIndicator.SetActive(false);
 		combatUI.DeactivatePanels();
 		combatUI.stateText.text = "";
-		em.Setup(playerSpawnSpots, true);
+		em.Setup(true);
 
-		while (state == State.PlayerExecutionPhase)
+		while (em.state != ExecutionPhaseManager.State.Inactive)
 			yield return 0;
-		
-		NextState();
-	}
-
-	IEnumerator EnemyExecutionPhaseState () {
-		Debug.Log("***Arena EnemyExecutionPhase State***\n");
-		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Enemy's Turn");
-		generalTimer = em.timeDelayBetweenTurns;
-		while(generalTimer > 0f) {
-			generalTimer-=Time.deltaTime;
-			yield return 0;
-		}
-
 		RepositionEnemies();
-		em.Setup(enemySpawnSpots, false);
-		while (state == State.EnemyExecutionPhase)
-			yield return 0;
+		state = State.EndOfTurn;
 		NextState();
 	}
 
 	IEnumerator EndOfTurnState () {
 		Debug.Log("***Arena End Of Turn State***\n");
+		combatUI.positionIndicator.SetActive(true);
+		for( int i = 0; i < goblins.Count; i++)
+			goblins[i].ProcessTurnForStatusEffects();
+
+		for( int i = 0; i < enemies.Count; i++)
+			enemies[i].ProcessTurnForStatusEffects();
+		
 		combatUI.HideMoves();
 		bool allGoblinsDead = AreAllGoblinsDead();
 		bool allEnemiesDead = true;
@@ -214,12 +211,6 @@ public class Arena : MonoBehaviour {
 			generalTimer-=Time.deltaTime;
 			yield return 0;
 		}
-
-//		for( int i = 0; i < goblins.Count; i++)
-//			goblins[i].RemoveAllStatusEffects();
-//
-//		for( int i = 0; i < enemies.Count; i++)
-//			enemies[i].RemoveAllStatusEffects();
 		
 		GameManager.gm.state = GameManager.State.Result;
 		state = State.Inactive;
@@ -254,8 +245,8 @@ public class Arena : MonoBehaviour {
 		foreach(Transform child in spawnSpots) {
 			combatPosition++;
 			Character c = GetTransformCharacter(child, false, true);
-			if(c == null)
-				continue;
+			if(c == null) 
+					continue;
 			c.combatPosition = combatPosition;
 			partyList.Add(c);
 		}
@@ -427,6 +418,9 @@ public class Arena : MonoBehaviour {
 	}
 
 	public void Update() {
+		if(state == State.Inactive)
+			return;
+		
 		if(Input.GetMouseButtonDown(0)) {
 			Character enemyCharHit = null;
 			Character playerCharHit = null;
@@ -448,11 +442,10 @@ public class Arena : MonoBehaviour {
 				combatUI.HideEnemyPanel();
 
 			if(playerCharHit != null) {
-				combatUI.characterDetails.gameObject.SetActive(true);
-				combatUI.characterDetails.AssignCharacter(playerCharHit.data);
+				selectedChar = playerCharHit;
+				GoblinCombatPanel gcp = combatUI.GetPanelForPlayer(playerCharHit);
+				gcp.Pressed();
 			}
-			else
-				combatUI.characterDetails.gameObject.SetActive(false);
 		}
 	}
 }

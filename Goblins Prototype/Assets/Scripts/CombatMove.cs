@@ -28,6 +28,7 @@ public class CombatMove : MonoBehaviour {
 		RandomAlly,
 		RandomOpponent,
 		MostDamagedAlly,
+		AllyBehind,
 		None,
 	}
 
@@ -50,6 +51,7 @@ public class CombatMove : MonoBehaviour {
 	public List<BaseStatusEffect> moveStatusEffects = new List<BaseStatusEffect>(); //this move may apply 1 to many status effects on its target
 	public bool displaceOpponent;
 	public bool isDot = false;
+	public float workingDamage = 0f;
 	public string GenerateDesciption () {
 		switch(moveType){
 		case MoveType.Damage : 
@@ -79,6 +81,15 @@ public class CombatMove : MonoBehaviour {
 		case DamageType.Dark: return new Color(1f,0f,1f);
 		case DamageType.Fire: return Color.red;
 		case DamageType.Cold: return  Color.blue;
+		}
+		return Color.white;
+	}
+
+	public static Color ColorFromMovePosition (int pos) {
+		switch(pos) {
+		case 1: return new Color(0.804f, 0.918f, 0.804f);
+		case 2: return new Color(0.918f, 0.678f, 0.376f);
+		case 3: return new Color(0.902f, 0.804f, 0.918f);
 		}
 		return Color.white;
 	}

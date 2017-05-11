@@ -7,12 +7,11 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public int position;
 	public Text positionText;
 	public Text classText;
-	public Text lifeText;
 	public Text energyText;
 	public GameObject curtain;
 	public GameObject wheelCover;
-	public Image lifeBar;
-	public Image energyBar;
+	public LifeBar lifeBar;
+	public LifeBar energyBar;
 	public Image iconImage;
 	public Image opponentImage;
 	public Image opponentLifeBar;
@@ -28,9 +27,14 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public Text moveDescriptionText;
 	public Text moveEnergyText;
 	public Text moveDamageText;
+	public Text moveNumberText;
+	public Image moveNumberBg;
+	public GameObject highlight;
 
 	public void Setup(Character c) {
 		character = c;
+		lifeBar.Setup(c);
+		energyBar.Setup(c,true);
 		iconImage.sprite = character.data.combatClass.icon;
 		classText.text = character.data.combatClass.type.ToString();
 		RefreshMoveNames();
@@ -40,20 +44,21 @@ public class GoblinCombatPanel : MonoBehaviour {
 		moveDetails.SetActive(false);
 		curtain.SetActive(false);
 		HideWheel();
+		SetInHighlightedStatus();
+
 	}
+
+	public void SetInHighlightedStatus() {
+		highlight.SetActive(false);
+		if(GameManager.gm.arena.selectedChar != character)
+			return;
+		highlight.SetActive(true);
+	}
+
 
 	public void RefreshBars() {
-		lifeText.text = character.data.life.ToString() + "/" + character.data.maxLife.ToString();
-		energyText.text = character.data.energy.ToString() + "/" + character.data.maxEnergy.ToString();
-		RefreshBar(lifeBar, character.data.life, character.data.maxLife, 172f);
-		RefreshBar(energyBar, character.data.energy, character.data.maxEnergy, 172f);
-		if(opponent != null)
-			RefreshBar(opponentLifeBar, opponent.data.life, opponent.data.maxLife, 70f);
-	}
-
-	void RefreshBar(Image bar, float curval, float totVal, float v) {
-		Vector2 s = bar.GetComponent<RectTransform>().sizeDelta;
-		bar.GetComponent<RectTransform>().sizeDelta = new Vector2(v * curval/totVal, s.y);
+		lifeBar.Refresh();
+		energyBar.Refresh();
 	}
 
 	void RefreshMoveNames() {
@@ -76,28 +81,32 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public void SetOpponent(Character o) {
 		opponent = o;
 		if(o == null || o.state == Character.State.Dead) {
-			opponentInfo.SetActive(false);
+			//opponentInfo.SetActive(false);
 			return;
 		}
-		opponentInfo.SetActive(true);
-		opponentImage.sprite = o.spriteRenderer.sprite;
-		opponentImage.preserveAspect = true;
-		RefreshBar(opponentLifeBar, opponent.data.life, opponent.data.maxLife, 70f);
+		//opponentInfo.SetActive(true);
+		//opponentImage.sprite = o.spriteRenderer.sprite;
+		//opponentImage.preserveAspect = true;
+		//RefreshBar(opponentLifeBar, opponent.data.life, opponent.data.maxLife, 70f);
 	}
 
 	public void Pressed() {
-		float time = 3f;
+		float time = float.MaxValue;
 		CombatUI cui = GameManager.gm.arena.combatUI;
 		cui.HideEnemyPanel();
 		foreach(Transform child in cui.targetPointerContainers)
 			Destroy(child.gameObject);
 
-		if(character != null)
+		if(character != null) {
+			GameManager.gm.arena.selectedChar = character;
 			cui.ShowTargetPointer(character, time);
+		}
 		if(opponent != null){
 			cui.ShowTargetPointer(opponent, time);
 			cui.ShowEnemyPanel(opponent);
 		}
+		foreach(GoblinCombatPanel gcp in cui.goblinPanels)
+			gcp.SetInHighlightedStatus();
 	}
 
 	public void HideWheel() {
@@ -119,6 +128,9 @@ public class GoblinCombatPanel : MonoBehaviour {
 			moveEnergyText.text = combatMove.energyCost + " Energy";
 			moveDamageText.text = combatMove.damageType.ToString() + " Damage";
 			moveDamageText.color = moveIcon.color;
+			int pos = character.data.moves.IndexOf(combatMove) + 1;
+			moveNumberText.text = pos.ToString();
+			moveNumberBg.color = CombatMove.ColorFromMovePosition(pos);
 			if(combatMove.damageType == CombatMove.DamageType.None)
 				moveDamageText.text = "";
 			if(combatMove.moveType == CombatMove.MoveType.Heal) {

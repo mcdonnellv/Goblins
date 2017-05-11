@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class LaceratedStatusEffect : BaseStatusEffect {
 	
 	public override float OnDamageDealtToMeCalc(AttackTurnInfo ati) {
-		if(ati.attacker.queuedMove.moveName == "Wound") 
+		string moveName = ati.attacker.queuedMove.moveName;
+		if(moveName == "Wound" || moveName== "Open Wound") 
 			ati.damage = ati.damage * statusEffectPower;
 		return ati.damage;
 	}
