@@ -16,8 +16,10 @@ public class GameManager : MonoBehaviour {
 	public GameObject prepUI;
 	public GameObject winScreen;
 	public GameObject loseScreen;
+	public GameObject introPage;
 	public bool useTimeScale = false;
 	public bool autoplay = false;
+	public bool showIntroPage = true;
 	public float timeScaleMultiplier;
 
 	public enum State {
@@ -35,7 +37,16 @@ public class GameManager : MonoBehaviour {
 		roster.Populate();
 		arena.combatUI.gameObject.SetActive(false);
 		enemies.Setup();
-		state = State.Prep;
+		if(showIntroPage == false) {
+			introPage.SetActive(false);
+			prepUI.SetActive(true);
+			state = State.Prep;
+		}
+		else {
+			introPage.SetActive(true);
+			prepUI.SetActive(false);
+		}
+
 		while (state == State.Init) {
 			yield return 0;
 		}
@@ -45,6 +56,7 @@ public class GameManager : MonoBehaviour {
 
 	IEnumerator PrepState () {
 		Debug.Log("Prep: Enter\n");
+		prepUI.SetActive(true);
 		prepCam.enabled = true;
 		fightCam.enabled = false;
 		//spawn enemies
@@ -84,10 +96,10 @@ public class GameManager : MonoBehaviour {
 			if(goblin == null)
 				continue;
 			bool removeFromRoster = false;
-			if(goblin.state != Character.State.Dead && goblin.state != Character.State.Ghost)
+			if(goblin.state != Character.State.Dead)
 				goblin.RecoverFull();
 			else 
-				foreach(CharacterData d in roster.goblins) //ghosts appear and hosts dont get removed!
+				foreach(CharacterData d in roster.goblins)
 					if(d == goblin.data)
 					 removeFromRoster = true;	
 
@@ -101,19 +113,23 @@ public class GameManager : MonoBehaviour {
 		foreach(Character enemy in arena.enemies)
 			enemy.DeSpawn();
 
-		if(roster.goblins.Count <= 0) {
+		if(roster.goblins.Count == 0) {
 			loseScreen.SetActive(true);
+			Debug.Log("Game Over You Lose!\n");
 			state = State.GameEnd;
+			NextState();
+			yield break;
 		}
-
-
+			
 		enemies.curPartyIndex++;
 		if(enemies.curPartyIndex < enemies.stageEnemySets.Length)
 			state = State.Prep;
 		else {
 			winScreen.SetActive(true);
+			Debug.Log("Game Over You Win!\n");
 			state = State.GameEnd;
 		}
+
 		while (state == State.Result) {
 			yield return 0;
 		}
@@ -122,7 +138,6 @@ public class GameManager : MonoBehaviour {
 	}
 
 	IEnumerator GameEndState () {
-		Debug.Log("Game Over You Win!\n");
 		while (state == State.GameEnd)
 			yield return 0;
 		NextState();
@@ -158,6 +173,11 @@ public class GameManager : MonoBehaviour {
 			yield return new WaitForEndOfFrame();
 		}
 		objectToMove.transform.position = end;
+	}
+
+	public void PlayPressed() {
+		introPage.SetActive(false);
+		state = State.Prep;
 	}
 
 }

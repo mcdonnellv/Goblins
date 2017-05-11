@@ -52,7 +52,12 @@ namespace EckTechGames.FloatingCombatText
 		}
 
 		IEnumerator ShowCombatTextWithPackage(GameObject targetGameObject, CombatTextType combatTextType, string combatText, float delayTime) {
-			yield return new WaitForSeconds(delayTime);
+			float timer = delayTime;
+			while(timer > 0f) {
+				timer-=Time.deltaTime;
+				yield return 0;
+			}
+
 			// Now do your thing here
 			this.targetGameObject = targetGameObject;
 			targetRectTransform = targetGameObject.GetComponent<RectTransform>();

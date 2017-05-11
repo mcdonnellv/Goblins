@@ -11,7 +11,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public GameObject curtain;
 	public GameObject wheelCover;
 	public LifeBar lifeBar;
-	public Image energyBar;
+	public LifeBar energyBar;
 	public Image iconImage;
 	public Image opponentImage;
 	public Image opponentLifeBar;
@@ -34,6 +34,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public void Setup(Character c) {
 		character = c;
 		lifeBar.Setup(c);
+		energyBar.Setup(c,true);
 		iconImage.sprite = character.data.combatClass.icon;
 		classText.text = character.data.combatClass.type.ToString();
 		RefreshMoveNames();
@@ -57,15 +58,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 
 	public void RefreshBars() {
 		lifeBar.Refresh();
-		energyText.text = character.data.energy.ToString() + "/" + character.data.maxEnergy.ToString();
-		RefreshBar(energyBar, character.data.energy, character.data.maxEnergy, 172f);
-		if(opponent != null)
-			RefreshBar(opponentLifeBar, opponent.data.life, opponent.data.maxLife, 70f);
-	}
-
-	void RefreshBar(Image bar, float curval, float totVal, float v) {
-		Vector2 s = bar.GetComponent<RectTransform>().sizeDelta;
-		bar.GetComponent<RectTransform>().sizeDelta = new Vector2(v * curval/totVal, s.y);
+		energyBar.Refresh();
 	}
 
 	void RefreshMoveNames() {
@@ -88,13 +81,13 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public void SetOpponent(Character o) {
 		opponent = o;
 		if(o == null || o.state == Character.State.Dead) {
-			opponentInfo.SetActive(false);
+			//opponentInfo.SetActive(false);
 			return;
 		}
-		opponentInfo.SetActive(true);
-		opponentImage.sprite = o.spriteRenderer.sprite;
-		opponentImage.preserveAspect = true;
-		RefreshBar(opponentLifeBar, opponent.data.life, opponent.data.maxLife, 70f);
+		//opponentInfo.SetActive(true);
+		//opponentImage.sprite = o.spriteRenderer.sprite;
+		//opponentImage.preserveAspect = true;
+		//RefreshBar(opponentLifeBar, opponent.data.life, opponent.data.maxLife, 70f);
 	}
 
 	public void Pressed() {

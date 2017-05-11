@@ -196,8 +196,14 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				
 			if(hit) {
 				if(move.displaceOpponent && attacker.target != null && attacker.target.state != Character.State.Dead) {
-					int pos = attacker.target.combatPosition;
-					arena.MoveCharacterToNewPosition(attacker.target, pos + 1);
+					Character toDisplace = attacker.target;
+					int pos = toDisplace.combatPosition;
+					if(pos < 4) {
+						Transform newPt = toDisplace.isPlayerCharacter ? arena.playerSpawnSpots[pos] : arena.enemySpawnSpots[pos];
+						Character inhabitant = arena.GetTransformCharacter(newPt, false, false);
+						if(inhabitant == null) //spot to be displaced to is free, proceed
+							arena.MoveCharacterToNewPosition(attacker.target, pos + 1);
+					}
 				}
 			}
 
@@ -431,7 +437,10 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	public void CastOnFriendlyCharacter(Character caster, Character target) {
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
-		camAnimator.Play("CamZoomInCombat");
+		if(isPlayerTurn)
+			camAnimator.Play("CamZoomFriendlyCast");
+		else
+			camAnimator.Play("CamZoomEnemyCast");
 
 		//add any status effects that may come from the spell
 		foreach(BaseStatusEffect se in caster.queuedMove.moveStatusEffects){
@@ -450,7 +459,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 				damageHealed = damageHealed * (arena.cm.baseCritDamageMultiplier + critModifer);
 			finalDamageHealed = Mathf.FloorToInt(damageHealed);
 			int amountHealed = arena.cm.ApplyHeal(finalDamageHealed, target.data);
-			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, amountHealed);
+			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, "+" + amountHealed.ToString());
 			target.RefreshLifeBar();
 		}
 	}
@@ -510,29 +519,36 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		ClashCharacters(attacker, defender);
 	}
 
+	IEnumerator ShowDelayedMessage(string message, GameObject go, CombatTextType ctt, float timer) {
+		yield return new WaitForSeconds(timer);
+		occ.ShowCombatText(go, ctt, message);
+	}
+
 	public void ClashCharacters(Character attacker, Character defender) {
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
 		camAnimator.Play("CamZoomInCombat");
-		float damage = 0f;
+		CombatMove move = attacker.queuedMove;
+		move.workingDamage = 0f;
 		int finalDamage = 0;
 		string damageString = attacker.data.givenName + " misses";
+		float fullDamage = 0f;
 		if(hit) {
 			if(!attacker.queuedMove.isDot) {
-				damage = arena.cm.RollForDamage(attacker.queuedMove, attacker, defender);
+				move.workingDamage = arena.cm.RollForDamage(move, attacker, defender);
 				if(crit) 
-					damage = damage * (arena.cm.baseCritDamageMultiplier + critModifer);
-				defender.statusContainer.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, damage), SendMessageOptions.DontRequireReceiver);
-				finalDamage = Mathf.FloorToInt(damage);
+					move.workingDamage *= (arena.cm.baseCritDamageMultiplier + critModifer);
+				defender.statusContainer.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, move.workingDamage), SendMessageOptions.DontRequireReceiver);
+				finalDamage = Mathf.FloorToInt(move.workingDamage);
 				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, crit ? ("Crit\n" + finalDamage.ToString()) : finalDamage.ToString());
-				damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + attacker.queuedMove.moveName + " deals " + damage.ToString() + " damage to " + defender.data.givenName;
+				damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + move.moveName + " deals " + finalDamage.ToString() + " damage to " + defender.data.givenName;
 
-				float resist = arena.cm.GetResistForDamageType(attacker.queuedMove.damageType, defender.data);
+				float resist = arena.cm.GetResistForDamageType(move.damageType, defender.data);
 				if(resist > 0)
-					occ.ShowCombatTextDelay(defender.headTransform.gameObject, CombatTextType.Miss, resist.ToString() + " resisted", 1.5f);
+					StartCoroutine(ShowDelayedMessage(Mathf.FloorToInt(resist * 100f) + "% resisted", defender.headTransform.gameObject, CombatTextType.Miss, 1f));
 			}
 
 			//add any status effects that may come from the attack
-			foreach(BaseStatusEffect se in attacker.queuedMove.moveStatusEffects) {
+			foreach(BaseStatusEffect se in move.moveStatusEffects) {
 				defender.AddStatusEffect(se);
 				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.StatusAppliedBad, se.statusEffectName);
 				defender.statusContainer.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(attacker, se), SendMessageOptions.DontRequireReceiver);
@@ -572,24 +588,26 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			return;
 		Debug.Log("\t" + (c.isPlayerCharacter ? "Goblin " :"Enemy ") + c.data.givenName + " DIES!\n");
 		c.Death();
-
 		if(c.isPlayerCharacter) {
 			GoblinCombatPanel gcp = arena.combatUI.GetPanelForPlayer(c);
 			gcp.GetComponent<CanvasGroup>().alpha = .3f;
-
-			//spawn a ghost
-			Character g = Character.Spawn(ghostPrefab, c.spawnSpot, null, true).GetComponent<Character>();
-			g.state = Character.State.Ghost;
-			g.combatPosition = c.combatPosition;
-			g.statusContainer = GameObject.Instantiate(g.statusContainerPrefab, arena.combatUI.statusContainers, false);
-			GhostDeathStatusEffect gdse = (GhostDeathStatusEffect)g.AddStatusEffect(ghostDeathEffectPrefab);
-			gdse.body = c;
-			gcp.character = g;
-			int ind = arena.goblins.IndexOf(c);
-			arena.goblins[ind] = g;
-			c.transform.SetAsLastSibling();
-			Debug.Log("\t" + g.data.givenName + " appears!\n");
+			SpawnGhost(c);
 		}
+	}
+
+	public void SpawnGhost(Character c) {
+		GoblinCombatPanel gcp = arena.combatUI.GetPanelForPlayer(c);
+		Character g = Character.Spawn(ghostPrefab, c.spawnSpot, null, true).GetComponent<Character>();
+		g.state = Character.State.Ghost;
+		g.combatPosition = c.combatPosition;
+		g.statusContainer = GameObject.Instantiate(g.statusContainerPrefab, arena.combatUI.statusContainers, false);
+		GhostDeathStatusEffect gdse = (GhostDeathStatusEffect)g.AddStatusEffect(ghostDeathEffectPrefab);
+		gdse.body = c;
+		gcp.character = g;
+		int ind = arena.goblins.IndexOf(c);
+		arena.goblins[ind] = g;
+		c.transform.SetAsLastSibling();
+		Debug.Log("\t" + g.data.givenName + " appears!\n");
 	}
 
 	public void AttackDone() {

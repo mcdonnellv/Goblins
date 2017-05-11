@@ -25,6 +25,7 @@ public class CombatUI : MonoBehaviour {
 
 	public GameObject tooltipBox;
 	public Text tooltipBoxTitle;
+	public Text tooltipBoxTurns;
 	public Text tooltipBoxDescription;
 	public CritTargetRing targetRing;
 	public CritFocusRing focusRing;
@@ -200,14 +201,17 @@ public class CombatUI : MonoBehaviour {
 		GameManager.gm.arena.em.state = ExecutionPhaseManager.State.Attack;
 	}
 
-	public void ShowToolTip(string title, string description, float time) {
+	public void ShowToolTip(string title, string description, int turns, float time) {
 		StopCoroutine("HideToolTip");
 		tooltipBox.SetActive(true);
 		tooltipBoxTitle.text = title;
 		tooltipBoxDescription.text = description;
-		if(time > 0f) {
+		if(turns > 0 && turns < 99)
+			tooltipBoxTurns.text = turns.ToString() + (turns == 1 ? " turn": " turns") + " left";
+		else
+			tooltipBoxTurns.text = "";
+		if(time > 0f) 
 			StartCoroutine(HideToolTip(time));
-		}
 	}
 
 	IEnumerator HideToolTip(float t) {
