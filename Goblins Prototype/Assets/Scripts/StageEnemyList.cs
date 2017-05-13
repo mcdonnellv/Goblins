@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 [Serializable]
 public class StageEnemyList {
-	public static int minEnemies = 3;
+	public static int minEnemies = 4;
 	public static int maxEnemies = 4;
 	public List<Transform> enemyPrefabs = new List<Transform>();
 	public List<Transform> enemies = new List<Transform>();
