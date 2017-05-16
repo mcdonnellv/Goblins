@@ -14,14 +14,18 @@ public class EnemyCombatPanel : MonoBehaviour {
 	public Transform resistanceGrid;
 	public List<Text> resistances;
 	public Character character;
+	public Image unitTypeBg;
+	public Image unitTypeIcon;
 
 	public void Setup(Character c) {
 		character = c;
 		lifeBar.Setup(c);
 		nameText.text = character.data.givenName;
-		raceText.text = character.data.enemyRace;
+		raceText.text = character.data.race;
 		defenseText.text = "Evasion: " + (character.data.defense * 100f).ToString() + "%";
 		positionText.text = character.combatPosition.ToString();
+		unitTypeIcon.sprite = Character.SpriteForUnitType(c.data.unitType);
+		unitTypeBg.color = Character.ColorForUnitType(c.data.unitType);
 
 		while(resistanceGrid.childCount > 0) {
 			Transform child = resistanceGrid.GetChild(0);

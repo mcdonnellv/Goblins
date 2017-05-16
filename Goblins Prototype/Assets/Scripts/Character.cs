@@ -14,6 +14,20 @@ public enum CombatClassType {
 	COUNT
 }
 
+public enum CombatUnitType {
+	Armored,
+	Assault,
+	MagicUser,
+	NoType,
+}
+
+public enum CombatSigil {
+	Sun,
+	Moon,
+	Star,
+	NoSigil
+}
+
 
 
 public class Character : MonoBehaviour {
@@ -41,6 +55,24 @@ public class Character : MonoBehaviour {
 		Ghost,
 	}
 
+	static public Color ColorForUnitType(CombatUnitType ut) {
+		switch(ut) {
+		case CombatUnitType.Armored: return new Color(0.714f, 0.267f, 0.337f);
+		case CombatUnitType.Assault: return new Color(0.165f, 0.584f, 0.325f);
+		case CombatUnitType.MagicUser: return new Color(0.282f, 0.451f, 0.82f);
+		}
+		return Color.gray;
+	}
+
+	static public Sprite SpriteForUnitType(CombatUnitType ut) {
+		Sprite s = null;
+		switch(ut) {
+		case CombatUnitType.Armored: s = Resources.Load<Sprite>("Icons/Equipment_Helmet"); break;
+		case CombatUnitType.Assault: s = Resources.Load<Sprite>("Icons/Weapons_Sword"); break;
+		case CombatUnitType.MagicUser: s = Resources.Load<Sprite>("Icons/Weapons_Staff"); break;
+		}
+		return s;
+	}
 
 	static public Transform Spawn(Transform prefab, Transform parentTransform, CharacterData cData, bool playerChar) {
 		Transform spawnedChar = GameObject.Instantiate(prefab);
@@ -54,10 +86,14 @@ public class Character : MonoBehaviour {
 		c.isPlayerCharacter = playerChar;
 		if(cData != null)
 			c.data = cData;
+		if(c.data.sigil == CombatSigil.NoSigil)
+			c.data.sigil = (CombatSigil)UnityEngine.Random.Range(0, 2);
 		c.data.characterGameObject = spawnedChar.gameObject;
 		c.UpdateSprite();
+
 		if(c.isPlayerCharacter)
-			c.data.givenName = c.data.combatClass.type.ToString();
+			c.data.givenName = c.data.race + c.data.combatClass.type.ToString();	
+		c.name = c.data.givenName;
 
 		float dm = GameManager.gm.enemies.difficutlyModifier;
 		if(!playerChar && dm > 1f) {

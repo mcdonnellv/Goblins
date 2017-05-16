@@ -9,4 +9,5 @@ public class CombatClass {
 	public Sprite sprite;
 	public Sprite icon;
 	public List<Transform> movePrefabs = new List<Transform>();
+	public CombatUnitType unitType;
 }

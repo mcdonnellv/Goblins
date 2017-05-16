@@ -14,7 +14,7 @@ public class CharacterData {
 	public static int baseEnergy = 5;
 	public static int spiritBonusEnergy = 5;
 	public string givenName;
-	public string enemyRace;
+	public string race;
 	public string enemyClass;
 	public int maxLife;
 	public int life;
@@ -22,6 +22,8 @@ public class CharacterData {
 	public int energy;
 	public float critChance;
 	public float defense;
+	public CombatSigil sigil;
+	public CombatUnitType unitType;
 
 	//goblin specific
 	public int body;
@@ -46,8 +48,9 @@ public class CharacterData {
 	public void RollStats() {
 		RollAttributes();
 		ApplyAttributesToStats();
+		sigil = (CombatSigil)UnityEngine.Random.Range(0, 2);
 	}
-
+		
 	void RollAttributes() {
 		body = 0;
 		mind = 0;
@@ -71,6 +74,7 @@ public class CharacterData {
 
 	public void AssignClass(CombatClass cc) {
 		combatClass = cc;
+		unitType = cc.unitType;
 		moves.Clear();
 		foreach(Transform t in combatClass.movePrefabs){
 			CombatMove cm = t.GetComponent<CombatMove>();
@@ -83,5 +87,4 @@ public class CharacterData {
 				c.UpdateSprite();
 		}
 	}
-
 }

@@ -30,6 +30,8 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public Text moveNumberText;
 	public Image moveNumberBg;
 	public GameObject highlight;
+	public Image unitTypeBg;
+	public Image unitTypeIcon;
 
 	public void Setup(Character c) {
 		character = c;
@@ -37,6 +39,8 @@ public class GoblinCombatPanel : MonoBehaviour {
 		energyBar.Setup(c,true);
 		iconImage.sprite = character.data.combatClass.icon;
 		classText.text = character.data.combatClass.type.ToString();
+		unitTypeIcon.sprite = Character.SpriteForUnitType(c.data.unitType);
+		unitTypeBg.color = Character.ColorForUnitType(c.data.unitType);
 		RefreshMoveNames();
 		RefreshBars();
 		GetComponent<CanvasGroup>().alpha = 1f;
