@@ -32,15 +32,17 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public GameObject highlight;
 	public Image unitTypeBg;
 	public Image unitTypeIcon;
+	public Image sigilIcon;
 
 	public void Setup(Character c) {
 		character = c;
 		lifeBar.Setup(c);
 		energyBar.Setup(c,true);
 		iconImage.sprite = character.data.combatClass.icon;
-		classText.text = character.data.combatClass.type.ToString();
+		classText.text = character.data.combatClass.type.ToString().ToUpper();
 		unitTypeIcon.sprite = Character.SpriteForUnitType(c.data.unitType);
 		unitTypeBg.color = Character.ColorForUnitType(c.data.unitType);
+		sigilIcon.sprite = Character.SpriteForSigil(c.data.sigil);
 		RefreshMoveNames();
 		RefreshBars();
 		GetComponent<CanvasGroup>().alpha = 1f;

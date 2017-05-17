@@ -16,16 +16,18 @@ public class EnemyCombatPanel : MonoBehaviour {
 	public Character character;
 	public Image unitTypeBg;
 	public Image unitTypeIcon;
+	public Image sigilIcon;
 
 	public void Setup(Character c) {
 		character = c;
 		lifeBar.Setup(c);
-		nameText.text = character.data.givenName;
+		nameText.text = character.data.givenName.ToUpper();
 		raceText.text = character.data.race;
 		defenseText.text = "Evasion: " + (character.data.defense * 100f).ToString() + "%";
 		positionText.text = character.combatPosition.ToString();
 		unitTypeIcon.sprite = Character.SpriteForUnitType(c.data.unitType);
 		unitTypeBg.color = Character.ColorForUnitType(c.data.unitType);
+		sigilIcon.sprite = Character.SpriteForSigil(c.data.sigil);
 
 		while(resistanceGrid.childCount > 0) {
 			Transform child = resistanceGrid.GetChild(0);

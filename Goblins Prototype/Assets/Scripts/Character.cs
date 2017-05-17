@@ -22,9 +22,9 @@ public enum CombatUnitType {
 }
 
 public enum CombatSigil {
-	Sun,
-	Moon,
-	Star,
+	Sun = 0,
+	Moon = 1,
+	Star = 2,
 	NoSigil
 }
 
@@ -73,6 +73,15 @@ public class Character : MonoBehaviour {
 		}
 		return s;
 	}
+	static public Sprite SpriteForSigil(CombatSigil si) {
+		Sprite s = null;
+		switch(si) {
+		case CombatSigil.Sun: s = Resources.Load<Sprite>("Icons/Elements_Sun"); break;
+		case CombatSigil.Moon: s = Resources.Load<Sprite>("Icons/Elements_Moon"); break;
+		case CombatSigil.Star: s = Resources.Load<Sprite>("Icons/World_RoseOfWinds"); break;
+		}
+		return s;
+	}
 
 	static public Transform Spawn(Transform prefab, Transform parentTransform, CharacterData cData, bool playerChar) {
 		Transform spawnedChar = GameObject.Instantiate(prefab);
@@ -87,7 +96,7 @@ public class Character : MonoBehaviour {
 		if(cData != null)
 			c.data = cData;
 		if(c.data.sigil == CombatSigil.NoSigil)
-			c.data.sigil = (CombatSigil)UnityEngine.Random.Range(0, 2);
+			c.data.sigil = (CombatSigil)UnityEngine.Random.Range(0, 3);
 		c.data.characterGameObject = spawnedChar.gameObject;
 		c.UpdateSprite();
 

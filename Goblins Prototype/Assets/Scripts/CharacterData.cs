@@ -48,7 +48,7 @@ public class CharacterData {
 	public void RollStats() {
 		RollAttributes();
 		ApplyAttributesToStats();
-		sigil = (CombatSigil)UnityEngine.Random.Range(0, 2);
+		sigil = (CombatSigil)UnityEngine.Random.Range(0, 3);
 	}
 		
 	void RollAttributes() {
