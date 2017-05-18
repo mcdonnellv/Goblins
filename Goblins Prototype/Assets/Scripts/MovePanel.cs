@@ -23,13 +23,13 @@ public class MovePanel : MonoBehaviour {
 		moveIcon.color = combatMove.ColorFromDamageType();
 		descriptionLabel.text = combatMove.description;//GenerateDesciption();
 		energyCostLabel.text = combatMove.energyCost + " Energy";
-		moveDamageText.text = combatMove.damageType.ToString() + " Damage";
+		moveDamageText.text = "";//combatMove.damageType.ToString() + " Damage";
 		moveDamageText.color = moveIcon.color;
 		if(combatMove.damageType == CombatMove.DamageType.None)
 			moveDamageText.text = "";
 		if(combatMove.moveType == CombatMove.MoveType.Heal) {
-			moveDamageText.text = "Healing";
-			moveDamageText.color = Color.green;
+			//moveDamageText.text = "Healing";
+			//moveDamageText.color = Color.green;
 			moveIcon.color = Color.green;
 		}
 	}

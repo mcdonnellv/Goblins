@@ -23,6 +23,7 @@ public class Arena : MonoBehaviour {
 	private float generalTimer = 0f;
 	private OverlayCanvasController occ;
 	public Character selectedChar;
+	public int rerolls;
 
 	public enum State {
 		Inactive,
@@ -55,44 +56,27 @@ public class Arena : MonoBehaviour {
 		combatUI.fightButton.gameObject.SetActive(false);
 		combatUI.DeactivatePanels();
 		combatUI.HideVersusPanels();
+		combatUI.RefreshRerolls();
 		foreach(Character c in goblins) {
 			int ind = c.combatPosition -1;
 			combatUI.goblinPanels[ind].Setup(c);
 		}
 		combatUI.RefreshPanelPositionNumbers();
-
 		occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "ENCOUNTER!");
 		generalTimer = encounterStartAnnounceTimer;
 		while(generalTimer > 0f) {
 			generalTimer-=Time.deltaTime;
 			yield return 0;
 		}
-
 		state = State.WaitForRollPhase;
-		while (state == State.Init)
-			yield return 0;
 		NextState();
 	}
 
 	IEnumerator WaitForRollPhaseState () {
 		Debug.Log("***Arena WaitforRollPhase State***\n");
 		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Rolling Moves");
-		combatUI.rollButton.gameObject.SetActive(true);
 		combatUI.roundText.text = "Round " + round.ToString();
-		combatUI.stateText.text = "Move Roll Phase";
-
-		if(true)//GameManager.gm.autoplay)
-			state = Arena.State.MoveRollPhase;
-			
-		while (state == State.WaitForRollPhase)
-			yield return 0;
-		NextState();
-	}
-
-	IEnumerator MoveRollPhaseState () {
-		Debug.Log("***Arena MoveRollPhase State***\n");
-		combatUI.stateText.text = "";
-		combatUI.rollButton.gameObject.SetActive(false);
+		//enemy rolls moves
 		foreach(Character c in enemies) {
 			if(c.state == Character.State.Dead)
 				continue;
@@ -100,7 +84,15 @@ public class Arena : MonoBehaviour {
 			c.queuedMove = c.data.moves[roll];
 			Debug.Log("\tEnemy " + c.data.givenName +  " has rolled: " + c.queuedMove.moveName + "\n");
 		}
-		
+		state = Arena.State.MoveRollPhase;
+		NextState();
+		yield break;
+	}
+
+	IEnumerator MoveRollPhaseState () {
+		Debug.Log("***Arena MoveRollPhase State***\n");
+		combatUI.rollButton.gameObject.SetActive(false);
+		combatUI.fightButton.gameObject.SetActive(false);
 		foreach(Character c in goblins) {
 			if(c.state == Character.State.Ghost)
 				c.queuedMove = c.data.moves[UnityEngine.Random.Range(0, c.data.moves.Count -1)];
@@ -109,22 +101,25 @@ public class Arena : MonoBehaviour {
 		}
 		combatUI.RevealWheels();
 		combatUI.StartMoveRoll();
+
 		generalTimer = .5f;
 		while (state == State.MoveRollPhase)
 			yield return 0;
-
+		combatUI.StopCoroutine("ForceEndRoll");
 		while(generalTimer > 0f) {
 			generalTimer-=Time.deltaTime;
 			yield return 0;
 		}
 		NextState();
 	}
+		
 
 	IEnumerator PositionPhaseState () {
 		Debug.Log("***Arena PositionPhase State***\n");
 		occ.ShowCombatText(combatUI.upperAnnounceMarker, CombatTextType.RoundAnnounce, "Position Your Goblins");
-		combatUI.stateText.text = "Positioning Phase";
 		combatUI.fightButton.gameObject.SetActive(true);
+		if(rerolls > 0)
+			combatUI.rollButton.gameObject.SetActive(true);
 		combatUI.ActivatePanels();
 		combatUI.DisplayMoves();
 		combatUI.HideWheels();
@@ -137,9 +132,15 @@ public class Arena : MonoBehaviour {
 
 		while (state == State.PositionPhase)
 			yield return 0;
+
+		if (state == State.MoveRollPhase) {
+			NextState();
+			yield break;
+		}
 		Animator camAnimator = Camera.main.gameObject.GetComponent<Animator>();
 		camAnimator.Play("CamExecuteEnter");
 		combatUI.fightButton.gameObject.SetActive(false);
+		combatUI.rollButton.gameObject.SetActive(false);
 		occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.RoundAnnounce, "ROUND " + round.ToString());
 		generalTimer = roundAnnounceTimer;
 		while(generalTimer > 0f) {
@@ -154,7 +155,6 @@ public class Arena : MonoBehaviour {
 
 		combatUI.positionIndicator.SetActive(false);
 		combatUI.DeactivatePanels();
-		combatUI.stateText.text = "";
 		em.Setup(true);
 
 		while (em.state != ExecutionPhaseManager.State.Inactive)
@@ -333,27 +333,26 @@ public class Arena : MonoBehaviour {
 			if(i == 3)
 				move3Count++;
 		}
-
-		MoveRollBonusStatusEffect se = null;
-		string text1 = "4 MATCHES!!!";
-		if(move1Count == 4 || move2Count == 4 || move3Count == 4)
-			se = superRollBonusStatusEffect;
+			
+		if(move1Count == 4 || move2Count == 4 || move3Count == 4) {
+			rerolls += 2;
+			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "4 MATCHES!");
+			StartCoroutine(ShowDelayedMessage("+2 reroll token", combatUI.centerAnnounceMarker, CombatTextType.Miss, 2f));
+			generalTimer = 3f;
+		}
 		else if(move1Count == 3 || move2Count == 3 || move3Count == 3) {
-			se = rollBonusStatusEffect;
-			text1 = "3 MATCHES";
+			rerolls += 1;
+			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "3 MATCHES!");
+			StartCoroutine(ShowDelayedMessage("+1 reroll token", combatUI.centerAnnounceMarker, CombatTextType.Miss, 2f));
+			generalTimer = 3f;
 		}
-		
-		if(se != null) {
-			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, text1);
-			foreach(Character goblin in goblins) {
-				goblin.AddStatusEffect(se);
-				occ.ShowCombatText(goblin.headTransform.gameObject, CombatTextType.StatusAppliedGood, se.statusEffectName);
-				goblin.statusContainer.BroadcastMessage("OnStatusEffectAddedToMe", new AttackTurnInfo(goblin, se), SendMessageOptions.DontRequireReceiver);
-				generalTimer = 3f;
-			}
-		}
-
+		combatUI.RefreshRerolls();
 		state = State.PositionPhase;
+	}
+
+	IEnumerator ShowDelayedMessage(string message, GameObject go, CombatTextType ctt, float timer) {
+		yield return new WaitForSeconds(timer);
+		occ.ShowCombatText(go, ctt, message);
 	}
 
 	private int GetNumberForMove(CharacterData c, CombatMove m) {

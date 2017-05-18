@@ -168,7 +168,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	}
 
 	IEnumerator AttackState() {
-		
 		Character attacker = GetCurrentAttacker();
 		if(attacker.queuedMove.targetType == CombatMove.TargetType.Opponent || attacker.queuedMove.targetType == CombatMove.TargetType.RandomOpponent)
 			StartCoroutine(GotoClashPositions(attacker, attacker.target));

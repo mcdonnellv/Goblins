@@ -18,7 +18,7 @@ public class CombatUI : MonoBehaviour {
 	public Button rollButton;
 	public Button fightButton;
 	public Text roundText;
-	public Text stateText;
+	public Text rerollsText;
 	public GameObject moveAnnouncePlayerMarker;
 	public GameObject moveAnnounceEnemyMarker;
 	public GameObject centerAnnounceMarker;
@@ -63,10 +63,22 @@ public class CombatUI : MonoBehaviour {
 	}
 
 	public void ShowVersusPanels(Character c) {
+		ShowVersusPanels(c, null);
+	}
+
+	public void RefreshRerolls() {
+		int rerolls = GameManager.gm.arena.rerolls;
+		if(rerolls == 0)
+			rerollsText.text = "No Rerolls";
+		else
+			rerollsText.text = GameManager.gm.arena.rerolls.ToString() + (rerolls == 1 ? " Reroll" : " Rerolls") +  " Left";
+	}
+
+	public void ShowVersusPanels(Character c, Character c2) {
 		CombatInfoPanel panel = (c.isPlayerCharacter) ? infoPanelPlayer : infoPanelEnemy;
 		panel.Setup(c);
 		panel.Show();
-		Character opposing = GetCharacterAtPosition(c.combatPosition, false);
+		Character opposing = c2 == null ? GetCharacterAtPosition(c.combatPosition, false) : c2;
 		if(opposing != null) {
 			panel.opposingInfoPanel.Setup(opposing);
 			panel.opposingInfoPanel.Show();
@@ -86,6 +98,7 @@ public class CombatUI : MonoBehaviour {
 	}
 
 	public void StartMoveRoll() {
+		StartCoroutine(ForceEndRoll());
 		float r1 = UnityEngine.Random.Range(1000f, 2000f);
 		foreach(GoblinCombatPanel panel in goblinPanels) {
 			if(panel.character == null)
@@ -94,6 +107,24 @@ public class CombatUI : MonoBehaviour {
 				continue;
 			float r2 = UnityEngine.Random.Range(0f, 1000f * goblinPanels.IndexOf(panel));
 			panel.wheel.StartMoveScroll(r1 + r2);
+		}
+	}
+
+	IEnumerator ForceEndRoll () {
+		//this will ensure that the wheel doesnt hang
+		float timer = 8f;
+		while(timer > 0f && GameManager.gm.arena.state == Arena.State.MoveRollPhase) {
+			timer-=Time.deltaTime;
+			yield return 0;
+		}
+
+		if(GameManager.gm.arena.state == Arena.State.MoveRollPhase) {
+			foreach(GoblinCombatPanel panel in goblinPanels) {
+				int roll = UnityEngine.Random.Range(0, 3);
+				Transform res = panel.wheel.scroll.content.GetChild(roll);
+				panel.wheel.SnapTo(res.GetComponent<RectTransform>(), roll);
+				panel.wheel.CenterOnVisibleAndGetMove();
+			}
 		}
 	}
 
@@ -142,7 +173,12 @@ public class CombatUI : MonoBehaviour {
 	}
 
 	public void RollButtonPressed() {
-		GameManager.gm.arena.state = Arena.State.MoveRollPhase;
+		Arena arena = GameManager.gm.arena;
+		if(arena.rerolls <=0 )
+			return;
+		arena.rerolls--;
+		arena.state = Arena.State.MoveRollPhase;
+		RefreshRerolls();
 	}
 
 	public void FightButtonPressed() {

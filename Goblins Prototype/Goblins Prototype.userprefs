@@ -1,20 +1,29 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/GoblinCombatPanel.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\GoblinCombatPanel.cs">
     <Files>
-      <File FileName="Assets/Scripts/CombatUI.cs" Line="80" Column="3" />
-      <File FileName="Assets/Scripts/Arena.cs" Line="462" Column="31" />
-      <File FileName="Assets/CombatInfoPanel.cs" Line="38" Column="51" />
-      <File FileName="Assets/Scripts/ExecutionPhaseManager.cs" Line="187" Column="37" />
-      <File FileName="Assets/Scripts/GoblinCombatPanel.cs" Line="98" Column="3" />
+      <File FileName="Assets\Scripts\InfiniteScroll.cs" Line="35" Column="1" />
+      <File FileName="Assets\Scripts\CombatMove.cs" Line="104" Column="44" />
+      <File FileName="Assets\Scripts\Character.cs" Line="34" Column="19" />
+      <File FileName="Assets\Scripts\CharacterData.cs" Line="35" Column="30" />
+      <File FileName="Assets\Scripts\CombatUI.cs" Line="131" Column="14" />
+      <File FileName="Assets\Scripts\GoblinCombatPanel.cs" Line="97" Column="54" />
+      <File FileName="Assets\Scripts\MovePanel.cs" Line="32" Column="6" />
+      <File FileName="Assets\Scripts\Arena.cs" Line="125" Column="12" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/FloatingCombatText/Scripts/CombatTextAnchorController.cs" line="62" column="1" />
+      <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/GameManager.cs" line="129" column="1" />
+      <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/GameManager.cs" line="118" column="1" />
       <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/GameManager.cs" line="104" column="1" />
       <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/GameManager.cs" line="88" column="1" />
+      <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/GameManager.cs" line="110" column="1" />
       <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/GameManager.cs" line="95" column="1" />
+      <Breakpoint file="/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Assets/Scripts/GameManager.cs" line="107" column="1" />
+      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\Scripts\GoblinCombatPanel.cs" line="126" column="13" />
+      <Breakpoint file="C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Assets\Scripts\GoblinCombatPanel.cs" line="97" column="39" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

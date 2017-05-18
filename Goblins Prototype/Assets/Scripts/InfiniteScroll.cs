@@ -9,19 +9,14 @@ public class InfiniteScroll : MonoBehaviour {
 	public Transform centerCursor;
 	// Actually this could be using the screen dimension but I was just doing it quick
 	// the x values of those two objects will define when to snap
-	private int count = 0;
 	public float size = 100f;
 	public Transform panelTr;
 	private bool rolling = false;
 
-	void Start() {
-		count = panelTr.childCount - 1; // How many kids do we have?
-	}
-
 	public void  Movement() {
 		if(!rolling)
 			return;
-		Transform bottom = panelTr.GetChild(count);    // Get last kid
+		Transform bottom = panelTr.GetChild(panelTr.childCount - 1);    // Get last kid
 		if(bottom.position.y < bottomCursor.position.y) {
 			bottom.SetAsFirstSibling();
 			RectTransform rt = panelTr.GetComponent<RectTransform>();
@@ -30,12 +25,19 @@ public class InfiniteScroll : MonoBehaviour {
 			rt.anchoredPosition = v;
 		}
 
-		if(scroll.velocity.magnitude <= 100) {
-			scroll.verticalNormalizedPosition = 0.5f;
-			string indexText = scroll.content.GetChild(1).GetComponentInChildren<Text>().text;
-			GetComponentInParent<GoblinCombatPanel>().SetSelectedMove(int.Parse(indexText) - 1);
+		if(scroll.velocity.magnitude <= 50) {
+			CenterOnVisibleAndGetMove();
 			rolling = false;
 		}
+	}
+
+	public void CenterOnVisibleAndGetMove() {
+		int selIndex = panelTr.childCount - 2;
+		Transform child = scroll.content.GetChild(selIndex);
+		float normalizePosition = (selIndex * 1f) / (panelTr.childCount * 1f - 1f);
+		scroll.verticalNormalizedPosition = 1f - normalizePosition;
+		CombatMove cm = child.GetComponentInChildren<WheelEntry>().combatMove;
+		GetComponentInParent<GoblinCombatPanel>().SetSelectedMove(cm);
 	}
 
 	public void StartMoveScroll(float speed) {
@@ -43,8 +45,7 @@ public class InfiniteScroll : MonoBehaviour {
 			int roll = UnityEngine.Random.Range(0, 3);
 			Transform res = scroll.content.GetChild(roll);
 			SnapTo(res.GetComponent<RectTransform>(), roll);
-			string indexText = res.GetComponentInChildren<Text>().text;
-			GetComponentInParent<GoblinCombatPanel>().SetSelectedMove(int.Parse(indexText) - 1);
+			CenterOnVisibleAndGetMove();
 		}
 		else {
 			scroll.velocity = new Vector2(0f, -speed);
@@ -52,7 +53,7 @@ public class InfiniteScroll : MonoBehaviour {
 		}
 	}
 
-	private void SnapTo(RectTransform target, int ind) {
+	public void SnapTo(RectTransform target, int ind) {
 		Canvas.ForceUpdateCanvases();
 		RectTransform rt = panelTr.GetComponent<RectTransform>();
 		rt.anchoredPosition = new Vector2(0, 100 * ind);

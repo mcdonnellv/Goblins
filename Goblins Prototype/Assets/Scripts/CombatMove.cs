@@ -6,6 +6,12 @@ using UnityEngine.UI;
 
 [Serializable]
 public class CombatMove : MonoBehaviour {
+	public enum MoveCategory {
+		Attack,
+		Defense,
+		Special,
+	}
+
 	public enum MoveType {
 		Damage,
 		Heal,
@@ -44,6 +50,7 @@ public class CombatMove : MonoBehaviour {
 	public int weight = 10;
 	public int energyCost = 2;
 	public Sprite sprite;
+	public MoveCategory moveCategory = MoveCategory.Attack;
 	public MoveType moveType = MoveType.Damage;
 	public RangeType rangeType = RangeType.Melee;
 	public TargetType targetType = TargetType.Opponent;
@@ -92,5 +99,15 @@ public class CombatMove : MonoBehaviour {
 		case 3: return new Color(0.902f, 0.804f, 0.918f);
 		}
 		return Color.white;
+	}
+
+	static public Sprite SpriteForMoveCategory(MoveCategory c) {
+		Sprite s = null;
+		switch(c) {
+		case MoveCategory.Attack: s = Resources.Load<Sprite>("Icons/UI_Versus"); break;
+		case MoveCategory.Defense: s = Resources.Load<Sprite>("Icons/Equipment_Shield"); break;
+		case MoveCategory.Special: s = Resources.Load<Sprite>("Icons/Rewards_Diamond"); break;
+		}
+		return s;
 	}
 }

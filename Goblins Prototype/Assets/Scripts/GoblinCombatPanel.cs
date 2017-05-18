@@ -19,16 +19,16 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public Character character;
 	public Character opponent;
 	public InfiniteScroll wheel;
-	public List<Text> moveLabels;
+	public WheelEntry wheelEntryPrefab;
+	public List <WheelEntry> wheelEntries;
 	public CharacterDetails characterDetails;
 	public GameObject moveDetails;
 	public Image moveIcon;
+	public Image moveWheelIcon;
 	public Text moveNameText;
 	public Text moveDescriptionText;
 	public Text moveEnergyText;
 	public Text moveDamageText;
-	public Text moveNumberText;
-	public Image moveNumberBg;
 	public GameObject highlight;
 	public Image unitTypeBg;
 	public Image unitTypeIcon;
@@ -43,7 +43,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 		unitTypeIcon.sprite = Character.SpriteForUnitType(c.data.unitType);
 		unitTypeBg.color = Character.ColorForUnitType(c.data.unitType);
 		sigilIcon.sprite = Character.SpriteForSigil(c.data.sigil);
-		RefreshMoveNames();
+		RefreshWheelEntries();
 		RefreshBars();
 		GetComponent<CanvasGroup>().alpha = 1f;
 		SetOpponent(null);
@@ -67,19 +67,38 @@ public class GoblinCombatPanel : MonoBehaviour {
 		energyBar.Refresh();
 	}
 
-	void RefreshMoveNames() {
-		int i=0;
-		foreach(Text label in moveLabels) {
-			if( i >= character.data.moves.Count)
-				label.text = "-";
-			else
-				label.text = character.data.moves[i].moveName;
-			i++;
+	void RefreshWheelEntries() {
+		foreach(Transform child in wheel.panelTr)
+			GameObject.Destroy(child.gameObject);
+		wheelEntries.Clear();
+
+		foreach(CombatMove cm in character.data.moves) {
+			if(cm.moveCategory == CombatMove.MoveCategory.Attack)
+				for(int i=0 ; i < character.data.attackWeight; i++)
+					AddWheelEntry(cm);
+
+			if(cm.moveCategory == CombatMove.MoveCategory.Defense)
+				for(int i=0 ; i < character.data.defendWeight; i++)
+					AddWheelEntry(cm);
+
+			if(cm.moveCategory == CombatMove.MoveCategory.Special)
+				for(int i=0 ; i < character.data.specialWeight; i++)
+					AddWheelEntry(cm);
 		}
 	}
 
-	public void SetSelectedMove(int index) {
-		character.queuedMove = character.data.moves[index];
+	public void AddWheelEntry(CombatMove cm) {
+		WheelEntry we = Instantiate(wheelEntryPrefab, wheel.panelTr, false);
+		we.icon.sprite = CombatMove.SpriteForMoveCategory(cm.moveCategory);
+		we.combatMove = cm;
+		wheelEntries.Add(we);
+		wheel.scroll.content.sizeDelta = new Vector2(wheel.scroll.content.sizeDelta.x, 100f * wheel.scroll.content.childCount);
+		int randpos = UnityEngine.Random.Range(0, wheel.panelTr.childCount);
+		we.transform.SetSiblingIndex(randpos); //check this
+	}
+
+	public void SetSelectedMove(CombatMove cm) {
+		character.queuedMove = cm;
 		Debug.Log("\tGoblin " + character.data.givenName +  " has rolled: " + character.queuedMove.moveName + "\n");
 		GameManager.gm.arena.CheckAllGoblinMovesSelected();
 	}
@@ -107,6 +126,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 		wheelCover.GetComponent<Animator>().SetBool("revealed", false);
 	}
 	public void RevealWheel() {
+		moveDetails.SetActive(false);
 		wheelCover.GetComponent<Animator>().SetBool("revealed", true);
 	}
 
@@ -120,16 +140,15 @@ public class GoblinCombatPanel : MonoBehaviour {
 			moveIcon.color = combatMove.ColorFromDamageType();
 			moveDescriptionText.text = combatMove.description;//GenerateDesciption();
 			moveEnergyText.text = combatMove.energyCost + " Energy";
-			moveDamageText.text = combatMove.damageType.ToString() + " Damage";
+			moveDamageText.text = "";//combatMove.damageType.ToString() + " Damage";
 			moveDamageText.color = moveIcon.color;
 			int pos = character.data.moves.IndexOf(combatMove) + 1;
-			moveNumberText.text = pos.ToString();
-			moveNumberBg.color = CombatMove.ColorFromMovePosition(pos);
+			moveWheelIcon.sprite = CombatMove.SpriteForMoveCategory(combatMove.moveCategory);
 			if(combatMove.damageType == CombatMove.DamageType.None)
 				moveDamageText.text = "";
 			if(combatMove.moveType == CombatMove.MoveType.Heal) {
-				moveDamageText.text = "Healing";
-				moveDamageText.color = Color.green;
+				//moveDamageText.text = "Healing";
+				//moveDamageText.color = Color.green;
 				moveIcon.color = Color.green;
 			}
 		}

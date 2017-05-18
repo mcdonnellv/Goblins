@@ -31,6 +31,9 @@ public class CharacterData {
 	public int spirit;
 	public int age;
 	public CombatClass combatClass;
+	public int attackWeight = 5;
+	public int defendWeight = 3;
+	public int specialWeight = 2;
 
 	//resistances
 	public float sliceRes;

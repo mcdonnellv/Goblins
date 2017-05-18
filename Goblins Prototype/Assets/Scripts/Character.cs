@@ -73,6 +73,7 @@ public class Character : MonoBehaviour {
 		}
 		return s;
 	}
+
 	static public Sprite SpriteForSigil(CombatSigil si) {
 		Sprite s = null;
 		switch(si) {
