@@ -175,9 +175,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		else
 			StartCoroutine(GotoCastPositions(attacker, attacker.target));
 
-		if(attacker.target != null && !attacker.target.isPlayerCharacter)
-			arena.combatUI.ShowEnemyPanel(attacker.target);
-		
+		arena.combatUI.ShowVersusPanels(attacker);
 		while (state == State.Attack)
 			yield return 0;	
 		NextState();
@@ -186,7 +184,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 
 	IEnumerator AttackDoneState () {
 		curtain.SetActive(false);
-		arena.combatUI.HideEnemyPanel();
+		arena.combatUI.HideVersusPanels();
 		//do any post attack combat move effects
 		Character attacker = GetCurrentAttacker();
 		if(attacker != null) {
@@ -457,7 +455,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			damageHealed = caster.queuedMove.effectiveness;
 			if(crit)
 				damageHealed = damageHealed * (arena.cm.baseCritDamageMultiplier + critModifer);
-			finalDamageHealed = Mathf.FloorToInt(damageHealed);
+			finalDamageHealed = Mathf.RoundToInt(damageHealed);
 			int amountHealed = arena.cm.ApplyHeal(finalDamageHealed, target.data);
 			occ.ShowCombatText(target.headTransform.gameObject, CombatTextType.Heal, "+" + amountHealed.ToString());
 			target.RefreshLifeBar();
@@ -531,20 +529,15 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		move.workingDamage = 0f;
 		int finalDamage = 0;
 		string damageString = attacker.data.givenName + " misses";
-		float fullDamage = 0f;
 		if(hit) {
 			if(!attacker.queuedMove.isDot) {
 				move.workingDamage = arena.cm.RollForDamage(move, attacker, defender);
 				if(crit) 
 					move.workingDamage *= (arena.cm.baseCritDamageMultiplier + critModifer);
 				defender.statusContainer.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, move.workingDamage), SendMessageOptions.DontRequireReceiver);
-				finalDamage = Mathf.FloorToInt(move.workingDamage);
+				finalDamage = Mathf.RoundToInt(move.workingDamage);
 				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, crit ? ("Crit\n" + finalDamage.ToString()) : finalDamage.ToString());
 				damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + move.moveName + " deals " + finalDamage.ToString() + " damage to " + defender.data.givenName;
-
-				float resist = arena.cm.GetResistForDamageType(move.damageType, defender.data);
-				if(resist > 0)
-					StartCoroutine(ShowDelayedMessage(Mathf.FloorToInt(resist * 100f) + "% resisted", defender.headTransform.gameObject, CombatTextType.Miss, 1f));
 			}
 
 			//add any status effects that may come from the attack
@@ -560,8 +553,6 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		Debug.Log("\t" + damageString + "\n");
 		arena.cm.ApplyDamage(finalDamage, defender.data);
 		defender.RefreshLifeBar();
-
-		int pos = attacker.combatPosition;
 
 		attacker.Idle();
 		defender.Idle();

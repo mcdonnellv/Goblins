@@ -20,7 +20,7 @@ public class DotStatusEffect : BaseStatusEffect {
 		Character recipient = ati.attacker;
 		CombatMath cm = GameManager.gm.arena.cm;
 		float damage = cm.RollForDamage(move, applier, recipient);
-		int finalDamage = Mathf.FloorToInt(damage);
+		int finalDamage = Mathf.RoundToInt(damage);
 		cm.ApplyDamage(finalDamage, recipient.data);
 		occ.ShowCombatText(recipient.headTransform.gameObject, CombatTextType.Hit, finalDamage.ToString());
 		recipient.RefreshLifeBar();

@@ -8,6 +8,8 @@ public class CombatMath : MonoBehaviour {
 	public float baseCritDamageMultiplier = 1.5f;
 	public float baseCritDamageMultiplierIncrement = .5f;
 	public float baseCritChance = 0.1f;
+	public float standardUnitTypeAdvantage = .2f;
+	public float standardSigilAdvantage = .1f;
 
 	public bool RollForHit(CharacterData attacker, CharacterData defender, CombatMove move) {
 		//magical ranged attacks always hit
@@ -33,9 +35,11 @@ public class CombatMath : MonoBehaviour {
 	public float RollForDamage(CombatMove combatMove, Character attacker, Character defender) {
 		if (combatMove == null)
 			return 0;
-		float resist = GetResistForDamageType(combatMove.damageType, defender.data);
-		float damage = combatMove.effectiveness * (1f - resist);
+		float typeAdvantage = Advantage(attacker.data.unitType, defender.data.unitType);
+		float sigilAdvantage = Advantage(attacker.data.sigil, defender.data.sigil);
+		float damage = combatMove.effectiveness * (1f + typeAdvantage + sigilAdvantage);
 		damage = Mathf.Max(0f, damage);
+
 		// status effects may alter the attack's damage value
 		AttackTurnInfo ati = new AttackTurnInfo(attacker, damage);
 		defender.statusContainer.BroadcastMessage("OnDamageDealtToMeCalc", ati, SendMessageOptions.DontRequireReceiver);
@@ -43,17 +47,6 @@ public class CombatMath : MonoBehaviour {
 		return ati.damage;
 	}
 
-	public float GetResistForDamageType(CombatMove.DamageType dt, CharacterData defender) {
-		switch(dt) {
-		case CombatMove.DamageType.Slice: return defender.sliceRes;
-		case CombatMove.DamageType.Crush: return defender.crushRes;
-		case CombatMove.DamageType.Arcane: return defender.aracaneRes;
-		case CombatMove.DamageType.Dark: return defender.darkRes;
-		case CombatMove.DamageType.Cold: return defender.coldRes;
-		case CombatMove.DamageType.Fire: return defender.fireRes;
-		}
-		return 0f;
-	}
 
 	public void ApplyDamage(int damage, CharacterData defender) {
 		defender.life = Mathf.Max(0, defender.life - damage);
@@ -63,5 +56,40 @@ public class CombatMath : MonoBehaviour {
 		int damage = recipient.maxLife - recipient.life;
 		recipient.life = Mathf.Min(recipient.maxLife, recipient.life + heal);
 		return Mathf.Min(heal, damage);
+	}
+
+	public float Advantage(CombatUnitType a, CombatUnitType b) {
+		if(a == CombatUnitType.Armored && b == CombatUnitType.Assault)
+			return standardUnitTypeAdvantage;
+		if(a == CombatUnitType.Assault && b == CombatUnitType.MagicUser)
+			return standardUnitTypeAdvantage;
+		if(a == CombatUnitType.MagicUser && b == CombatUnitType.Armored)
+			return standardUnitTypeAdvantage;
+		
+		if(a == CombatUnitType.Armored && b == CombatUnitType.MagicUser)
+			return -standardUnitTypeAdvantage;
+		if(a == CombatUnitType.Assault && b == CombatUnitType.Armored)
+			return -standardUnitTypeAdvantage;
+		if(a == CombatUnitType.MagicUser && b == CombatUnitType.Assault)
+			return -standardUnitTypeAdvantage;
+		return 0f;
+	}
+
+	public float Advantage(CombatSigil a, CombatSigil b) {
+		if(a == CombatSigil.Sun && b == CombatSigil.Moon)
+			return standardSigilAdvantage;
+		if(a == CombatSigil.Moon && b == CombatSigil.Star)
+			return standardSigilAdvantage;
+		if(a == CombatSigil.Star && b == CombatSigil.Sun)
+			return standardSigilAdvantage;
+
+		if(a == CombatSigil.Sun && b == CombatSigil.Star)
+			return -standardSigilAdvantage;
+		if(a == CombatSigil.Moon && b == CombatSigil.Sun)
+			return -standardSigilAdvantage;
+		if(a == CombatSigil.Star && b == CombatSigil.Moon)
+			return -standardSigilAdvantage;
+		
+		return 0f;
 	}
 }

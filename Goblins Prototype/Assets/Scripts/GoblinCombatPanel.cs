@@ -86,32 +86,20 @@ public class GoblinCombatPanel : MonoBehaviour {
 
 	public void SetOpponent(Character o) {
 		opponent = o;
-		if(o == null || o.state == Character.State.Dead) {
-			//opponentInfo.SetActive(false);
+		if(o == null || o.state == Character.State.Dead)
 			return;
-		}
-		//opponentInfo.SetActive(true);
-		//opponentImage.sprite = o.spriteRenderer.sprite;
-		//opponentImage.preserveAspect = true;
-		//RefreshBar(opponentLifeBar, opponent.data.life, opponent.data.maxLife, 70f);
 	}
 
 	public void Pressed() {
-		float time = float.MaxValue;
-		CombatUI cui = GameManager.gm.arena.combatUI;
-		cui.HideEnemyPanel();
-		foreach(Transform child in cui.targetPointerContainers)
-			Destroy(child.gameObject);
-
-		if(character != null) {
+		if(GameManager.gm.arena.selectedChar == null)
 			GameManager.gm.arena.selectedChar = character;
-			cui.ShowTargetPointer(character, time);
-		}
-		if(opponent != null){
-			cui.ShowTargetPointer(opponent, time);
-			cui.ShowEnemyPanel(opponent);
-		}
-		foreach(GoblinCombatPanel gcp in cui.goblinPanels)
+		CombatUI ui = GameManager.gm.arena.combatUI;
+		ui.DestoryPointers();
+
+		if(opponent != null)
+			ui.ShowVersusPanels(opponent);
+		
+		foreach(GoblinCombatPanel gcp in ui.goblinPanels)
 			gcp.SetInHighlightedStatus();
 	}
 

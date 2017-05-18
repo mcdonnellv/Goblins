@@ -54,7 +54,7 @@ public class Arena : MonoBehaviour {
 		combatUI.rollButton.gameObject.SetActive(false);
 		combatUI.fightButton.gameObject.SetActive(false);
 		combatUI.DeactivatePanels();
-		combatUI.HideEnemyPanel();
+		combatUI.HideVersusPanels();
 		foreach(Character c in goblins) {
 			int ind = c.combatPosition -1;
 			combatUI.goblinPanels[ind].Setup(c);
@@ -394,8 +394,11 @@ public class Arena : MonoBehaviour {
 			return null;
 		foreach(Transform child in t) {
 			Character c = child.GetComponent<Character>();
-			if(c == null)
-				continue;
+			if(c == null) {
+				c = GetTransformCharacter(child, allowDead, allowGhost); 
+				if(c == null)
+					continue;
+			}
 			
 			if(c.state == Character.State.Ghost) {
 				if(allowGhost)
@@ -436,15 +439,30 @@ public class Arena : MonoBehaviour {
 				}
 			}
 
-			if(enemyCharHit != null)
-				combatUI.ShowEnemyPanel(enemyCharHit);
-			else
-				combatUI.HideEnemyPanel();
+			combatUI.DestoryPointers();
 
+			bool versusPanelShown = false;
+			if(enemyCharHit != null) {
+				combatUI.ShowVersusPanels(enemyCharHit);
+				versusPanelShown = true;
+				playerCharHit = combatUI.GetCharacterAtPosition(enemyCharHit.combatPosition, false);
+			}
+				
 			if(playerCharHit != null) {
+				if(!versusPanelShown) {
+					combatUI.ShowVersusPanels(playerCharHit);
+					versusPanelShown = true;
+				}
 				selectedChar = playerCharHit;
 				GoblinCombatPanel gcp = combatUI.GetPanelForPlayer(playerCharHit);
 				gcp.Pressed();
+			}
+
+			if(playerCharHit == null && enemyCharHit == null) {
+				combatUI.HideVersusPanels();
+				selectedChar = null;
+				foreach(GoblinCombatPanel gcp in combatUI.goblinPanels)
+					gcp.SetInHighlightedStatus();
 			}
 		}
 	}

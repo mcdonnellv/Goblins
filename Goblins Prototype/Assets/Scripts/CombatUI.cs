@@ -8,7 +8,9 @@ public class CombatUI : MonoBehaviour {
 
 	public List <GoblinCombatPanel> goblinPanels;
 	public CharacterDetails characterDetails;
-	public EnemyCombatPanel enemyPanel;
+	public CombatInfoPanel infoPanelPlayer;
+	public CombatInfoPanel infoPanelEnemy;
+	public GameObject vsIcon;
 	public Transform goblinPanelGrid;
 	public Transform statusContainers;
 	public Transform targetPointerContainers;
@@ -47,21 +49,40 @@ public class CombatUI : MonoBehaviour {
 
 			panel.position = i + 1;
 			panel.positionText.text = panel.position.ToString();
-			if(panel.character != null) {
-				Transform newPt = arena.enemySpawnSpots[panel.position - 1];
-				Character inhabitant = arena.GetTransformCharacter(newPt, true, true);
-				panel.SetOpponent(inhabitant);
-			}
+			if(panel.character != null) 
+				panel.SetOpponent(GetCharacterAtPosition(panel.position, true));
 		}
 	}
 
-	public void ShowEnemyPanel(Character c) {
-		enemyPanel.gameObject.SetActive(true);
-		enemyPanel.Setup(c);
+	public Character GetCharacterAtPosition(int combatPos, bool enemy) {
+		Arena arena = GameManager.gm.arena;
+		List<Transform> spawnSpots = enemy ? arena.enemySpawnSpots : arena.playerSpawnSpots;
+		Transform newPt = spawnSpots[combatPos - 1];
+		Character inhabitant = arena.GetTransformCharacter(newPt, true, true);
+		return inhabitant;
 	}
 
-	public void HideEnemyPanel() {
-		enemyPanel.gameObject.SetActive(false);
+	public void ShowVersusPanels(Character c) {
+		CombatInfoPanel panel = (c.isPlayerCharacter) ? infoPanelPlayer : infoPanelEnemy;
+		panel.Setup(c);
+		panel.Show();
+		Character opposing = GetCharacterAtPosition(c.combatPosition, false);
+		if(opposing != null) {
+			panel.opposingInfoPanel.Setup(opposing);
+			panel.opposingInfoPanel.Show();
+		}
+		vsIcon.SetActive(true);
+	}
+
+	public void HideVersusPanels() {
+		infoPanelEnemy.Hide();
+		infoPanelPlayer.Hide();
+		vsIcon.SetActive(false);
+	}
+
+	public void DestoryPointers() {
+		foreach(Transform child in targetPointerContainers)
+			Destroy(child.gameObject);
 	}
 
 	public void StartMoveRoll() {

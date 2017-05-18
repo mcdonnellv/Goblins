@@ -25,7 +25,7 @@ public class BracingStatusEffect : BaseStatusEffect {
 				bbse = (BashBonusStatusEffect)owner.AddStatusEffect(bashBonusStatusEffectPrefab);
 			float mitigatedDamage = originalDamage - move.workingDamage;
 			if(mitigatedDamage > 0)
-				StartCoroutine(ShowMitigatedDamage(Mathf.FloorToInt(mitigatedDamage), 1f));
+				StartCoroutine(ShowMitigatedDamage(Mathf.RoundToInt(mitigatedDamage), 1f));
 			bbse.damageStored += mitigatedDamage;
 		}
 	}

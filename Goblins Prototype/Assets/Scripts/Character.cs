@@ -106,7 +106,7 @@ public class Character : MonoBehaviour {
 
 		float dm = GameManager.gm.enemies.difficutlyModifier;
 		if(!playerChar && dm > 1f) {
-			c.data.maxLife = Mathf.FloorToInt(c.data.maxLife * dm);
+			c.data.maxLife = Mathf.RoundToInt(c.data.maxLife * dm);
 			c.data.life = c.data.maxLife;
 		}
 		return spawnedChar;
@@ -169,15 +169,18 @@ public class Character : MonoBehaviour {
 		float totVal = data.maxLife;
 		Vector2 s = lifeBar.GetChild(1).GetComponent<RectTransform>().sizeDelta;
 		lifeBar.GetChild(1).GetComponent<RectTransform>().sizeDelta = new Vector2(v * curval/totVal, s.y);
-
+		CombatUI ui = GameManager.gm.arena.combatUI;
 		if(isPlayerCharacter)
-			GameManager.gm.arena.combatUI.GetPanelForPlayer(this).RefreshBars();
+			ui.GetPanelForPlayer(this).RefreshBars();
 
 		if(target != null && target.isPlayerCharacter) {
 			GoblinCombatPanel gcp = GameManager.gm.arena.combatUI.GetPanelForPlayer(target);
 			if(gcp != null)
 				gcp.RefreshBars();
 		}
+
+		ui.infoPanelEnemy.lifebar.Refresh();
+		ui.infoPanelPlayer.lifebar.Refresh();
 	}
 
 	public void ProcessTurnForStatusEffects() {
