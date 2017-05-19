@@ -8,16 +8,19 @@ public class CharacterDetails : MonoBehaviour {
 	public Button closeButton;
 	public CharacterData character;
 
-
-
 	public Text bodyLabel;
 	public Text mindLabel;
 	public Text spiritLabel;
 	public Text lifeLabel;
-	public Text energyLabel;
 	public Text critRateLabel;
 	public Text defenseLabel;
 	public Text ageLabel;
+
+	public Image sigil;
+	public Text sigilLabel;
+	public Text unitLabel;
+	public Image unit;
+	public Image unitBG;
 
 	public Text sliceResLabel;
 	public Text crushResLabel;
@@ -59,7 +62,6 @@ public class CharacterDetails : MonoBehaviour {
 		mindLabel.text = character.mind.ToString();
 		spiritLabel.text = character.spirit.ToString();
 		lifeLabel.text = character.life.ToString() + "/" + character.maxLife.ToString();
-		energyLabel.text = character.energy.ToString() + "/" + character.maxEnergy.ToString();
 		critRateLabel.text = (100 * character.critChance).ToString() + "%";
 		defenseLabel.text = character.defense.ToString();
 		ageLabel.text = character.age.ToString();
@@ -69,6 +71,13 @@ public class CharacterDetails : MonoBehaviour {
 		darkResLabel.text = (100 * character.darkRes).ToString() + "%";
 		coldResLabel.text = (100 * character.coldRes).ToString() + "%";
 		fireResLabel.text = (100 * character.fireRes).ToString() + "%";
+
+		sigil.sprite = Character.SpriteForSigil(character.sigil);
+		sigilLabel.text = character.sigil.ToString();
+		unit.sprite = Character.SpriteForUnitType(character.unitType);
+		unitBG.color = Character.ColorForUnitType(character.unitType);
+		unitLabel.text = character.unitType.ToString();
+
 		classDropdown.value = (int) character.combatClass.type;
 
 		foreach (Transform child in movePanelGrid.transform) {

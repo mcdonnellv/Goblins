@@ -319,34 +319,24 @@ public class Arena : MonoBehaviour {
 		}
 
 		//check if all wheel results match for a nice combat bonus
-		int move1Count = 0;
-		int move2Count = 0;
-		int move3Count = 0;
-		foreach(Character goblin in goblins) {
-			if(goblin.state == Character.State.Dead || goblin.state == Character.State.Ghost)
-				continue;
-			int i = GetNumberForMove(goblin.data, goblin.queuedMove);
-			if(i == 1)
-				move1Count++;
-			if(i == 2)
-				move2Count++;
-			if(i == 3)
-				move3Count++;
-		}
+		int[] moveCount = new int[3];
+		foreach(GoblinCombatPanel panel in combatUI.goblinPanels) 
+			moveCount[(int)panel.character.queuedMove.moveCategory]++;
+
+		int highestmoveCt = 1;
+		for (int i=0; i < 3; i++)
+			if(moveCount[i] > highestmoveCt)
+				highestmoveCt = moveCount[i];
 			
-		if(move1Count == 4 || move2Count == 4 || move3Count == 4) {
-			rerolls += 2;
-			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "4 MATCHES!");
-			StartCoroutine(ShowDelayedMessage("+2 reroll token", combatUI.centerAnnounceMarker, CombatTextType.Miss, 2f));
+		if(highestmoveCt >= 3) {
+			int toAdd = (highestmoveCt == 4 ? 2 : 1);
+			rerolls += toAdd;
+			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, highestmoveCt.ToString() + " MATCHES!");
+			StartCoroutine(ShowDelayedMessage("+" + toAdd.ToString() + " reroll token", combatUI.centerAnnounceMarker, CombatTextType.Miss, 2f));
 			generalTimer = 3f;
+			combatUI.RefreshRerolls();
 		}
-		else if(move1Count == 3 || move2Count == 3 || move3Count == 3) {
-			rerolls += 1;
-			occ.ShowCombatText(combatUI.centerAnnounceMarker, CombatTextType.EncounterStart, "3 MATCHES!");
-			StartCoroutine(ShowDelayedMessage("+1 reroll token", combatUI.centerAnnounceMarker, CombatTextType.Miss, 2f));
-			generalTimer = 3f;
-		}
-		combatUI.RefreshRerolls();
+
 		state = State.PositionPhase;
 	}
 

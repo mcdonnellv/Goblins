@@ -5,39 +5,29 @@ using UnityEngine.UI;
 
 public class GoblinCombatPanel : MonoBehaviour {
 	public int position;
-	public Text positionText;
 	public Text classText;
-	public Text energyText;
+	public Image unitTypeBg;
+	public Image unitTypeIcon;
+	public Image sigilIcon;
 	public GameObject curtain;
 	public GameObject wheelCover;
 	public LifeBar lifeBar;
-	public LifeBar energyBar;
 	public Image iconImage;
-	public Image opponentImage;
-	public Image opponentLifeBar;
-	public GameObject opponentInfo;
 	public Character character;
 	public Character opponent;
 	public InfiniteScroll wheel;
 	public WheelEntry wheelEntryPrefab;
-	public List <WheelEntry> wheelEntries;
 	public CharacterDetails characterDetails;
 	public GameObject moveDetails;
-	public Image moveIcon;
 	public Image moveWheelIcon;
 	public Text moveNameText;
 	public Text moveDescriptionText;
-	public Text moveEnergyText;
-	public Text moveDamageText;
 	public GameObject highlight;
-	public Image unitTypeBg;
-	public Image unitTypeIcon;
-	public Image sigilIcon;
+
 
 	public void Setup(Character c) {
 		character = c;
 		lifeBar.Setup(c);
-		energyBar.Setup(c,true);
 		iconImage.sprite = character.data.combatClass.icon;
 		classText.text = character.data.combatClass.type.ToString().ToUpper();
 		unitTypeIcon.sprite = Character.SpriteForUnitType(c.data.unitType);
@@ -64,13 +54,11 @@ public class GoblinCombatPanel : MonoBehaviour {
 
 	public void RefreshBars() {
 		lifeBar.Refresh();
-		energyBar.Refresh();
 	}
 
 	void RefreshWheelEntries() {
 		foreach(Transform child in wheel.panelTr)
 			GameObject.Destroy(child.gameObject);
-		wheelEntries.Clear();
 
 		foreach(CombatMove cm in character.data.moves) {
 			if(cm.moveCategory == CombatMove.MoveCategory.Attack)
@@ -90,11 +78,11 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public void AddWheelEntry(CombatMove cm) {
 		WheelEntry we = Instantiate(wheelEntryPrefab, wheel.panelTr, false);
 		we.icon.sprite = CombatMove.SpriteForMoveCategory(cm.moveCategory);
+		we.name = cm.moveCategory.ToString();
 		we.combatMove = cm;
-		wheelEntries.Add(we);
 		wheel.scroll.content.sizeDelta = new Vector2(wheel.scroll.content.sizeDelta.x, 100f * wheel.scroll.content.childCount);
 		int randpos = UnityEngine.Random.Range(0, wheel.panelTr.childCount);
-		we.transform.SetSiblingIndex(randpos); //check this
+		we.transform.SetSiblingIndex(randpos);
 	}
 
 	public void SetSelectedMove(CombatMove cm) {
@@ -131,27 +119,14 @@ public class GoblinCombatPanel : MonoBehaviour {
 	}
 
 	public void DisplayMove() {
-		if(character != null && character.queuedMove != null) {
-			CombatMove combatMove = character.queuedMove;
-			moveDetails.SetActive(true);
-
-			moveNameText.text = combatMove.moveName;
-			moveIcon.sprite = combatMove.sprite;
-			moveIcon.color = combatMove.ColorFromDamageType();
-			moveDescriptionText.text = combatMove.description;//GenerateDesciption();
-			moveEnergyText.text = combatMove.energyCost + " Energy";
-			moveDamageText.text = "";//combatMove.damageType.ToString() + " Damage";
-			moveDamageText.color = moveIcon.color;
-			int pos = character.data.moves.IndexOf(combatMove) + 1;
-			moveWheelIcon.sprite = CombatMove.SpriteForMoveCategory(combatMove.moveCategory);
-			if(combatMove.damageType == CombatMove.DamageType.None)
-				moveDamageText.text = "";
-			if(combatMove.moveType == CombatMove.MoveType.Heal) {
-				//moveDamageText.text = "Healing";
-				//moveDamageText.color = Color.green;
-				moveIcon.color = Color.green;
-			}
-		}
+		if(character == null || character.queuedMove == null)
+			return;
+		CombatMove combatMove = character.queuedMove;
+		moveDetails.SetActive(true);
+		moveNameText.text = combatMove.moveName;
+		moveDescriptionText.text = combatMove.description;
+		int pos = character.data.moves.IndexOf(combatMove) + 1;
+		moveWheelIcon.sprite = CombatMove.SpriteForMoveCategory(combatMove.moveCategory);
 	}
 }
 

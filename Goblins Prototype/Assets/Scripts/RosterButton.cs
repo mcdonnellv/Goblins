@@ -13,16 +13,14 @@ public class RosterButton : MonoBehaviour {
 	public Text mindLabel;
 	public Text spiritLabel;
 	public Image iconImage;
+	public Image sigil;
+	public Image unit;
+	public Image unitBG;
 	public GameObject highlight;
 	public Roster roster;
 	public CharacterData character;
 	public bool inParty = false;
 	private Color originalColor;
-
-	// Use this for initialization
-	void Start () {
-		
-	}
 
 	public void Setup (CharacterData currentCharacter) {
 		Image bg = GetComponent<Image>();
@@ -36,6 +34,9 @@ public class RosterButton : MonoBehaviour {
 		bodyLabel.text = "Body: " + character.body.ToString();
 		mindLabel.text = "Mind: " + character.mind.ToString();
 		spiritLabel.text = "Spirit :" + character.spirit.ToString();
+		sigil.sprite = Character.SpriteForSigil(character.sigil);
+		unit.sprite = Character.SpriteForUnitType(character.unitType);
+		unitBG.color = Character.ColorForUnitType(character.unitType);
 		SetInPartyStatus();
 		SetInHighlightedStatus();
 

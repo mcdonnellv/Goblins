@@ -10,7 +10,9 @@ public class PartyMemberPanel : MonoBehaviour {
 	public Text lifeLabel;
 	public Text energyLabel;
 	public Image iconImage;
-
+	public Image sigil;
+	public Image unit;
+	public Image unitBG;
 	public CharacterData character;
 	public Roster roster;
 
@@ -42,6 +44,9 @@ public class PartyMemberPanel : MonoBehaviour {
 		nameLabel.text = character.combatClass.type.ToString();
 		lifeLabel.text = character.maxLife.ToString();
 		energyLabel.text = character.maxEnergy.ToString();
+		sigil.sprite = Character.SpriteForSigil(character.sigil);
+		unit.sprite = Character.SpriteForUnitType(character.unitType);
+		unitBG.color = Character.ColorForUnitType(character.unitType);
 		SpawnGoblin();
 		cell.SetActive(true);
 		SetInHighlightedStatus();

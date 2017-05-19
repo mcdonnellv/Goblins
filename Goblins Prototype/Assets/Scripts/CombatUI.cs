@@ -48,7 +48,6 @@ public class CombatUI : MonoBehaviour {
 			}
 
 			panel.position = i + 1;
-			panel.positionText.text = panel.position.ToString();
 			if(panel.character != null) 
 				panel.SetOpponent(GetCharacterAtPosition(panel.position, true));
 		}
