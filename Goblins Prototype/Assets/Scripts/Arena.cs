@@ -320,8 +320,11 @@ public class Arena : MonoBehaviour {
 
 		//check if all wheel results match for a nice combat bonus
 		int[] moveCount = new int[3];
-		foreach(GoblinCombatPanel panel in combatUI.goblinPanels) 
+		foreach(GoblinCombatPanel panel in combatUI.goblinPanels) {
+			if(panel == null || panel.character == null || panel.character.queuedMove == null)
+				continue;
 			moveCount[(int)panel.character.queuedMove.moveCategory]++;
+		}
 
 		int highestmoveCt = 1;
 		for (int i=0; i < 3; i++)

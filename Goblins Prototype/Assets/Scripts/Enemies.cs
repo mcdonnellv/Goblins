@@ -11,6 +11,8 @@ public class Enemies : MonoBehaviour {
 	public List<Transform> enemyParty;
 	public Text enemyDescription;
 	public Text enemyGroupNumber;
+	public GameObject enemyTypeContainer;
+	public Image unitTypePrefab;
 	public int curPartyIndex = 0;
 	public int enemySetsCount;
 	public List<Transform> enemyPrefabs;
@@ -36,8 +38,9 @@ public class Enemies : MonoBehaviour {
 		}
 		stageEnemySets[index].SpawnEnemies();
 		enemyParty = stageEnemySets[index].enemies;
-		enemyDescription.text = DescribeEnemyParty();
+		enemyDescription.text = "";//DescribeEnemyParty();
 		enemyGroupNumber.text = "Enemy Group " + (index+1).ToString() + " of " + enemySetsCount.ToString();
+		Image unitType = (Image)Instantiate(unitTypePrefab, enemyTypeContainer.transform); //todo
 	}
 
 

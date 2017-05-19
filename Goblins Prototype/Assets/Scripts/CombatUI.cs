@@ -76,12 +76,12 @@ public class CombatUI : MonoBehaviour {
 	public void ShowVersusPanels(Character c, Character c2) {
 		CombatInfoPanel panel = (c.isPlayerCharacter) ? infoPanelPlayer : infoPanelEnemy;
 		panel.Setup(c);
-		panel.Show();
-		Character opposing = c2 == null ? GetCharacterAtPosition(c.combatPosition, false) : c2;
+		Character opposing = c2 == null ? GetCharacterAtPosition(c.combatPosition, c.isPlayerCharacter) : c2;
 		if(opposing != null) {
 			panel.opposingInfoPanel.Setup(opposing);
 			panel.opposingInfoPanel.Show();
 		}
+		panel.Show();
 		vsIcon.SetActive(true);
 	}
 
