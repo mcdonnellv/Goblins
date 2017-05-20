@@ -38,6 +38,8 @@ public class CombatUI : MonoBehaviour {
 		Arena arena = GameManager.gm.arena;
 		foreach(Transform panelTrans in goblinPanelGrid) {
 			GoblinCombatPanel panel = panelTrans.GetComponentInChildren<GoblinCombatPanel>();
+			if(panel == null)
+				continue;
 
 			int i = panel.transform.parent.GetSiblingIndex();
 			switch(i){
@@ -68,12 +70,13 @@ public class CombatUI : MonoBehaviour {
 	public void RefreshRerolls() {
 		int rerolls = GameManager.gm.arena.rerolls;
 		if(rerolls == 0)
-			rerollsText.text = "No Rerolls";
+			rerollsText.text = "No Free Spins";
 		else
-			rerollsText.text = GameManager.gm.arena.rerolls.ToString() + (rerolls == 1 ? " Reroll" : " Rerolls") +  " Left";
+			rerollsText.text = GameManager.gm.arena.rerolls.ToString() + (rerolls == 1 ? " Free Spin" : " Free Spins") +  " Left";
 	}
 
 	public void ShowVersusPanels(Character c, Character c2) {
+		DestroyTargetPointers();
 		CombatInfoPanel panel = (c.isPlayerCharacter) ? infoPanelPlayer : infoPanelEnemy;
 		panel.Setup(c);
 		Character opposing = c2 == null ? GetCharacterAtPosition(c.combatPosition, c.isPlayerCharacter) : c2;
@@ -99,14 +102,15 @@ public class CombatUI : MonoBehaviour {
 	public void StartMoveRoll() {
 		StartCoroutine(ForceEndRoll());
 		float r1 = UnityEngine.Random.Range(1000f, 2000f);
-		foreach(GoblinCombatPanel panel in goblinPanels) {
-			if(panel.character == null)
-				continue;
-			if(panel.character.state == Character.State.Dead || panel.character.state == Character.State.Ghost)
-				continue;
-			float r2 = UnityEngine.Random.Range(0f, 1000f * goblinPanels.IndexOf(panel));
-			panel.wheel.StartMoveScroll(r1 + r2);
-		}
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			RollWheel(panel, r1);
+	}
+
+	public void RollWheel(GoblinCombatPanel panel, float r1) {
+		if(panel.character == null || panel.character.state == Character.State.Dead || panel.character.state == Character.State.Ghost)
+			return;
+		float r2 = UnityEngine.Random.Range(0f, 1000f * goblinPanels.IndexOf(panel));
+		panel.wheel.StartMoveScroll(r1 + r2);
 	}
 
 	IEnumerator ForceEndRoll () {
@@ -157,6 +161,16 @@ public class CombatUI : MonoBehaviour {
 			panel.transform.parent.GetComponent<DropMe>().Deactivate();
 	}
 
+	public void HideRerollButtons() {
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			panel.rollButton.SetActive(false);
+	}
+
+	public void ShowRerollButtons() {
+		foreach(GoblinCombatPanel panel in goblinPanels)
+			panel.rollButton.SetActive(true);
+	}
+
 	public void FocusPanel(int combatPos) {
 		foreach(GoblinCombatPanel panel in goblinPanels) {
 			panel.curtain.SetActive(panel.position != combatPos);
@@ -173,7 +187,7 @@ public class CombatUI : MonoBehaviour {
 
 	public void RollButtonPressed() {
 		Arena arena = GameManager.gm.arena;
-		if(arena.rerolls <=0 )
+		if(arena.rerolls <= 0 )
 			return;
 		arena.rerolls--;
 		arena.state = Arena.State.MoveRollPhase;
@@ -280,20 +294,16 @@ public class CombatUI : MonoBehaviour {
 	}
 
 	public void ShowTargetPointer(Character character, float time) {
+		if(character.state == Character.State.Dead)
+			return;
 		StopCoroutine("HideTargetPointer");
 		Transform tp = GameObject.Instantiate(targetPointerPrefab, targetPointerContainers);
+		tp.GetComponentInChildren<Text>().text = character.combatPosition.ToString();
 		character.targetPointer = tp;
 		if(time > 0f)
-			StartCoroutine(HideTargetPointer(time));
+			Invoke("DestroyTargetPointers", time);
 	}
-
-	IEnumerator HideTargetPointer(float t) {
-		float time = t;
-		while (time > 0f) {
-			time -= Time.deltaTime;
-			yield return 0;
-		}
-
+	public void DestroyTargetPointers() {
 		foreach(Transform child in targetPointerContainers)
 			Destroy(child.gameObject);
 	}

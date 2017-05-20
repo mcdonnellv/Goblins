@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class PartyMemberPanel : MonoBehaviour {
-	public static int activePanelIndex = 0;
+	public static int activePanelIndex = -1;
 
 	public Text nameLabel;
 	public Text lifeLabel;
@@ -43,7 +43,6 @@ public class PartyMemberPanel : MonoBehaviour {
 		iconImage.sprite = character.combatClass.icon;
 		nameLabel.text = character.combatClass.type.ToString();
 		lifeLabel.text = character.maxLife.ToString();
-		energyLabel.text = character.maxEnergy.ToString();
 		sigil.sprite = Character.SpriteForSigil(character.sigil);
 		unit.sprite = Character.SpriteForUnitType(character.unitType);
 		unitBG.color = Character.ColorForUnitType(character.unitType);
@@ -72,6 +71,7 @@ public class PartyMemberPanel : MonoBehaviour {
 		roster.gameObject.SetActive(true);
 		roster.RefreshDisplay();
 		roster.Highlight(character);
+		roster.characterDetailsPanel.gameObject.SetActive(false);
 		addButton.gameObject.SetActive(false);
 		removeButton.gameObject.SetActive(true);
 		SetInHighlightedStatus();
@@ -98,6 +98,7 @@ public class PartyMemberPanel : MonoBehaviour {
 	}
 
 	public void RemoveButtonPressed() {
+		PartyMemberPanel.activePanelIndex = -1;
 		if(character != null && character.characterGameObject != null) {
 			Character c = character.characterGameObject.GetComponent<Character>();
 			if(c != null)
@@ -109,19 +110,17 @@ public class PartyMemberPanel : MonoBehaviour {
 		addButton.gameObject.SetActive(true);
 		removeButton.gameObject.SetActive(false);
 		cell.SetActive(false);
+		roster.characterDetailsPanel.gameObject.SetActive(false);
+		roster.RefreshDisplay();
 		SetInHighlightedStatus();
 	}
 
 	public void DetailsButtonPressed() {
+		activePanelIndex = transform.GetSiblingIndex();
 		roster.gameObject.SetActive(true);
-		if(roster.characterDetailsPanel.gameObject.activeSelf) {
-			roster.characterDetailsPanel.gameObject.SetActive(false);
-		}
-		else {
-			CharacterDetails characterDetails = roster.characterDetailsPanel.GetComponent<CharacterDetails>();
-			characterDetails.AssignCharacter(character);
-			roster.characterDetailsPanel.gameObject.SetActive(true);
-		}
+		CharacterDetails characterDetails = roster.characterDetailsPanel.GetComponent<CharacterDetails>();
+		characterDetails.AssignCharacter(character);
+		roster.characterDetailsPanel.gameObject.SetActive(true);
 		roster.RefreshDisplay();
 		roster.Highlight(character);
 	}

@@ -11,8 +11,9 @@ public class MovePanel : MonoBehaviour {
 	public Image moveIcon;
 
 	public void Setup (CombatMove combatMove) {
-		nameLabel.text = combatMove.moveName;
+		nameLabel.text = combatMove.moveName.ToUpper();
 		moveIcon.sprite = CombatMove.SpriteForMoveCategory(combatMove.moveCategory);
+		moveIcon.color = CombatMove.ColorForMoveCategory(combatMove.moveCategory);
 		descriptionLabel.text = combatMove.description;
 	}
 }

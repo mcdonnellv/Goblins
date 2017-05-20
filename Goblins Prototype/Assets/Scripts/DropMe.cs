@@ -29,7 +29,7 @@ public class DropMe : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointe
 			return;
 
 		//reparent current inhabitant
-		Transform currentChild = transform.GetChild(0);
+		Transform currentChild = transform.GetComponentInChildren<DragMe>().transform;
 		if(currentChild != null) {
 			currentChild.SetParent(dragMe.prevParent, false);
 			currentChild.SetAsLastSibling();

@@ -18,8 +18,6 @@ public class CharacterData {
 	public string enemyClass;
 	public int maxLife;
 	public int life;
-	public int maxEnergy;
-	public int energy;
 	public float critChance;
 	public float defense;
 	public CombatSigil sigil;
@@ -34,14 +32,6 @@ public class CharacterData {
 	public int attackWeight = 5;
 	public int defendWeight = 3;
 	public int specialWeight = 2;
-
-	//resistances
-	public float sliceRes;
-	public float crushRes;
-	public float aracaneRes;
-	public float darkRes;
-	public float coldRes;
-	public float fireRes;
 
 	public List<CombatMove> moves = new List<CombatMove>();
 	public List<BaseStatusEffect> statusEffects = new List<BaseStatusEffect>();
@@ -69,10 +59,8 @@ public class CharacterData {
 
 	void ApplyAttributesToStats() {
 		maxLife = baseLife + body * bodyBonusLife;
-		maxEnergy = baseEnergy + spirit * spiritBonusEnergy;
 		critChance = standardCritChance + mind * 0.02f;
 		life = maxLife;
-		energy = maxEnergy;
 	}
 
 	public void AssignClass(CombatClass cc) {

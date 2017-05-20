@@ -5,7 +5,6 @@ C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\Uni
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.dll
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.HoloLens.dll
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.Networking.dll
-C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.PlaymodeTestsRunner.dll
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.UI.dll
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.VR.dll
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\Mono.Cecil.dll
@@ -20,10 +19,13 @@ C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\Uni
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEditor.xml
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.UI.xml
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.Networking.xml
-C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.PlaymodeTestsRunner.xml
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.Analytics.xml
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.HoloLens.xml
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.VR.xml
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\obj\Debug\Assembly-CSharp.dll
 C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\obj\Debug\Assembly-CSharp.pdb
+C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\nunit.framework.dll
+C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.TestRunner.dll
+C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\UnityEngine.TestRunner.xml
+C:\Users\vince_000\Documents\GitHub\Goblins\Goblins Prototype\Temp\bin\Debug\nunit.framework.xml

@@ -30,7 +30,6 @@ public class RosterButton : MonoBehaviour {
 		iconImage.sprite = currentCharacter.combatClass.icon;
 		nameLabel.text = character.combatClass.type.ToString();
 		lifeLabel.text = character.maxLife.ToString();
-		energyLabel.text = character.maxEnergy.ToString();
 		bodyLabel.text = "Body: " + character.body.ToString();
 		mindLabel.text = "Mind: " + character.mind.ToString();
 		spiritLabel.text = "Spirit :" + character.spirit.ToString();
@@ -44,7 +43,7 @@ public class RosterButton : MonoBehaviour {
 
 	void SetInPartyStatus() {
 		Image bg = GetComponent<Image>();
-		bg.color = inParty ? originalColor * .8f : originalColor;
+		bg.color = inParty ? originalColor * 2.5f : originalColor;
 		transform.localScale = new Vector3(1,1,1);
 	}
 
@@ -64,7 +63,7 @@ public class RosterButton : MonoBehaviour {
 		characterDetails.AssignCharacter(character);
 		roster.characterDetailsPanel.gameObject.SetActive(true);
 
-		if(inParty == false) {
+		if(inParty == false && PartyMemberPanel.activePanelIndex > 0) {
 			PartyMemberPanel partyMemberPanel = roster.partyGrid.GetChild(PartyMemberPanel.activePanelIndex).GetComponent<PartyMemberPanel>();
 			partyMemberPanel.Setup(character);
 		}

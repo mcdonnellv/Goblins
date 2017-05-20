@@ -110,4 +110,13 @@ public class CombatMove : MonoBehaviour {
 		}
 		return s;
 	}
+
+	public static Color ColorForMoveCategory (MoveCategory c) {
+		switch(c) {
+		case MoveCategory.Attack: return new Color(0.627f, 0.239f, 0.239f);
+		case MoveCategory.Defense: return new Color(0.239f, 0.627f, 0.349f);
+		case MoveCategory.Special: return new Color(0.624f, 0.239f, 0.627f);
+		}
+		return Color.white;
+	}
 }

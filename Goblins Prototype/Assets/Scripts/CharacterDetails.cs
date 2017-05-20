@@ -65,12 +65,6 @@ public class CharacterDetails : MonoBehaviour {
 		critRateLabel.text = (100 * character.critChance).ToString() + "%";
 		defenseLabel.text = character.defense.ToString();
 		ageLabel.text = character.age.ToString();
-		sliceResLabel.text = (100 * character.sliceRes).ToString() + "%";
-		crushResLabel.text = (100 * character.crushRes).ToString() + "%";
-		arcaneResLabel.text = (100 * character.aracaneRes).ToString() + "%";
-		darkResLabel.text = (100 * character.darkRes).ToString() + "%";
-		coldResLabel.text = (100 * character.coldRes).ToString() + "%";
-		fireResLabel.text = (100 * character.fireRes).ToString() + "%";
 
 		sigil.sprite = Character.SpriteForSigil(character.sigil);
 		sigilLabel.text = character.sigil.ToString();

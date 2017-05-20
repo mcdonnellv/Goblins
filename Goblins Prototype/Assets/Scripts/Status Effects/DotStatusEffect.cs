@@ -22,7 +22,13 @@ public class DotStatusEffect : BaseStatusEffect {
 		float damage = cm.RollForDamage(move, applier, recipient);
 		int finalDamage = Mathf.RoundToInt(damage);
 		cm.ApplyDamage(finalDamage, recipient.data);
-		occ.ShowCombatText(recipient.headTransform.gameObject, CombatTextType.Hit, finalDamage.ToString());
+		occ.ShowCombatText(recipient.headTransform.gameObject, CombatTextType.StatusAppliedBad, statusEffectName);
+		StartCoroutine(ShowDelayedMessage(finalDamage.ToString(), recipient.headTransform.gameObject, CombatTextType.Hit, .5f));
 		recipient.RefreshLifeBar();
+	}
+
+	IEnumerator ShowDelayedMessage(string message, GameObject go, CombatTextType ctt, float timer) {
+		yield return new WaitForSeconds(timer);
+		OverlayCanvasController.instance.ShowCombatText(go, ctt, message);
 	}
 }

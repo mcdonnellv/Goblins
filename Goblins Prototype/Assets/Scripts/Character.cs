@@ -57,8 +57,8 @@ public class Character : MonoBehaviour {
 
 	static public Color ColorForUnitType(CombatUnitType ut) {
 		switch(ut) {
-		case CombatUnitType.Armored: return new Color(0.714f, 0.267f, 0.337f);
-		case CombatUnitType.Assault: return new Color(0.165f, 0.584f, 0.325f);
+		case CombatUnitType.Armored: return new Color(0.165f, 0.584f, 0.325f);
+		case CombatUnitType.Assault: return new  Color(0.714f, 0.267f, 0.337f);
 		case CombatUnitType.MagicUser: return new Color(0.282f, 0.451f, 0.82f);
 		}
 		return Color.gray;
@@ -92,7 +92,6 @@ public class Character : MonoBehaviour {
 		c.spawnSpot = parentTransform;
 		c.state = State.Alive;
 		c.data.life = c.data.maxLife;
-		c.data.energy = c.data.maxEnergy;
 		c.isPlayerCharacter = playerChar;
 		if(cData != null)
 			c.data = cData;
@@ -214,7 +213,6 @@ public class Character : MonoBehaviour {
 
 	public void RecoverFull() {
 		data.life = data.maxLife;
-		data.energy = data.maxEnergy;
 	}
 
 	public void Death() {

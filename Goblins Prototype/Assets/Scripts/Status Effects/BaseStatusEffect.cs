@@ -24,5 +24,5 @@ public class BaseStatusEffect : MonoBehaviour {
 	public void Tapped() {
 		GameManager.gm.arena.combatUI.ShowToolTip(statusEffectName, statusEffectDescription, statusEffectTurnsApplied + 1, 3f);
 	}
-}
 
+}

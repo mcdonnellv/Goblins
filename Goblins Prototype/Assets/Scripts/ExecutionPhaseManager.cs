@@ -121,23 +121,8 @@ public class ExecutionPhaseManager : MonoBehaviour {
 			NextState();
 			yield break;
 		}
-
-		//check if we have enough energy to perform the move
-		if(isPlayerTurn) {
-			if (attacker.queuedMove.energyCost > attacker.data.energy) {
-				attackSkipped = true;
-				Debug.Log("\t" + attacker.data.givenName + " does not have enough energy to attack, skipping attack\n");
-				GameObject mtm = isPlayerTurn ? GameManager.gm.arena.combatUI.moveAnnouncePlayerMarker : GameManager.gm.arena.combatUI.moveAnnounceEnemyMarker;
-				occ.ShowCombatText(mtm,  CombatTextType.MoveAnnounce, "Not Enough energy");
-				state = State.AttackDone;
-				NextState();
-				yield break;
-			}
-			else
-				attacker.data.energy -= attacker.queuedMove.energyCost;
-		}
 			
-		arena.combatUI.ShowTargetPointer(attacker, 3f);
+		//arena.combatUI.ShowTargetPointer(attacker, 3f);
 
 		//roll for hit
 		hit = (attacker.target == null) ? true : arena.cm.RollForHit(attacker.data, attacker.target.data, attacker.queuedMove);
@@ -581,7 +566,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		if(c.isPlayerCharacter) {
 			GoblinCombatPanel gcp = arena.combatUI.GetPanelForPlayer(c);
 			gcp.GetComponent<CanvasGroup>().alpha = .3f;
-			SpawnGhost(c);
+			//SpawnGhost(c);
 		}
 	}
 

@@ -23,6 +23,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public Text moveNameText;
 	public Text moveDescriptionText;
 	public GameObject highlight;
+	public GameObject rollButton;
 
 
 	public void Setup(Character c) {
@@ -38,6 +39,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 		GetComponent<CanvasGroup>().alpha = 1f;
 		SetOpponent(null);
 		moveDetails.SetActive(false);
+		rollButton.SetActive(false);
 		curtain.SetActive(false);
 		HideWheel();
 		SetInHighlightedStatus();
@@ -78,6 +80,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 	public void AddWheelEntry(CombatMove cm) {
 		WheelEntry we = Instantiate(wheelEntryPrefab, wheel.panelTr, false);
 		we.icon.sprite = CombatMove.SpriteForMoveCategory(cm.moveCategory);
+		we.icon.color = CombatMove.ColorForMoveCategory(cm.moveCategory);
 		we.name = cm.moveCategory.ToString();
 		we.combatMove = cm;
 		wheel.scroll.content.sizeDelta = new Vector2(wheel.scroll.content.sizeDelta.x, 100f * wheel.scroll.content.childCount);
@@ -123,10 +126,23 @@ public class GoblinCombatPanel : MonoBehaviour {
 			return;
 		CombatMove combatMove = character.queuedMove;
 		moveDetails.SetActive(true);
-		moveNameText.text = combatMove.moveName;
+		moveNameText.text = combatMove.moveName.ToUpper();
 		moveDescriptionText.text = combatMove.description;
 		int pos = character.data.moves.IndexOf(combatMove) + 1;
 		moveWheelIcon.sprite = CombatMove.SpriteForMoveCategory(combatMove.moveCategory);
+	}
+
+	public void SpinWheel() {
+		Arena arena = GameManager.gm.arena;
+		if(arena.rerolls <= 0 )
+			return;
+		arena.rerolls--;
+		arena.combatUI.RefreshRerolls();
+		arena.combatUI.HideRerollButtons();
+		character.queuedMove = null;
+		RevealWheel();
+		arena.combatUI.RollWheel(this, UnityEngine.Random.Range(1000f, 2000f));
+		arena.state = Arena.State.SingleMoveRollPhase;
 	}
 }
 

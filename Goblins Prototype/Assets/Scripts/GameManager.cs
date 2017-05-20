@@ -62,6 +62,10 @@ public class GameManager : MonoBehaviour {
 		//spawn enemies
 		enemies.SetAndSpawnParty(enemies.curPartyIndex);
 		enemies.difficutlyModifier += .5f;
+
+		roster.gameObject.SetActive(true);
+		roster.RefreshDisplay();
+
 		while (state == State.Prep) {
 			yield return 0;
 		}

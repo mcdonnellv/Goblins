@@ -20,7 +20,7 @@ public class CombatInfoPanel : MonoBehaviour {
 
 	public void Setup(Character c) {
 		character = c;
-		charName.text = c.name;
+		charName.text = c.name.ToUpper();
 		sigil.sprite = Character.SpriteForSigil(c.data.sigil);
 		unitType.sprite = Character.SpriteForUnitType(c.data.unitType);
 		unitTypeBG.color = Character.ColorForUnitType(c.data.unitType);
@@ -54,8 +54,8 @@ public class CombatInfoPanel : MonoBehaviour {
 
 	private void ShowAdvantages() {
 		HideAdvantages();
-		if(character.isPlayerCharacter == false)
-			return;
+		//if(character.isPlayerCharacter == false)
+		//	return;
 		
 		Character opponent = opposingInfoPanel.character;
 		if(opponent == null)
@@ -75,11 +75,11 @@ public class CombatInfoPanel : MonoBehaviour {
 			typeAdvantage.Show();
 
 		}
-		else if(advantage < 0f) {
-			typeAdvantage.text.text = "-" + Mathf.Abs(advantage * 100f).ToString() + "% vs ";
-			typeAdvantage.text.color = character.isPlayerCharacter ? Color.red : Color.green;
-			typeAdvantage.Show();
-		}
+//		else if(advantage < 0f) {
+//			typeAdvantage.text.text = "-" + Mathf.Abs(advantage * 100f).ToString() + "% vs ";
+//			typeAdvantage.text.color = character.isPlayerCharacter ? Color.red : Color.green;
+//			typeAdvantage.Show();
+//		}
 
 		//sigil
 		advantage = cm.Advantage(character.data.sigil, opponent.data.sigil);
@@ -89,11 +89,11 @@ public class CombatInfoPanel : MonoBehaviour {
 			sigilAdvantage.Show();
 
 		}
-		else if(advantage < 0f) {
-			sigilAdvantage.text.text = "-" + Mathf.Abs(advantage * 100f).ToString() + "% vs ";
-			sigilAdvantage.text.color = character.isPlayerCharacter ? Color.red : Color.green;
-			sigilAdvantage.Show();
-		}
+//		else if(advantage < 0f) {
+//			sigilAdvantage.text.text = "-" + Mathf.Abs(advantage * 100f).ToString() + "% vs ";
+//			sigilAdvantage.text.color = character.isPlayerCharacter ? Color.red : Color.green;
+//			sigilAdvantage.Show();
+//		}
 	}
 
 
