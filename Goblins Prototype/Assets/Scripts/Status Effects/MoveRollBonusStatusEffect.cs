@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MoveRollBonusStatusEffect : BaseStatusEffect {
-	public override float OnDamageDealtByMeCalc(AttackTurnInfo ati) {
-		return ati.damage * this.statusEffectPower;
+	public override void OnDamageDealtByMeCalc(AttackTurnInfo ati) {
+		ati.damage *= statusEffectPower;
 	}
 }

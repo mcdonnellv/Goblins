@@ -4,9 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class CursedStatusEffect : BaseStatusEffect {
-	public override float OnDamageDealtToMeCalc(AttackTurnInfo ati) {
+	public override void OnDamageDealtToMeCalc(AttackTurnInfo ati) {
 		ati.damage = ati.damage * statusEffectPower;
-		return ati.damage;
 	}
 }
 

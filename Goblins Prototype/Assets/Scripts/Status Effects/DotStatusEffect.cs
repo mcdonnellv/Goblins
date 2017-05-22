@@ -5,12 +5,12 @@ using UnityEngine.UI;
 using EckTechGames.FloatingCombatText;
 
 public class DotStatusEffect : BaseStatusEffect {
-	CombatMove move;
 	Character applier;
 
 	public override void OnStatusEffectAddedToMe(AttackTurnInfo ati) {
 		if(ati.statusEffect.statusEffectID == statusEffectID) {
-			move = ati.attacker.queuedMove;
+			statusEffectPower = (float)ati.attacker.queuedMove.effectiveness;
+			statusEffectDamageType = ati.attacker.queuedMove.damageType;
 			applier = ati.attacker;
 		}
 	}
@@ -19,16 +19,18 @@ public class DotStatusEffect : BaseStatusEffect {
 		OverlayCanvasController occ = OverlayCanvasController.instance;
 		Character recipient = ati.attacker;
 		CombatMath cm = GameManager.gm.arena.cm;
-		float damage = cm.RollForDamage(move, applier, recipient);
-		int finalDamage = Mathf.RoundToInt(damage);
+		float workingDamage = cm.RollForDamage((int)statusEffectPower, applier, recipient, statusEffectDamageType, 1f);
+
+		AttackTurnInfo newAti = new AttackTurnInfo(applier, workingDamage, statusEffectDamageType);
+
+		int finalDamage = Mathf.RoundToInt(newAti.damage);
 		cm.ApplyDamage(finalDamage, recipient.data);
-		occ.ShowCombatText(recipient.headTransform.gameObject, CombatTextType.StatusAppliedBad, statusEffectName);
-		StartCoroutine(ShowDelayedMessage(finalDamage.ToString(), recipient.headTransform.gameObject, CombatTextType.Hit, .5f));
+		occ.ShowCombatText(recipient.headTransform.gameObject, CombatTextType.StatusAppliedBad, statusEffectName + "\n" + finalDamage.ToString());
 		recipient.RefreshLifeBar();
 	}
+	
 
-	IEnumerator ShowDelayedMessage(string message, GameObject go, CombatTextType ctt, float timer) {
-		yield return new WaitForSeconds(timer);
-		OverlayCanvasController.instance.ShowCombatText(go, ctt, message);
+	public override string GetDescription() { 
+		return string.Format(statusEffectDescription, statusEffectPower); 
 	}
 }

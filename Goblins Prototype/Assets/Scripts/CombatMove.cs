@@ -19,13 +19,8 @@ public class CombatMove : MonoBehaviour {
 	}
 
 	public enum DamageType {
-		Slice,
-		Crush,
-		Arcane,
-		Dark,
-		Cold,
-		Fire,
-		None,
+		Physical,
+		Magical
 	}
 
 	public enum TargetType {
@@ -54,43 +49,13 @@ public class CombatMove : MonoBehaviour {
 	public MoveType moveType = MoveType.Damage;
 	public RangeType rangeType = RangeType.Melee;
 	public TargetType targetType = TargetType.Opponent;
-	public DamageType damageType = DamageType.Slice;
+	public DamageType damageType = DamageType.Physical;
 	public List<BaseStatusEffect> moveStatusEffects = new List<BaseStatusEffect>(); //this move may apply 1 to many status effects on its target
 	public bool displaceOpponent;
 	public bool isDot = false;
 	public float workingDamage = 0f;
-	public string GenerateDesciption () {
-		switch(moveType){
-		case MoveType.Damage : 
-			description = "Deal " + effectiveness.ToString();
-			switch(damageType) {
-			case DamageType.Slice : description += " slicing damage"; break;
-			case DamageType.Crush : description += " crushing damage"; break;
-			case DamageType.Arcane : description += " arcane damage"; break;
-			case DamageType.Dark : description += " dark damage"; break;
-			case DamageType.Cold : description += " cold damage"; break;
-			case DamageType.Fire : description += " fire damage"; break;
-			}
-			break;
-		case MoveType.Heal : 
-			description = "Heal " + effectiveness.ToString() + " damage";
-			break;
-		}
+	public bool canCrit = true;
 
-		return description;
-	} 
-
-	public Color ColorFromDamageType () {
-		switch(damageType) {
-		case DamageType.Slice: return Color.magenta;
-		case DamageType.Crush: return Color.yellow;
-		case DamageType.Arcane: return Color.cyan;
-		case DamageType.Dark: return new Color(1f,0f,1f);
-		case DamageType.Fire: return Color.red;
-		case DamageType.Cold: return  Color.blue;
-		}
-		return Color.white;
-	}
 
 	public static Color ColorFromMovePosition (int pos) {
 		switch(pos) {

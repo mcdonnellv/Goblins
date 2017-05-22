@@ -63,7 +63,7 @@ public class RosterButton : MonoBehaviour {
 		characterDetails.AssignCharacter(character);
 		roster.characterDetailsPanel.gameObject.SetActive(true);
 
-		if(inParty == false && PartyMemberPanel.activePanelIndex > 0) {
+		if(inParty == false && PartyMemberPanel.activePanelIndex >= 0) {
 			PartyMemberPanel partyMemberPanel = roster.partyGrid.GetChild(PartyMemberPanel.activePanelIndex).GetComponent<PartyMemberPanel>();
 			partyMemberPanel.Setup(character);
 		}

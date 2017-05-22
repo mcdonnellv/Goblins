@@ -13,8 +13,7 @@ public class CombatMath : MonoBehaviour {
 
 	public bool RollForHit(CharacterData attacker, CharacterData defender, CombatMove move) {
 		//magical ranged attacks always hit
-		if(move.rangeType == CombatMove.RangeType.Ranged && 
-			!(move.damageType == CombatMove.DamageType.Crush || move.damageType == CombatMove.DamageType.Slice))
+		if(move.rangeType == CombatMove.RangeType.Ranged && move.damageType == CombatMove.DamageType.Magical)
 			return true;
 		
 		float roll = UnityEngine.Random.Range(0f,1f);
@@ -24,6 +23,8 @@ public class CombatMath : MonoBehaviour {
 	}
 
 	public bool RollForCrit(CombatMove combatMove, CharacterData attacker) {
+		if(combatMove.canCrit == false)
+			return false;
 		float roll = UnityEngine.Random.Range(0f,1f);
 		float mindModified = Mathf.Max(0f, attacker.mind - 4f);
 		float chance = combatMove.critChance + (.01f * Mathf.Pow(mindModified, 1.5f));
@@ -32,19 +33,29 @@ public class CombatMath : MonoBehaviour {
 		return false;
 	}
 
-	public float RollForDamage(CombatMove combatMove, Character attacker, Character defender) {
-		if (combatMove == null)
-			return 0;
-		float typeAdvantage = Advantage(attacker.data.unitType, defender.data.unitType);
-		float sigilAdvantage = Advantage(attacker.data.sigil, defender.data.sigil);
-		float damage = combatMove.effectiveness * (1f + typeAdvantage + sigilAdvantage);
+	public float RollForDamage(int moveDamage, Character attacker, Character defender, CombatMove.DamageType damageType, float critVal) {
+		float typeAdvantage = 0f;
+		float sigilAdvantage = 0f;
+
+		if(attacker != null) {
+			typeAdvantage = Advantage(attacker.data.unitType, defender.data.unitType);
+			sigilAdvantage = Advantage(attacker.data.sigil, defender.data.sigil);
+		}
+
+		float damage = moveDamage * (1f + typeAdvantage + sigilAdvantage);
 		damage = Mathf.Max(0f, damage);
 
 		// status effects may alter the attack's damage value
-		AttackTurnInfo ati = new AttackTurnInfo(attacker, damage);
+		AttackTurnInfo ati = new AttackTurnInfo(attacker, damage, damageType);
 		defender.statusContainer.BroadcastMessage("OnDamageDealtToMeCalc", ati, SendMessageOptions.DontRequireReceiver);
-		attacker.statusContainer.BroadcastMessage("OnDamageDealtByMeCalc", ati, SendMessageOptions.DontRequireReceiver);
-		return ati.damage;
+
+		if(attacker != null)
+			attacker.statusContainer.BroadcastMessage("OnDamageDealtByMeCalc", ati, SendMessageOptions.DontRequireReceiver);
+
+		//factor in crit
+		ati.damage *= critVal;
+
+		return ati.damage ;
 	}
 
 

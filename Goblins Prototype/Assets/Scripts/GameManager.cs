@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour {
 		fightCam.enabled = false;
 		//spawn enemies
 		enemies.SetAndSpawnParty(enemies.curPartyIndex);
-		enemies.difficutlyModifier += .5f;
+		enemies.difficutlyModifier += .75f;
 
 		roster.gameObject.SetActive(true);
 		roster.RefreshDisplay();

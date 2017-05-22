@@ -26,7 +26,7 @@ public class CombatInfoPanel : MonoBehaviour {
 		unitTypeBG.color = Character.ColorForUnitType(c.data.unitType);
 		lifebar.Setup(character);
 		lifebar.showText = true;
-		defense.text = c.data.defense.ToString();
+		defense.text = Mathf.RoundToInt(c.data.defense * 100f).ToString() + "%";
 		lifebar.Refresh();
 	}
 		

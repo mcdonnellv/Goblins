@@ -515,11 +515,14 @@ public class ExecutionPhaseManager : MonoBehaviour {
 		string damageString = attacker.data.givenName + " misses";
 		if(hit) {
 			if(!attacker.queuedMove.isDot) {
-				move.workingDamage = arena.cm.RollForDamage(move, attacker, defender);
-				if(crit) 
-					move.workingDamage *= (arena.cm.baseCritDamageMultiplier + critModifer);
-				defender.statusContainer.BroadcastMessage("OnDamageTakenCalc", new AttackTurnInfo(attacker, move.workingDamage), SendMessageOptions.DontRequireReceiver);
+				
+				// modify damage by type/sigil advantage, status effects, and crit
+				float critMod = crit ? (arena.cm.baseCritDamageMultiplier + critModifer) : 1f;
+				move.workingDamage = arena.cm.RollForDamage(move.effectiveness, attacker, defender, move.damageType, critMod);
+
+				//this is the final damage
 				finalDamage = Mathf.RoundToInt(move.workingDamage);
+
 				occ.ShowCombatText(defender.headTransform.gameObject, CombatTextType.CriticalHit, crit ? ("Crit\n" + finalDamage.ToString()) : finalDamage.ToString());
 				damageString = (crit ? "CRITICAL HIT! " : "") + attacker.data.givenName + "'s " + move.moveName + " deals " + finalDamage.ToString() + " damage to " + defender.data.givenName;
 			}
