@@ -19,3 +19,5 @@
 /Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Temp/bin/Debug/Unity.CecilTools.dll
 /Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Temp/bin/Debug/Mono.Cecil.Pdb.dll
 /Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Temp/bin/Debug/Mono.Cecil.Mdb.dll
+/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Temp/bin/Debug/UnityEngine.TestRunner.dll
+/Users/mcdonnellv/Documents/GitHub/Goblins/Goblins Prototype/Temp/bin/Debug/nunit.framework.dll
