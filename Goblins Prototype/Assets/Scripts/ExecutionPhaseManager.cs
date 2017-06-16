@@ -169,6 +169,7 @@ public class ExecutionPhaseManager : MonoBehaviour {
 	IEnumerator AttackDoneState () {
 		curtain.SetActive(false);
 		arena.combatUI.HideVersusPanels();
+		arena.combatUI.DestroyTargetPointers();
 		//do any post attack combat move effects
 		Character attacker = GetCurrentAttacker();
 		if(attacker != null) {

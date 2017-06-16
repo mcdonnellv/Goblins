@@ -28,6 +28,15 @@ public class GoblinCombatPanel : MonoBehaviour {
 
 	public void Setup(Character c) {
 		character = c;
+		List<Transform> childrenToDelete = new List<Transform>();
+		foreach (Transform child in wheel.scroll.content.transform) 
+			childrenToDelete.Add(child);
+
+		foreach (Transform child in childrenToDelete) {
+			child.parent = GameManager.gm.transform;
+			Destroy(child.gameObject);
+		}
+
 		lifeBar.Setup(c);
 		iconImage.sprite = character.data.combatClass.icon;
 		classText.text = character.data.combatClass.type.ToString().ToUpper();
@@ -83,7 +92,7 @@ public class GoblinCombatPanel : MonoBehaviour {
 		we.icon.color = CombatMove.ColorForMoveCategory(cm.moveCategory);
 		we.name = cm.moveCategory.ToString();
 		we.combatMove = cm;
-		wheel.scroll.content.sizeDelta = new Vector2(wheel.scroll.content.sizeDelta.x, 100f * wheel.scroll.content.childCount);
+		wheel.scroll.content.sizeDelta = new Vector2(wheel.scroll.content.sizeDelta.x, 100f * wheel.scroll.content.transform.childCount);
 		int randpos = UnityEngine.Random.Range(0, wheel.panelTr.childCount);
 		we.transform.SetSiblingIndex(randpos);
 	}
