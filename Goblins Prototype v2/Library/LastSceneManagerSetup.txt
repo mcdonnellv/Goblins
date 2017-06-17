@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/2D Platformer Controller/Scenes/Demo.unity
+- path: Assets/scene.unity
   isLoaded: 1
   isActive: 1

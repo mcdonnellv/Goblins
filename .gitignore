@@ -46,5 +46,14 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+#For Mac developers
+# Unity generated #
+# =============== #
+Temp/
+obj/
+Build
+Library/
 Goblins\ Prototype/Library/
-Goblins Prototype/Temp/
+Goblins\ Prototype/Temp/
+Goblins\ Prototype\ v2/Library/
+Goblins\ Prototype\ v2/Temp/
